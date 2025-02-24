@@ -4,8 +4,8 @@ from shotgrid_connector import ShotGridConnector
 class UserAuthenticator:
     """ShotGrid 사용자 로그인 및 권한 확인"""
 
-    def login(username, password):
-        """사용자 로그인 인증 (ShotGrid는 기본적으로 비밀번호 인증 X)"""
+    def login(username):
+        """사용자 로그인 인증"""
         user = ShotGridConnector.sg.find_one(
             "HumanUser",
             [["login", "is", username]],
