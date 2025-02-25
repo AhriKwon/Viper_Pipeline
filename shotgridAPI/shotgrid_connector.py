@@ -19,6 +19,31 @@ class ShotGridConnector:
             ["id", "content", "sg_status_list", "entity"]
         )
         return tasks
+    
+    def get_publishes_for_task(task_id):
+        """특정 Task에 연결된 PublishedFile을 조회"""
+        # PublishedFile 엔티티에서 Task ID를 기준으로 검색
+        filters = [["task", "is", {"type": "Task", "id": task_id}]]
+        fields = ["id", "code", "path"]
+
+        publishes = ShotGridConnector.sg.find("PublishedFile", filters, fields)
+        publish_list = []
+        
+        # 퍼블리시 된 파일을 리스트로 리턴
+        if publishes:
+            print(f"Task {task_id}에 연결된 퍼블리시 파일 목록:")
+            for publish in publishes:
+                publish_dict = {
+                    'id' : publish['id'],
+                    'file_name' : publish['code'],
+                    'path' : publish['path']['url']
+                }
+                publish_list.append(publish_dict)
+            return publish_list
+        # 테스크 안에 퍼블리시 된 파일이 없는 경우
+        else:
+            print(f"⚠ Task {task_id}에 연결된 퍼블리시 파일이 없습니다.")
+            return []
 
     def get_task_status(task_id):
         """특정 Task의 상태(PND, IP, FIN)를 가져옴"""
