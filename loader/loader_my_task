@@ -1,0 +1,16 @@
+import sys, os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+from user_authenticator import UserAuthenticator
+from shotgrid_connector import ShotGridConnector
+
+class LoaderMytasktab:
+
+    username = "owlgrowl0v0@gmail.com"
+    user_data = UserAuthenticator.login(username)
+
+    sgc = ShotGridConnector
+
+    if user_data:
+        user_id = user_data['id']
+        tasks = sgc.get_user_tasks(user_id)
