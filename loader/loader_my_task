@@ -5,12 +5,13 @@ from user_authenticator import UserAuthenticator
 from shotgrid_connector import ShotGridConnector
 
 class LoaderMytasktab:
+    def __init__(self):
+        username = "owlgrowl0v0@gmail.com"
+        self.user_data = UserAuthenticator.login(username)
 
-    username = "owlgrowl0v0@gmail.com"
-    user_data = UserAuthenticator.login(username)
+        self.sgc = ShotGridConnector
 
-    sgc = ShotGridConnector
-
-    if user_data:
-        user_id = user_data['id']
-        tasks = sgc.get_user_tasks(user_id)
+    def show_tasks(self):   
+        if self.user_data:
+            user_id = self.user_data['id']
+            tasks = self.sgc.get_user_tasks(user_id)
