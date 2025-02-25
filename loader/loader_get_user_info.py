@@ -462,14 +462,638 @@
 ##############################################################################################################################################
 
 
+# import os
+# import sys
+# import shotgun_api3
+# from shotgun_api3 import Shotgun
+
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+# from user_authenticator import UserAuthenticator
+
+
+# class ShotGridConnector:
+#     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
+
+#     def __init__(self):
+#         """ShotGrid API 연결"""
+#         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
+#         self.SCRIPT_NAME = "Viper"
+#         self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # 환경 변수에서 API 키 가져오기
+#         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
+#         self.user_data = None  # 로그인한 사용자 정보 저장
+
+#     def login_user(self, username):
+#         """ShotGrid에서 로그인한 사용자 정보를 가져오기"""
+#         filters = [["login", "is", username]]
+#         fields = ["id", "name", "email"]
+#         user = self.sg.find_one("HumanUser", filters, fields)
+
+#         if user:
+#             self.user_data = user
+#             return user
+#         else:
+#             return {"error": "User not found"}
+
+#     def get_user_tasks(self):
+#         """현재 로그인한 사용자에게 할당된 Task 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+#         filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
+#         fields = ["id", "content", "sg_status_list", "entity"]
+#         return self.sg.find("Task", filters, fields) or []
+
+#     # def get_user_shots(self):
+#     #     """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
+#     #     if not self.user_data:
+#     #         return {"error": "User not authenticated"}
+
+#     #     user_id = self.user_data["id"]
+#     #     filters = [["sg_artist", "is", {"type": "HumanUser", "id": user_id}]]
+#     #     fields = ["id", "code", "sg_status_list"]
+#     #     return self.sg.find("Shot", filters, fields) or []
+
+#     # def get_user_assets(self):
+#     #     """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
+#     #     if not self.user_data:
+#     #         return {"error": "User not authenticated"}
+
+#     #     user_id = self.user_data["id"]
+#     #     filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
+#     #     fields = ["id", "code", "sg_status_list"]
+#     #     return self.sg.find("Asset", filters, fields) or []
+
+
+# # 사용 예시
+# sg_connector = ShotGridConnector()
+
+# # 로그인한 사용자 정보 가져오기
+# username = "owlgrowl0v0@gmail.com"
+# user_data = sg_connector.login_user(username)
+
+# if "error" not in user_data:
+#     print(f"로그인 성공: {user_data}")
+
+#     # 1. 로그인한 사용자의 Task 가져오기
+#     user_tasks = sg_connector.get_user_tasks()
+#     print("\n[사용자 Task 목록]:")
+#     for task in user_tasks:
+#         print(f"Task ID: {task['id']}, Name: {task['content']}, Status: {task['sg_status_list']}")
+
+#     # 2. 로그인한 사용자의 Shot 가져오기
+#     user_shots = sg_connector.get_user_shots()
+#     print("\n[사용자 Shot 목록]:")
+#     for shot in user_shots:
+#         print(f"Shot ID: {shot['id']}, Name: {shot['code']}, Status: {shot['sg_status_list']}")
+
+#     # 3. 로그인한 사용자의 Asset 가져오기
+#     user_assets = sg_connector.get_user_assets()
+#     print("\n[사용자 Asset 목록]:")
+#     for asset in user_assets:
+#         print(f"Asset ID: {asset['id']}, Name: {asset['code']}, Status: {asset['sg_status_list']}")
+# else:
+#     print(user_data["error"])
+
+
+
+############################################################################################################################################
+
+# import os
+# from shotgun_api3 import Shotgun
+
+# class ShotGridConnector:
+#     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
+
+#     def __init__(self):
+#         """ShotGrid API 연결"""
+#         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
+#         self.SCRIPT_NAME = "Viper"
+#         self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # API 키 가져오기
+#         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
+#         self.user_data = None  # 로그인한 사용자 정보 저장
+
+#     def login_user(self, username):
+#         """ShotGrid에서 로그인한 사용자 정보를 가져오기"""
+#         filters = [["login", "is", username]]
+#         fields = ["id", "name", "email"]
+#         user = self.sg.find_one("HumanUser", filters, fields)
+
+#         if user:
+#             self.user_data = user
+#             return user
+#         else:
+#             return {"error": "User not found"}
+
+#     def get_user_tasks(self):
+#         """현재 로그인한 사용자에게 할당된 Task 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+#         filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
+#         fields = ["id", "content", "sg_status_list", "entity"]
+#         return self.sg.find("Task", filters, fields) or []
+
+#     def get_user_shots(self):
+#         """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         # 사용자가 할당된 Task 중 Shot과 연결된 Task 찾기
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Shot"]  # Task가 연결된 Shot만 필터링
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         # Shot 데이터 정리
+#         shots = []
+#         for task in tasks:
+#             if task["entity"]:  # Task가 연결된 Shot이 있는 경우
+#                 shots.append({
+#                     "shot_id": task["entity"]["id"],
+#                     "shot_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return shots
+
+#     def get_user_assets(self):
+#         """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         # Task 엔티티를 통해 Asset을 조회
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Asset"]  # Task와 연결된 엔티티가 Asset인지 확인
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         # Asset 데이터 정리
+#         assets = []
+#         for task in tasks:
+#             if task["entity"] and task["entity"]["type"] == "Asset":
+#                 assets.append({
+#                     "asset_id": task["entity"]["id"],
+#                     "asset_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return assets
+
+
+# # 사용 예시
+# sg_connector = ShotGridConnector()
+
+# # 로그인한 사용자 정보 가져오기
+# username = "owlgrowl0v0@gmail.com"
+# user_data = sg_connector.login_user(username)
+
+# if "error" not in user_data:
+#     print(f"로그인 성공: {user_data}")
+
+#     # 1️ Task 가져오기
+#     user_tasks = sg_connector.get_user_tasks()
+#     print("\n[사용자 Task 목록]:")
+#     for task in user_tasks:
+#         print(f"Task ID: {task['id']}, Name: {task['content']}, Status: {task['sg_status_list']}")
+
+#     # 2️ Shot 가져오기
+#     user_shots = sg_connector.get_user_shots()
+#     print("\n[사용자 Shot 목록]:")
+#     for shot in user_shots:
+#         print(f"Shot ID: {shot['shot_id']}, Name: {shot['shot_name']}, Task: {shot['task_name']}, Status: {shot['status']}")
+
+#     # 3️ Asset 가져오기
+#     user_assets = sg_connector.get_user_assets()
+#     print("\n[사용자 Asset 목록]:")
+#     for asset in user_assets:
+#         print(f"Asset ID: {asset['asset_id']}, Name: {asset['asset_name']}, Task: {asset['task_name']}, Status: {asset['status']}")
+# else:
+#     print(user_data["error"])
+
+
+
+###########################################################################################################################################
+
+
+
+"""
+추가해야 할 함수들
+
+
+
+1. Task가 상태변경(PND->IP) 되면 현 상태가 맞는지 확인하는 함수
+
+2. 날짜별 파일 정렬 함수
+
+3. 각 상태별 파일 정렬 (wtg 파일 따로, pndng 파일 따로, ip 파일 따로, fin 파일 따로 정렬해주는) 함수
+
+"""
+
+####################################################################################################################################
+
+# import os
+# from shotgun_api3 import Shotgun
+# from collections import defaultdict
+
+# class ShotGridConnector:
+#     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
+
+#     def __init__(self):
+#         """ShotGrid API 연결"""
+#         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
+#         self.SCRIPT_NAME = "Viper"
+#         self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # API 키 가져오기
+#         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
+#         self.user_data = None  # 로그인한 사용자 정보 저장
+
+#     def login_user(self, username):
+#         """ShotGrid에서 로그인한 사용자 정보를 가져오기"""
+#         filters = [["login", "is", username]]
+#         fields = ["id", "name", "email"]
+#         user = self.sg.find_one("HumanUser", filters, fields)
+
+#         if user:
+#             self.user_data = user
+#             return user
+#         else:
+#             return {"error": "User not found"}
+
+#     def get_user_tasks(self):
+#         """현재 로그인한 사용자에게 할당된 Task 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+#         filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
+#         fields = ["id", "content", "sg_status_list", "entity"]
+#         return self.sg.find("Task", filters, fields) or []
+
+#     def get_user_shots(self):
+#         """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         # 사용자가 할당된 Task 중 Shot과 연결된 Task 찾기
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Shot"]  # Task가 연결된 Shot만 필터링
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         # Shot 데이터 정리
+#         shots = []
+#         for task in tasks:
+#             if task["entity"]:  # Task가 연결된 Shot이 있는 경우
+#                 shots.append({
+#                     "shot_id": task["entity"]["id"],
+#                     "shot_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return shots
+
+#     def get_user_assets(self):
+#         """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         # Task 엔티티를 통해 Asset을 조회
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Asset"]  # Task와 연결된 엔티티가 Asset인지 확인
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         # Asset 데이터 정리
+#         assets = []
+#         for task in tasks:
+#             if task["entity"] and task["entity"]["type"] == "Asset":
+#                 assets.append({
+#                     "asset_id": task["entity"]["id"],
+#                     "asset_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return assets
+
+
+# # 사용하기
+# sg_connector = ShotGridConnector()
+
+# # 로그인한 사용자 정보 가져오기
+# username = "owlgrowl0v0@gmail.com"
+# user_data = sg_connector.login_user(username)
+
+# if "error" not in user_data:
+#     print(f"로그인 성공: {user_data}")
+
+#     # 1️ Task 가져오기
+#     user_tasks = sg_connector.get_user_tasks()
+#     print("\n[사용자 Task 목록]:")
+#     for task in user_tasks:
+#         print(f"Task ID: {task['id']}, Name: {task['content']}, Status: {task['sg_status_list']}")
+
+#     # 2️ Shot 가져오기
+#     user_shots = sg_connector.get_user_shots()
+#     print("\n[사용자 Shot 목록]:")
+#     for shot in user_shots:
+#         print(f"Shot ID: {shot['shot_id']}, Name: {shot['shot_name']}, Task: {shot['task_name']}, Status: {shot['status']}")
+
+#     # 3️ Asset 가져오기
+#     user_assets = sg_connector.get_user_assets()
+#     print("\n[사용자 Asset 목록]:")
+#     for asset in user_assets:
+#         print(f"Asset ID: {asset['asset_id']}, Name: {asset['asset_name']}, Task: {asset['task_name']}, Status: {asset['status']}")
+# else:
+#     print(user_data["error"])
+
+
+
+# class ShotGridFileManager:
+#     """ShotGrid에서 Task, Shot, Asset에 연결된 파일 정보를 정렬 및 분류하는 클래스"""
+
+#     def __init__(self, sg_connector):
+#         self.sg_connector = sg_connector
+
+#     def get_sorted_files_for_user(self, sort_by="created_at"):
+#         """로그인한 사용자의 Task, Shot, Asset에 연결된 파일 정보를 정렬하여 반환"""
+#         if not self.sg_connector.user_data:
+#             return {"error": "User not authenticated"}
+
+#         file_list = []
+
+#         # 1️ 사용자 Tasks에 연결된 파일 가져오기
+#         tasks = self.sg_connector.get_user_tasks()
+#         for task in tasks:
+#             task_id = task["id"]
+#             versions = self.sg_connector.sg.find("Version", [["sg_task", "is", {"type": "Task", "id": task_id}]], 
+#                                                  ["id", "code", "created_at", "sg_status_list"])
+#             for version in versions:
+#                 file_list.append({
+#                     "category": "Task",
+#                     "task_id": task_id,
+#                     "task_name": task["content"],
+#                     "version_id": version["id"],
+#                     "file_name": version["code"],
+#                     "created_at": version["created_at"],
+#                     "status": version.get("sg_status_list", "unknown")  # 기본값 설정
+#                 })
+
+#         # 2️ 파일 목록을 정렬
+#         sorted_files = sorted(file_list, key=lambda x: x[sort_by])
+
+#         return sorted_files
+
+#     def categorize_by_status(self, file_list):
+#         """파일 목록을 wtg, pndng, ip, fin 4가지 상태로 분류"""
+#         status_categories = defaultdict(list)
+
+#         for file in file_list:
+#             status = file.get("status", "unknown").lower()  # 상태명을 소문자로 변환
+#             if status in ["wtg", "pndng", "ip", "fin"]:
+#                 status_categories[status].append(file)
+#             else:
+#                 status_categories["unknown"].append(file)  # 알 수 없는 상태값
+
+#         return status_categories
+
+
+# # 사용 예시
+# sg_connector = ShotGridConnector()
+
+# # 로그인한 사용자 정보 가져오기
+# username = "owlgrowl0v0@gmail.com"
+# user_data = sg_connector.login_user(username)
+
+# if "error" not in user_data:
+#     print(f"로그인 성공: {user_data}")
+
+#     file_manager = ShotGridFileManager(sg_connector)
+
+#     # 1️ Task, Shot, Asset 관련 파일 가져오기
+#     sorted_files = file_manager.get_sorted_files_for_user(sort_by="created_at")
+
+#     # 2️ 상태별로 파일 분류
+#     categorized_files = file_manager.categorize_by_status(sorted_files)
+
+#     print("\n [파일 목록 - wtg 상태]:")
+#     for file in categorized_files["wtg"]:
+#         print(file)
+
+#     print("\n [파일 목록 - pndng 상태]:")
+#     for file in categorized_files["pndng"]:
+#         print(file)
+
+#     print("\n [파일 목록 - ip 상태]:")
+#     for file in categorized_files["ip"]:
+#         print(file)
+
+#     print("\n [파일 목록 - fin 상태]:")
+#     for file in categorized_files["fin"]:
+#         print(file)
+
+#     print("\n [파일 목록 - unknown 상태]:")
+#     for file in categorized_files["unknown"]:
+#         print(file)
+
+# else:
+#     print(user_data["error"])
+
+
+
+
+
+###################################################################################################################################
+
+
+# import os
+# from collections import defaultdict
+# from shotgun_api3 import Shotgun
+
+# class ShotGridConnector:
+#     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
+
+#     def __init__(self):
+#         """ShotGrid API 연결"""
+#         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
+#         self.SCRIPT_NAME = "Viper"
+#         self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # API 키 가져오기
+#         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
+#         self.user_data = None  # 로그인한 사용자 정보 저장
+
+#     def login_user(self, username):
+#         """ShotGrid에서 로그인한 사용자 정보를 가져오기"""
+#         filters = [["login", "is", username]]
+#         fields = ["id", "name", "email"]
+#         user = self.sg.find_one("HumanUser", filters, fields)
+
+#         if user:
+#             self.user_data = user
+#             return user
+#         else:
+#             return {"error": "User not found"}
+
+#     def get_user_tasks(self):
+#         """현재 로그인한 사용자에게 할당된 Task 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+#         filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
+#         fields = ["id", "content", "sg_status_list", "entity"]
+#         return self.sg.find("Task", filters, fields) or []
+
+#     def get_user_shots(self):
+#         """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Shot"]
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         shots = []
+#         for task in tasks:
+#             if task["entity"]:
+#                 shots.append({
+#                     "shot_id": task["entity"]["id"],
+#                     "shot_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return shots
+
+#     def get_user_assets(self):
+#         """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         user_id = self.user_data["id"]
+
+#         filters = [
+#             ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+#             ["entity", "type_is", "Asset"]
+#         ]
+#         fields = ["entity", "content", "sg_status_list"]
+
+#         tasks = self.sg.find("Task", filters, fields) or []
+
+#         assets = []
+#         for task in tasks:
+#             if task["entity"] and task["entity"]["type"] == "Asset":
+#                 assets.append({
+#                     "asset_id": task["entity"]["id"],
+#                     "asset_name": task["entity"]["name"],
+#                     "task_name": task["content"],
+#                     "status": task["sg_status_list"]
+#                 })
+
+#         return assets
+
+#     def categorize_and_sort_by_status(self):
+#         """Task, Shot, Asset 목록을 wtg, pndng, ip, fin 상태로 분류하고 정렬"""
+#         if not self.user_data:
+#             return {"error": "User not authenticated"}
+
+#         # 상태별 데이터를 저장할 defaultdict 생성
+#         categorized_data = defaultdict(list)
+
+#         # 1️ Task 데이터 분류
+#         tasks = self.get_user_tasks()
+#         for task in tasks:
+#             status = task.get("sg_status_list", "unknown").lower()
+#             if status in ["wtg", "pndng", "ip", "fin"]:
+#                 categorized_data[status].append(task)
+
+#         # 2️ Shot 데이터 분류
+#         shots = self.get_user_shots()
+#         for shot in shots:
+#             status = shot.get("status", "unknown").lower()
+#             if status in ["wtg", "pndng", "ip", "fin"]:
+#                 categorized_data[status].append(shot)
+
+#         # 3️ Asset 데이터 분류
+#         assets = self.get_user_assets()
+#         for asset in assets:
+#             status = asset.get("status", "unknown").lower()
+#             if status in ["wtg", "pndng", "ip", "fin"]:
+#                 categorized_data[status].append(asset)
+
+#         # 4️ 상태별 정렬 (Task, Shot, Asset 목록을 ID 기준으로 정렬)
+#         for status, items in categorized_data.items():
+#             categorized_data[status] = sorted(items, key=lambda x: x.get("id", 0))
+
+#         return categorized_data
+
+
+# # 사용 예시
+# sg_connector = ShotGridConnector()
+
+# # 로그인한 사용자 정보 가져오기
+# username = "owlgrowl0v0@gmail.com"
+# user_data = sg_connector.login_user(username)
+
+# if "error" not in user_data:
+#     print(f"로그인 성공: {user_data}")
+
+#     # Task, Shot, Asset 목록을 상태별로 분류 및 정렬
+#     categorized_data = sg_connector.categorize_and_sort_by_status()
+
+#     # 상태별로 출력
+#     for status, items in categorized_data.items():
+#         print(f"\n [파일 목록 - {status.upper()} 상태]:")
+#         for item in items:
+#             print(item)
+
+# else:
+#     print(user_data["error"])
+
+
+
+
+
+
+#####################################################################################################################################
+############### 각 상태별 파일 정렬 (wtg 파일 따로, pndng 파일 따로, ip 파일 따로, fin 파일 따로 정렬해주는) 함수 ########################
+#####################################################################################################################################
+
+
+
+
 import os
-import sys
-import shotgun_api3
+from collections import defaultdict
 from shotgun_api3 import Shotgun
-
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
-from user_authenticator import UserAuthenticator
-
 
 class ShotGridConnector:
     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
@@ -478,7 +1102,7 @@ class ShotGridConnector:
         """ShotGrid API 연결"""
         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
         self.SCRIPT_NAME = "Viper"
-        self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # 환경 변수에서 API 키 가져오기
+        self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # API 키 가져오기
         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
         self.user_data = None  # 로그인한 사용자 정보 저장
 
@@ -504,25 +1128,113 @@ class ShotGridConnector:
         fields = ["id", "content", "sg_status_list", "entity"]
         return self.sg.find("Task", filters, fields) or []
 
-    # def get_user_shots(self):
-    #     """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
-    #     if not self.user_data:
-    #         return {"error": "User not authenticated"}
+    def get_user_shots(self):
+        """현재 로그인한 사용자가 작업 중인 Shot 목록을 가져옴"""
+        if not self.user_data:
+            return {"error": "User not authenticated"}
 
-    #     user_id = self.user_data["id"]
-    #     filters = [["sg_artist", "is", {"type": "HumanUser", "id": user_id}]]
-    #     fields = ["id", "code", "sg_status_list"]
-    #     return self.sg.find("Shot", filters, fields) or []
+        user_id = self.user_data["id"]
 
-    # def get_user_assets(self):
-    #     """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
-    #     if not self.user_data:
-    #         return {"error": "User not authenticated"}
+        filters = [
+            ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+            ["entity", "type_is", "Shot"]
+        ]
+        fields = ["entity", "content", "sg_status_list"]
 
-    #     user_id = self.user_data["id"]
-    #     filters = [["task_assignees", "in", {"type": "HumanUser", "id": user_id}]]
-    #     fields = ["id", "code", "sg_status_list"]
-    #     return self.sg.find("Asset", filters, fields) or []
+        tasks = self.sg.find("Task", filters, fields) or []
+
+        shots = []
+        for task in tasks:
+            if task["entity"]:
+                shots.append({
+                    "shot_id": task["entity"]["id"],
+                    "shot_name": task["entity"]["name"],
+                    "task_name": task["content"],
+                    "status": task["sg_status_list"]
+                })
+
+        return shots
+
+    def get_user_assets(self):
+        """현재 로그인한 사용자가 작업 중인 Asset 목록을 가져옴"""
+        if not self.user_data:
+            return {"error": "User not authenticated"}
+
+        user_id = self.user_data["id"]
+
+        filters = [
+            ["task_assignees", "in", {"type": "HumanUser", "id": user_id}],
+            ["entity", "type_is", "Asset"]
+        ]
+        fields = ["entity", "content", "sg_status_list"]
+
+        tasks = self.sg.find("Task", filters, fields) or []
+
+        assets = []
+        for task in tasks:
+            if task["entity"] and task["entity"]["type"] == "Asset":
+                assets.append({
+                    "asset_id": task["entity"]["id"],
+                    "asset_name": task["entity"]["name"],
+                    "task_name": task["content"],
+                    "status": task["sg_status_list"]
+                })
+
+        return assets
+
+    def categorize_and_sort_tasks(self):
+        """Task 목록을 wtg, pndng, ip, fin 상태로 분류하고 정렬"""
+        if not self.user_data:
+            return {"error": "User not authenticated"}
+
+        categorized_tasks = defaultdict(list)
+        tasks = self.get_user_tasks()
+
+        for task in tasks:
+            status = task.get("sg_status_list", "unknown").lower()
+            if status in ["wtg", "pndng", "ip", "fin"]:
+                categorized_tasks[status].append(task)
+
+        for status, items in categorized_tasks.items():
+            categorized_tasks[status] = sorted(items, key=lambda x: x.get("id", 0))
+
+        return categorized_tasks
+
+    def categorize_and_sort_shots(self):
+        """Shot 목록을 wtg, pndng, ip, fin 상태로 분류하고 정렬"""
+        if not self.user_data:
+            return {"error": "User not authenticated"}
+
+        categorized_shots = defaultdict(list)
+        shots = self.get_user_shots()
+
+        for shot in shots:
+            status = shot.get("status", "unknown").lower()
+            if status in ["wtg", "pndng", "ip", "fin"]:
+                categorized_shots[status].append(shot)
+
+        for status, items in categorized_shots.items():
+            categorized_shots[status] = sorted(items, key=lambda x: x.get("shot_id", 0))
+
+        return categorized_shots
+
+    def categorize_and_sort_assets(self):
+        """Asset 목록을 wtg, pndng, ip, fin 상태로 분류하고 정렬"""
+        if not self.user_data:
+            return {"error": "User not authenticated"}
+
+        categorized_assets = defaultdict(list)
+        assets = self.get_user_assets()
+
+        for asset in assets:
+            status = asset.get("status", "unknown").lower()
+            if status in ["wtg", "pndng", "ip", "fin"]:
+                categorized_assets[status].append(asset)
+
+        for status, items in categorized_assets.items():
+            categorized_assets[status] = sorted(items, key=lambda x: x.get("asset_id", 0))
+
+        return categorized_assets
 
 
 # 사용 예시
@@ -535,22 +1247,29 @@ user_data = sg_connector.login_user(username)
 if "error" not in user_data:
     print(f"로그인 성공: {user_data}")
 
-    # 1. 로그인한 사용자의 Task 가져오기
-    user_tasks = sg_connector.get_user_tasks()
-    print("\n[사용자 Task 목록]:")
-    for task in user_tasks:
-        print(f"Task ID: {task['id']}, Name: {task['content']}, Status: {task['sg_status_list']}")
+    # 1️ Task 목록을 상태별로 분류 및 정렬
+    categorized_tasks = sg_connector.categorize_and_sort_tasks()
+    print("\n [Task 목록 - 상태별 정리]")
+    for status, items in categorized_tasks.items():
+        print(f"\n [{status.upper()} 상태]:")
+        for item in items:
+            print(item)
 
-    # 2. 로그인한 사용자의 Shot 가져오기
-    user_shots = sg_connector.get_user_shots()
-    print("\n[사용자 Shot 목록]:")
-    for shot in user_shots:
-        print(f"Shot ID: {shot['id']}, Name: {shot['code']}, Status: {shot['sg_status_list']}")
+    # 2️ Shot 목록을 상태별로 분류 및 정렬
+    categorized_shots = sg_connector.categorize_and_sort_shots()
+    print("\n [Shot 목록 - 상태별 정리]")
+    for status, items in categorized_shots.items():
+        print(f"\n [{status.upper()} 상태]:")
+        for item in items:
+            print(item)
 
-    # 3. 로그인한 사용자의 Asset 가져오기
-    user_assets = sg_connector.get_user_assets()
-    print("\n[사용자 Asset 목록]:")
-    for asset in user_assets:
-        print(f"Asset ID: {asset['id']}, Name: {asset['code']}, Status: {asset['sg_status_list']}")
+    # 3️ Asset 목록을 상태별로 분류 및 정렬
+    categorized_assets = sg_connector.categorize_and_sort_assets()
+    print("\n [Asset 목록 - 상태별 정리]")
+    for status, items in categorized_assets.items():
+        print(f"\n [{status.upper()} 상태]:")
+        for item in items:
+            print(item)
+
 else:
     print(user_data["error"])
