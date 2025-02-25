@@ -3,15 +3,15 @@ import shotgun_api3
 class ShotGridConnector:
     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
 
-    # ShotGrid 서버 정보 설정
-    SG_URL = "https://minseo.shotgrid.autodesk.com"
-    SCRIPT_NAME = "Viper"
-    API_KEY = "jvceqpsfqvbl1azzcns?haksI"
+    def init(self, sg_url, script_name, api_key):
+        # ShotGrid 서버 정보 설정
+        self.sg_url = sg_url
+        self.script_name = script_name
+        self.api_key = api_key
+        # ShotGrid API 연결
+        self.sg = shotgun_api3.Shotgun(self.sg_url, self.script_name, self.api_key)
 
-    # ShotGrid API 연결
-    sg = shotgun_api3.Shotgun(SG_URL, SCRIPT_NAME, API_KEY)
-
-    def get_user_tasks(user_id):
+    def get_user_tasks(self, user_id):
         """현재 사용자의 Task 목록을 가져옴"""
         tasks = ShotGridConnector.sg.find(
             "Task",
@@ -20,7 +20,7 @@ class ShotGridConnector:
         )
         return tasks
     
-    def get_publishes_for_task(task_id):
+    def get_publishes_for_task(self, task_id):
         """특정 Task에 연결된 PublishedFile을 조회"""
         # PublishedFile 엔티티에서 Task ID를 기준으로 검색
         filters = [["task", "is", {"type": "Task", "id": task_id}]]
@@ -50,7 +50,7 @@ class ShotGridConnector:
             print(f"⚠ Task {task_id}에 연결된 퍼블리시 파일이 없습니다.")
             return []
 
-    def get_task_status(task_id):
+    def get_task_status(self, task_id):
         """특정 Task의 상태(PND, IP, FIN)를 가져옴"""
         task = ShotGridConnector.sg.find_one(
             "Task",
@@ -62,13 +62,13 @@ class ShotGridConnector:
         else:
             None
 
-    def filter_tasks_by_status(tasks, status):
+    def filter_tasks_by_status(self, tasks, status):
         """특정 상태(PND, IP, FIN)에 해당하는 Task만 필터링"""
         if task["sg_status_list"] == status : 
             for task in tasks:
                 return task
 
-    def update_task(task_id, new_status):
+    def update_task(self, task_id, new_status):
         """Task 상태를 업데이트 (예: PND → IP)"""
         ShotGridConnector.sg.update(
             "Task",
@@ -76,7 +76,7 @@ class ShotGridConnector:
             {"sg_status_list": new_status}
         )
 
-    def sync_task_status(user_id):
+    def sync_task_status(self, user_id):
         """ShotGrid의 최신 Task 상태를 로더 UI와 동기화"""
         tasks = ShotGridConnector.get_user_tasks(user_id)
         updated_tasks = {task["id"]: task["sg_status_list"] for task in tasks}

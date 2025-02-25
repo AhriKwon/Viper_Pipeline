@@ -4,7 +4,7 @@ from shotgrid_connector import ShotGridConnector
 class UserAuthenticator:
     """ShotGrid 사용자 로그인 및 권한 확인"""
 
-    def login(username):
+    def login(self, username):
         """사용자 로그인 인증"""
         user = ShotGridConnector.sg.find_one(
             "HumanUser",
@@ -16,7 +16,7 @@ class UserAuthenticator:
         else:
             None
 
-    def get_user_role(user_id):
+    def get_user_role(self, user_id):
         """현재 로그인한 사용자의 역할(Role) 확인"""
         user = ShotGridConnector.sg.find_one(
             "HumanUser",
