@@ -21,7 +21,7 @@ class ShotGridConnector:
         tasks = ShotGridConnector.sg.find(
             "Task",
             [["task_assignees", "is", {"type": "HumanUser", "id": user_id}]],
-            ["id", "content", "sg_status_list", "entity"]
+            ["id", "content", "sg_status_list", "start_date", "due_date", "entity"]
         )
         return tasks
     
