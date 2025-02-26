@@ -1098,13 +1098,24 @@ from shotgun_api3 import Shotgun
 class ShotGridConnector:
     """ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스"""
 
+
+# 샷그리드를 연동하기 위해 url, 스크립트 이름, api 키를가져옴
+# (url, 스크립트 이름, api 키)가 담긴 shotgun을 sg 로 설정한다
+# 로그인한 사용자의 정보는 none으로 지정하여 정보가 담기도록
+
     def __init__(self):
         """ShotGrid API 연결"""
         self.SG_URL = "https://minseo.shotgrid.autodesk.com"
         self.SCRIPT_NAME = "Viper"
         self.API_KEY = "jvceqpsfqvbl1azzcns?haksI"  # API 키 가져오기
+
         self.sg = Shotgun(self.SG_URL, self.SCRIPT_NAME, self.API_KEY)
-        self.user_data = None  # 로그인한 사용자 정보 저장
+        self.user_data = None  
+
+
+# 로그인한 유저의 정보를 가져온다
+# field는 아이디, 이름, 이메일 
+# field, fuilter 가 일치하는 유저를 불러오는 user
 
     def login_user(self, username):
         """ShotGrid에서 로그인한 사용자 정보를 가져오기"""
@@ -1112,12 +1123,17 @@ class ShotGridConnector:
         fields = ["id", "name", "email"]
         user = self.sg.find_one("HumanUser", filters, fields)
 
+# 일치해야 코드가 실행되도록 한다 
+
         if user:
             self.user_data = user
             return user
         else:
             return {"error": "User not found"}
 
+
+# 로그인 후 유저가 확인되면
+# 그 유저에게 부여된 task,
     def get_user_tasks(self):
         """현재 로그인한 사용자에게 할당된 Task 목록을 가져옴"""
         if not self.user_data:
@@ -1619,11 +1635,13 @@ class ShotGridConnector:
         assets = self.get_user_assets()
         return self.categorize_and_sort_by_dates(assets, "asset_id")
 
-
 # 사용 예시
+# sg_connector = 앞에서 한 클래스(유저 로그인을 확인하고 할당된 task(이때 task는 항
+# 목, 진행상태 등의 정보의 일치로 확인한다) 를 찾는다 
+
 sg_connector = ShotGridConnector()
 
-# 로그인한 사용자 정보 가져오기
+
 username = "owlgrowl0v0@gmail.com"
 user_data = sg_connector.login_user(username)
 

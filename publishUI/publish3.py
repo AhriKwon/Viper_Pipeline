@@ -38,8 +38,8 @@ class PublishUI(QMainWindow):
 
 
     def set_checkbox(self):
-        self.groupBox_combobox = self.ui.findChild(QGroupBox, "groupBox_combobox")
-        groupBoxLayout = self.groupBox_combobox.layout() 
+        self.ui.groupBox_checkbox = self.ui.findChild(QGroupBox, "groupBox_checkbox")
+        groupBoxLayout = self.groupBox_checkbox.layout() 
 
         if not groupBoxLayout:
             groupBoxLayout = QVBoxLayout(self.groupBox_combobox) 
@@ -49,14 +49,15 @@ class PublishUI(QMainWindow):
         options = ["shader", "wireframe on shader", "textured", "wireframe on textured"]
         self.checkboxes = [] 
 
+       # groupbox 안에 checkbox가 들어가도롱
         for option in options:
             checkbox = QCheckBox(option)  
             checkbox.stateChanged.connect(self.if_checked_checkbox) 
             groupBoxLayout.addWidget(checkbox)  
             self.checkboxes.append(checkbox)  
 
-        self.groupBox_combobox.setLayout(groupBoxLayout)
-        self.groupBox_combobox.setVisible(False) 
+        self.groupBox_checkbox.setLayout(groupBoxLayout)
+        self.groupBox_checkbox.setVisible(False) 
 
 
 #-------------------------파일명을 라벨안에 입력 하는 행 ------------------------------------
@@ -113,13 +114,9 @@ class PublishUI(QMainWindow):
         file_dialog.setViewMode(QFileDialog.List)
 
     def load_ui(self):
-        ui_file_path = "/home/rapa/teamwork/publish.ui" 
+        ui_file_path = "/home/rapa/teamwork/viper/publishUI/publish.ui" 
 
         ui_file = QFile(ui_file_path)
-        if not ui_file.exists():
-            print("UI 파일이 존재하지 않습니다!")
-            return
-
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui) 
