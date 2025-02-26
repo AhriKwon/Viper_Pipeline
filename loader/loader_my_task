@@ -9,10 +9,12 @@ class LoaderMytasktab:
         username = "owlgrowl0v0@gmail.com"
         self.user_data = UserAuthenticator.login(username)
 
-        self.sgc = ShotGridConnector
+        self.sgc = ShotGridConnector 
+        # shotgridconnector = (ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스)
 
     def show_tasks(self):   
         if self.user_data:
             user_id = self.user_data['id']
             tasks = self.sgc.get_user_tasks(user_id)
         return tasks
+    
