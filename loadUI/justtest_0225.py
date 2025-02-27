@@ -1,4 +1,4 @@
-from PySide6.QtWidgets import QMainWindow, QApplication, QTableWidgetItem, QGroupBox, QLabel, QTableWidget
+from PySide6.QtWidgets import QMainWindow, QWidget,QApplication, QVBoxLayout,QTableWidgetItem, QGroupBox, QLabel, QTableWidget
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt
 from PySide6.QtGui import QPixmap
@@ -52,18 +52,22 @@ class LoadUI(QMainWindow):
         self.ui.show()
 
         # ui 설정하기 
-        # findChild은 QTableWidget에 해당하는 클래스 타입 위젯을 찾아온다 
+        #//////findChild은 QTableWidget에 해당하는 클래스 타입 위젯을 찾아온다 
 
-        # task를 불러오는
+        # task를 불러오는 위젯
         self.tableWidget_2 = self.ui.findChild(QTableWidget, "tableWidget_2")
-        # task의 정보를 불러오는 
+
+        # task의 정보를 불러오는 위젯
         self.groupBox_infor = self.ui.findChild(QGroupBox, "groupBox_infor")
 
         self.label_file_name = self.ui.findChild(QLabel, "label_filename")
         self.label_task_name = self.ui.findChild(QLabel, "label_task_name")
         self.label_version_id = self.ui.findChild(QLabel, "label_version_id")
         self.label_created_at = self.ui.findChild(QLabel, "label_created_at")
+        self.tableWidget_2 = self.ui.findChild(QTableWidget, "tableWidget_2")
+    
 
+    
 
     #=============================로그인, task 목록을 가져오는====================================
 
@@ -87,38 +91,57 @@ class LoadUI(QMainWindow):
         if not tasks:
             return
 
-        # task를 담을 테이블 행과 열 초기화
-        self.tableWidget_2.setRowCount(len(tasks))
-        self.tableWidget_2.setColumnCount(3)  # 썸네일과 Task 이름만 표시
+        # task를 담을 테이블 행과 열 (세로는 task 수만큼, 가로는 3줄)
+        self.tableWidget_2.setRowCount(len(tasks) // 3 + (1 if len(tasks) % 3 != 0 else 0))
+        self.tableWidget_2.setColumnCount(3)  
 
-        row = 0
+        # 헤더와 그리드라인 제거 (보기깔끔하게)
+        self.tableWidget_2.horizontalHeader().setVisible(False)
+        self.tableWidget_2.verticalHeader().setVisible(False)
+        self.tableWidget_2.setShowGrid(False) 
+
+       
+        row, col = 0, 0
 
         for task in tasks:
-            task_id = task["id"]
-            task_name = task["content"]
+            task_id = task["id"] # 샷그리드 내의 id
+            task_name = task["content"] # 샷그리드 내의 content
 
             # 해당 Task에 연결된 파일(버전)들 가져오기
             versions = ShotGridConnector.get_publishes_for_task(task_id)
 
             # 기본적인 Task 정보만 테이블에 추가 (썸네일과 Task 이름)
             for version in versions:
-                thumbnail_url = version.get("thumbnail", None)
+                thumbnail_url = version.get("thumbnail", None)  # 썸네일 가져오기 
 
-                # 테이블에 썸네일과 Task 이름 채우기
+                # 세로 정렬된 썸네일 + Task 이름을 담을 위젯 생성
+                container_widget = QWidget()
+                layout = QVBoxLayout()
+
+                # 테이블에 썸네일을 불러오는 코드 
+                label_thumbnail = QLabel()
                 if thumbnail_url:
                     pixmap = QPixmap(thumbnail_url)
-                    label = QLabel()
-                    label.setPixmap(pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio))
-                    self.tableWidget_2.setCellWidget(row, 0, label)
-                else:
-                    self.tableWidget_2.setCellWidget(row, 0, QLabel())
+                    label_thumbnail.setPixmap(pixmap.scaled(100, 100, Qt.AspectRatioMode.KeepAspectRatio))
+                layout.addWidget(label_thumbnail, alignment=Qt.AlignCenter)
 
-                self.tableWidget_2.setItem(row, 1, QTableWidgetItem(task_name))  # Task 이름
+                # Task 이름 추가
+                label_task_name = QLabel(task_name)
+                label_task_name.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label_task_name)
+                
+                container_widget.setLayout(layout)
+                self.tableWidget_2.setCellWidget(row, col, container_widget)
+                
+                # 다음 열로 이동, 3개를 채우면 다음 행으로 이동
+                col += 1
+                if col >= 3:
+                    col = 0
+                    row += 1
+               
 
-                # 클릭 시 해당 파일의 ID와 세부 정보를 얻을 수 있도록 설정
-                self.tableWidget_2.setItem(row, 2, QTableWidgetItem(str(task_id)))  # Task ID 추가
+             
 
-                row += 1  # 행을 하나씩 추가
 
         # 테이블의 행 크기를 자동으로 맞추기
         self.tableWidget_2.resizeRowsToContents()
@@ -130,19 +153,29 @@ class LoadUI(QMainWindow):
         self.tableWidget_2.cellClicked.connect(self.on_file_click)
 
 
+
+
+####3===================================클릭한 파일의 정보를 띄우는 창====================================
+#======================================================================================================
+
+
+
     def on_file_click(self, row, column):
-        
-        task_name = self.tableWidget_2.item(row, 1).text()  # 클릭된 Task 이름
-        task_id = self.tableWidget_2.item(row, 2).text()  # 클릭된 Task ID 가져오기
+        cell_widget = self.tableWidget_2.cellWidget(row, column)
+        if cell_widget:
+            task_name = cell_widget.layout().itemAt(1).widget().text()
+            task_id = ShotGridConnector.get_task_id_by_name(task_name)
+            
+            # 해당 Task의 세부 정보 가져오기
+            task = ShotGridConnector.get_user_tasks(int(task_id))
 
-        # 해당 Task의 세부 정보 가져오기
-        task = self.sg_connector.get_task_status(int(task_id))
+            # 상세 정보 표시
+            self.label_task_name.setText(f"{task_name}")
+            self.label_version_id.setText(f"{task['version_id']}")
+            self.label_file_name.setText(f"{task['file_name']}")
+            self.label_created_at.setText(f"{task['created_at']}")
 
-        # 상세 정보 표시
-        self.label_task_name.setText(f"Task 이름: {task_name}")
-        self.label_version_id.setText(f"버전 ID: {task['version_id']}")
-        self.label_file_name.setText(f"파일 이름: {task['file_name']}")
-        self.label_created_at.setText(f"생성일: {task['created_at']}")
+
 
 
 
