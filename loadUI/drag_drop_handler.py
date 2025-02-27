@@ -1,14 +1,13 @@
-import os
-import sys
-from PySide6.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QAbstractItemView
-from PySide6.QtGui import QPixmap, QIcon, QDrag
+import os, sys
+from PySide6.QtWidgets import QApplication, QTableWidget, QAbstractItemView
+from PySide6.QtGui import QDrag
 from PySide6.QtCore import Qt, QMimeData, QUrl
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from shotgrid_connector import ShotGridConnector  # ShotGrid API 연결
 
 
-class TaskTableWidget(QTableWidget):
+class DragDropHandler(QTableWidget):
     """
     QTableWidget을 상속받아 마우스 이벤트 직접 처리
     """
@@ -68,7 +67,20 @@ class TaskTableWidget(QTableWidget):
         
         file_paths = []
         for task_id in self.selected_task_ids:
+
             file = ShotGridConnector.get_publishes_for_task(task_id)[0]
+            # 수정 예정
+            """
+            현재 방식은 클릭한 테이블 위젯의 테스크ID를 인식하고
+            샷그리드API로 퍼블리시 경로를 불러오는 방식 (임시)
+            
+            해당 방법이 아니라 로더를 열 때 샷그리드 API로 정보들을 불러오고
+            각 테스크 셀에 필요한 인포메이션이 정리된 데이터를 따로 저장해서
+            셀을 누르면 그 셀에 해당하는 work 폴더 경로가 연결되게 (LIB 탭일 경우에는 그 LIB폴더로)
+
+            캐시화 (반복해서 API로 조회하는게 아니라 한번에 정보 받아온 후 따로 빼서 저장한 정보에서 조회할수 있게 최적화)
+            """
+
             file_path = file.get('path')
             file_paths.append(file_path)
 
@@ -79,53 +91,3 @@ class TaskTableWidget(QTableWidget):
         drag = QDrag(self)
         drag.setMimeData(mime_data)
         drag.exec_(Qt.CopyAction)  # 운영체제에서 Drag & Drop 인식하도록 설정
-
-
-class LoaderUI(QMainWindow):
-    def __init__(self):
-        super().__init__()
-        self.setWindowTitle("ShotGrid Loader")
-        self.setGeometry(100, 100, 800, 400)
-
-        # TaskTableWidget 인스턴스 생성
-        self.table_widget = TaskTableWidget(self)
-        self.table_widget.setGeometry(10, 10, 780, 380)
-
-        print("✅ UI 정상적으로 실행됨")  # ✅ UI 실행 확인 로그
-
-        # ShotGrid에서 Task 정보 가져오기
-        self.load_tasks()
-
-    def load_tasks(self):
-        """ShotGrid에서 Task 목록 불러와 테이블 위젯에 추가"""
-        user_id = 121  # 현재 로그인한 사용자 ID (예제)
-        print("🔍 ShotGrid에서 Task 불러오기...")  # ✅ ShotGrid API 실행 로그
-        tasks = ShotGridConnector.get_user_tasks(user_id)
-
-        print(f"✅ 불러온 Task 목록: {tasks}")  # ✅ Task 데이터 확인 로그
-
-        for task in tasks:
-            self.add_task(task["id"], task.get("image", None))  # 썸네일이 없으면 None 처리
-
-    def add_task(self, task_id, thumbnail_url):
-        """Task 정보를 테이블에 추가"""
-        row = self.table_widget.rowCount()
-        self.table_widget.insertRow(row)
-
-        # Task ID
-        self.table_widget.setItem(row, 0, QTableWidgetItem(str(task_id)))
-
-        # 썸네일 이미지
-        if thumbnail_url:
-            pixmap = QPixmap(thumbnail_url).scaled(50, 50, Qt.KeepAspectRatio)
-            icon = QIcon(pixmap)
-            item = QTableWidgetItem()
-            item.setIcon(icon)
-            self.table_widget.setItem(row, 1, item)
-
-
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = LoaderUI()
-    window.show()
-    sys.exit(app.exec_())
