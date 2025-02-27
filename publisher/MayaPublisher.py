@@ -1,29 +1,45 @@
 import os
+import datetime
 import maya.cmds as cmds
+from PublishPath import FilePath
 
 class MayaPublish():
+    
     """Maya에서 Playblast 또는 Alembic을 저장하고 Mp4 또는 Mov로 변환하는 클래스"""
     def __init__(self, output_dir="/nas/Viper/hyerin/Publisher"):
         self.output_dir = output_dir
         os.makedirs(self.output_dir, exist_ok=True)
+        
+        # Alembic 플러그인 로드 확인
+        if not cmds.pluginInfo("AbcExport", query=True, loaded=True):
+            print("Alembic 플러그인이 로드되었습니다.")
+            
+    def save_alembic(self):
+        
+        """Alembic(.abc) 파일을 저장하는 함수(프레임 범위 없음)"""
+        
+        selected_objects = cmds.ls(selection=True)
+        alembic_path = "/nas/Viper/hyerin/test.abc"
 
-    def save_alembic(self, file_path, start_frame=1, end_frame=100, selection=True):
-        """Alembic(.abc) 파일을 저장하는 함수"""
-        if selection:
-            selected_objects = cmds.ls(selection=True)
-            if not selected_objects:
-                print("Error: 선택된 오브젝트가 없습니다.")
-                return
-            objects_str = " ".join([f"-root {obj}" for obj in selected_objects])
-        else:
-            objects_str = "-wholeScene"  # 씬 전체를 추출
+        if not selected_objects:
+            print("Error: 선택된 오브젝트가 없습니다.")
+            return
+
+        # 선택된 오브제를 -root 옵션으로 설정
+        objects_str = " ".join([f"-root {obj}" for obj in selected_objects])
 
         # Alembic Export 실행
-        alembic_command = f"-frameRange {start_frame} {end_frame} {objects_str} -file {file_path}" 
-        cmds.AbcExport(j=alembic_command)
-        print(f"Saved .abc File: {file_path}")
-    
-    def maeke_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
+        alembic_command = f"{objects_str} -file {alembic_path}"
+        
+        try:
+            # Alembic 내보내기 명령어 실행
+            cmds.AbcExport(j=alembic_command)
+            print(f"Alembic 저장되었습니다: {alembic_path}")
+            
+        except Exception as e:
+            print(f"Error: Alembic 내보내기 실패 - {str(e)}") 
+
+    def make_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
         """
         Maya에서 Turntable camera 생성 후 애니메이션을 적용하는 함수
         :param cam_name: 생성할 카메라 이름
@@ -38,7 +54,6 @@ class MayaPublish():
         # 그룹 생성 후 회전 적용
         cam_grp = cmds.group(cam, name=f"{cam_name}_grp")
         cmds.xform(cam, rotation=(-30, -45, 0)) # 각도 조정
-        cmds.viewFit(all=True) # 씬 전체에 맞게 뷰 핏
 
         # 애니메이션 키 설정
         cmds.setKeyframe(cam_grp, attribute="rotateY", value=0, time=start_frame)
@@ -50,18 +65,24 @@ class MayaPublish():
     @staticmethod
     def save_playblast(output_path):
         """Playblast 실행 후 저장"""
+        
+        # cmds.optionVar(intValue=("playblastFormat", 8))
+        
         cmds.playblast(
             format="qt",
             filename=output_path,
             sequenceTime=False,
             clearCache=True,
-            viewer=True,
+            viewer=False,
             showOrnaments=False,
             framePadding=4,
             percent=100,
-            compression="H.264",
+            compression="jpeg",
             quality=100,
-            forceOverwrite=True
+            forceOverwrite=True,
+            widthHeight=(1920, 1080),
+            startTime=1,
+            endTime=99
         )
         print(f"Playblast 저장 완료: {output_path}")
 
@@ -81,24 +102,26 @@ class MayaPublish():
         print(f"뷰포트 설정 변경: {option}")
 
     def export_playblast(self):
-        self.maeke_turntable()
         
         """턴테이블 카메라를 사용하여 Playblast 실행"""
         all_cameras = cmds.ls(type="camera", long=True)
         scene_cameras = [cam for cam in all_cameras if "persp" not in cam and "top" not in cam and "side" not in cam and "front" not in cam]
 
         if not scene_cameras:
-            print("Scene에 사용할 수 있는 카메라가 없습니다.")
-            return
+            self.maeke_turntable()
+            all_cameras = cmds.ls(type="camera", long=True)
+            scene_cameras = [cam for cam in all_cameras if "persp" not in cam and "top" not in cam and "side" not in cam and "front" not in cam]
 
         camera_to_use = scene_cameras[0]
         # panel = cmds.getPanel(withFocus=True)
         panel = "modelPanel4" # <-- 이거 테스트용
         cmds.lookThru(panel, camera_to_use)
+        cmds.viewFit(all=True) # 씬 전체에 맞게 뷰 핏
 
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}")
 
-        output_path = os.path.join(self.output_dir, "playblast.mov")
+        output_path = FilePath.get_publish_path("Viper", "Character", "Hero_Character" , "MDL", version=1)
+        
         self.save_playblast(output_path)
 
     def playblast_publish(self, options):
@@ -106,6 +129,7 @@ class MayaPublish():
         for option in options:
             self.set_viewport_option(option)
             self.export_playblast()
+   
 
 # class UIPublisher():
 #     """UI를 통해 Maya에서 mp4 또는 mov 변환을 실행하는 클래스"""
@@ -119,3 +143,4 @@ if __name__ == "__main__":
     maya_pub = MayaPublish()
     selected_options = ["shaded", "wireframe on shaded"]
     maya_pub.playblast_publish(selected_options)
+    maya_pub.save_alembic()
