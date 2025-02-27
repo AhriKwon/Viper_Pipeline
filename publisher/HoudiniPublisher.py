@@ -27,19 +27,19 @@ class HoudiniPublisher:
             elif node.type().name() == "opengl":  # OpenGL
                 node.parm("output").set(image_path)
 
-            print(f"✅ {node.name()} 경로 설정 완료: {image_path}")
+            print(f"{node.name()} 경로 설정 완료!: {image_path}")
 
     def execute_rop_nodes(self, rop_nodes):
         """ROP 노드를 실행하여 렌더링"""
         for node in rop_nodes:
             node.render(frame_range=(1, 100), verbose=True)
-            print(f"✅ {node.name()} 렌더링 완료!")
+            print(f"{node.name()} 렌더링 완료!")
 
     def publish_video(self, format_type="mp4"):
         """Houdini에서 렌더링한 EXR을 MP4 또는 MOV로 변환"""
         rop_nodes = self.get_all_rop_nodes()
         if not rop_nodes:
-            print("⚠ Rop 노드가 없습니다.")
+            print("Rop 노드가 없습니다.")
             return
 
         self.set_output_paths(rop_nodes)
@@ -52,7 +52,7 @@ class HoudiniPublisher:
             
             # EXR → MOV 변환 실행
             FileConverter.convert_to_video(input_path, output_path, format_type)
-            print(f"✅ {output_path} 변환 완료!")
+            print(f"{output_path} 변환 완료!")
 
 if __name__ == "__main__":
     houdini_pub = HoudiniPublisher()
