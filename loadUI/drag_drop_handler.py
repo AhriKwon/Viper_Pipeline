@@ -14,7 +14,6 @@ class DragDropHandler(QTableWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setColumnCount(2)  # ID, 썸네일
         self.setSelectionBehavior(QAbstractItemView.SelectRows)  # 행 단위 선택
         self.setDragEnabled(True)  # 드래그 활성화
         self.setFocusPolicy(Qt.ClickFocus)  # 클릭으로 포커스 받을 수 있도록 설정
