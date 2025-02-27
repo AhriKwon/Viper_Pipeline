@@ -11,10 +11,14 @@ from shotgun_api3 import Shotgun
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
-from shotgrid_connector import ShotGridConnector 
+from shotgrid_connector import ShotGridConnector
 
-#============================================================================================
-#================================로그인 창 : LoginWindow==============================================
+from drag_drop_handler import DragDropHandler
+
+
+ #============================================================================================
+ #================================로그인 창 : LoginWindow==============================================
+
 
 class LoginWindow(QDialog):
     def __init__(self):
@@ -46,8 +50,10 @@ class LoginWindow(QDialog):
             self.main_window = LoadUI(email)
             self.main_window.show()
 
-#============================================================================================
-#====================loader ui class : LoadUI==============================================
+
+ #============================================================================================
+ #====================loader ui class : LoadUI==============================================
+
 
 class LoadUI(QMainWindow):
     def __init__(self, username):
@@ -59,8 +65,10 @@ class LoadUI(QMainWindow):
         self.animate_list_widgets() 
         self.login_and_load_tasks()
 
-    #====================================loadui 로드=======================================
-    #================================(loginui가 성공할 시에)=================================
+
+  #====================================loadui 로드=======================================
+  #================================(loginui가 성공할 시에)=================================
+
 
     def load_ui(self):
         ui_file_path = "/home/rapa/teamwork/viper/loadUI/load.ui"
