@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from user_authenticator import UserAuthenticator
 from shotgrid_connector import ShotGridConnector
 
-from drag_drop_handler import DragDropHandler
+from test_drag import DragDropHandler
 
 
  #============================================================================================
@@ -26,7 +26,7 @@ class LoginWindow(QDialog):
         self.load_ui()
     
     def load_ui(self):
-        ui_file_path = "/home/rapa/teamwork/viper/loadUI/login.ui"
+        ui_file_path = "/home/rapa/teamwork/Viper/loadUI/login.ui"
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
@@ -71,12 +71,15 @@ class LoadUI(QMainWindow):
 
 
     def load_ui(self):
-        ui_file_path = "/home/rapa/teamwork/viper/loadUI/load.ui"
+        ui_file_path = "/home/rapa/teamwork/Viper/loadUI/load.ui"
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui)
         self.ui.show()
+
+        # 배경 색상 변경 (기본 검정 계열, 명도 차이를 둠)
+        self.setStyleSheet("background-color: #101010;")  
 
         # load.ui 사이즈 조절 
         self.setGeometry(100, 100, 1200, 800)
@@ -94,14 +97,21 @@ class LoadUI(QMainWindow):
         self.main_layout.layout().addWidget(self.scroll_area)
         self.scroll_area.setWidget(self.scroll_widget)
 
+        # 스크롤 영역과 컨테이너 배경색을 어두운 회색으로 설정
+        self.scroll_area.setStyleSheet("background-color: #181818;")
+        self.scroll_widget.setStyleSheet("background-color: #181818;")
+
         self.tab_widget = self.ui.findChild(QTabWidget, "tabWidget_2")
         self.label_filename = self.ui.findChild(QLabel, "label_filename")
+
+        # 클릭 이벤트 전에는 숨기기 
         self.tab_widget.hide()
 
         # listwidget의 색깔 설정 
         self.list_widgets = []
         row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
 
+        # 행이 될 4개의 listwidget (크기, 간격, 색 조정하여 tableWidget_2에 삽입) 
         for i in range(4):
             list_widget = QListWidget()
             list_widget.setFixedWidth(220)
@@ -111,7 +121,9 @@ class LoadUI(QMainWindow):
             self.scroll_layout.addWidget(list_widget)
             self.list_widgets.append(list_widget)
 
+
     #=============================로그인, task 목록을 가져오는====================================
+
 
     def login_and_load_tasks(self):
         user_data = UserAuthenticator.login(self.username)
@@ -125,13 +137,16 @@ class LoadUI(QMainWindow):
 
     #=============================ListWidget 애니메이션 추가====================================
 
+
     def animate_list_widgets(self):
         delay = 400  # 0.4초 간격으로 순차적 애니메이션 실행 
 
         for index, list_widget in enumerate(self.list_widgets):
             QTimer.singleShot(index * delay, lambda lw=list_widget: self.animate_widget(lw, duration=600))
 
+
     #=============================애니메이션 적용=============================================
+
 
     def animate_widget(self, widget, duration=600):
         start_y = widget.y() + 40
@@ -139,13 +154,18 @@ class LoadUI(QMainWindow):
 
         anim = QPropertyAnimation(widget, b"geometry")
         anim.setDuration(duration)  
+
+        # (고정 : x 좌표, 넓이, 길이/   이동: y좌표 )
         anim.setStartValue(QRect(widget.x(), start_y, widget.width(), widget.height()))
         anim.setEndValue(QRect(widget.x(), end_y, widget.width(), widget.height()))
+
+
         self.animations.append(anim)  
         anim.start()
 
         effect = QGraphicsOpacityEffect()
         widget.setGraphicsEffect(effect)
+        # 투명도 조절 [시작(0) > (1)]
         fade_anim = QPropertyAnimation(effect, b"opacity")
         fade_anim.setDuration(duration)
         fade_anim.setStartValue(0.0)
@@ -156,12 +176,14 @@ class LoadUI(QMainWindow):
 
     #=============================GroupBox를 ListWidget에 추가====================================
 
+    # groupbox = 파일 listwidget= 파일을 담는 행 
+
     def populate_table(self, tasks):
         if not tasks:
             return
 
         index = 0
-        delay = 400  # GroupBox도 0.4초 간격으로 등장하도록 설정 
+        delay = 400  
 
         for task in tasks:
             task_id = task["id"] 
@@ -172,7 +194,13 @@ class LoadUI(QMainWindow):
                 thumbnail_url = version.get("thumbnail", None)
 
                 file_box = QGroupBox()
-                file_box.setStyleSheet("background-color: white; border-radius: 10px; padding: 5px;")
+                file_box.setStyleSheet("""
+                    background-color: #F5F5F5; 
+                    border: 2px solid #333333; 
+                    border-radius: 10px;
+                    padding: 10px;
+                """)
+
                 layout = QVBoxLayout()
 
                 label_thumbnail = QLabel()
@@ -198,8 +226,6 @@ class LoadUI(QMainWindow):
                 QTimer.singleShot(index * delay, lambda fb=file_box: self.animate_widget(fb, duration=1800))
 
                 index += 1
-
-    #=============================파일 정보 표시====================================
 
     def show_task_details(self, task_name):
         self.label_filename.setText(task_name)
