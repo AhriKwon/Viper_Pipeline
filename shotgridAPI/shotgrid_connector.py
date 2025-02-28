@@ -6,9 +6,9 @@ class ShotGridConnector:
     ShotGrid API와 연동하여 데이터를 가져오고 업데이트하는 클래스
     """
     # ShotGrid 서버 정보 설정
-    SG_URL = "https://minseo.shotgrid.autodesk.com"
-    SCRIPT_NAME = "Viper"
-    API_KEY = "jvceqpsfqvbl1azzcns?haksI"
+    SG_URL = "https://hi.shotgrid.autodesk.com"
+    SCRIPT_NAME = "Viper_key"
+    API_KEY = "qmnpuxldvlr(exx6wnrtziwWy"
 
     # ShotGrid API 연결
     sg = shotgun_api3.Shotgun(SG_URL, SCRIPT_NAME, API_KEY)
