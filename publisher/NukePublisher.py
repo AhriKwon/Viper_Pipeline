@@ -1,6 +1,8 @@
 import os
+import sys
 import nuke
-from convert_to_mov_mp4 import FileConverter  # import FileConverter class
+# sys.path.append(os.path.abspath("/nas/Viper/hyerin/Publisher"))
+from publisher.convert_to_mov import FileConverter  # import FileConverter class
 
 class NukePublisher:
     def __init__(self, output_dir="/nas/Viper/hyerin/Publisher"):
@@ -16,13 +18,13 @@ class NukePublisher:
 
         write_nodes = self.get_all_write_nodes()
         if not write_nodes:
-            print("⚠ Write 노드가 없습니다.")
+            print("Write 노드가 없습니다.")
             return
 
         for write_node in write_nodes:
             exr_path = os.path.join(self.output_dir, f"{os.path.splitext(nuke_file_name)[0]}.####.exr")
             write_node["file"].setValue(exr_path)
-            print(f"✅ {write_node.name()} 경로 설정 완료: {exr_path}")
+            print(f"{write_node.name()} 경로 설정 완료: {exr_path}")
 
     def get_all_write_nodes(self):
         """현재 씬에서 모든 Write 노드 반환"""
@@ -37,7 +39,7 @@ class NukePublisher:
 
         for write_node in write_nodes:
             nuke.execute(write_node, start_frame, end_frame, step)
-            print(f"✅ {write_node.name()} 렌더링 완료! ({start_frame}-{end_frame})")
+            print(f"{write_node.name()} 렌더링 완료! ({start_frame}-{end_frame})")
 
     def information_path(self, write_nodes, dir_path, nuke_file):
         """Write 노드의 경로를 설정"""
@@ -45,7 +47,7 @@ class NukePublisher:
         for write_node in write_nodes:
             file_path = os.path.join(dir_path, f"{base_name}.####.exr")
             write_node["file"].setValue(file_path)
-            print(f"✅ {write_node.name()} 경로 설정 완료: {file_path}")
+            print(f"{write_node.name()} 경로 설정 완료: {file_path}")
 
     def set_write_nodes_mov(self, write_nodes):
         """Write 노드의 파일 경로를 MOV 포맷으로 설정"""
@@ -53,13 +55,13 @@ class NukePublisher:
             mov_path = os.path.join(self.output_dir, f"output_{i+1}.mov")
             write_node["file"].setValue(mov_path)
             write_node["file_type"].setValue("QuickTime")  # Nuke에서는 "QuickTime"이 올바른 값
-            print(f"✅ {write_node.name()} MOV 경로 설정 완료: {mov_path}")
+            print(f"{write_node.name()} MOV 경로 설정 완료: {mov_path}")
 
     def publish_mov(self):
         """Nuke Publishing 실행 (MOV 출력)"""
         write_nodes = self.get_all_write_nodes()
         if not write_nodes:
-            print("⚠ Write 노드가 없습니다.")
+            print("Write 노드가 없습니다.")
             return
         
         self.set_write_nodes_mov(write_nodes)
@@ -71,7 +73,7 @@ if __name__ == "__main__":
     nuke_pub.publish_mov()  # MOV 변환 실행
 
 class UIPublisher:
-    """UI를 통해 Houdini, Maya, Nuke에서 mp4 또는 mov 변환을 실행하는 클래스"""
+    """UI를 통해 Houdini, Maya, Nuke에서 mov 변환을 실행하는 클래스"""
 
     @staticmethod
     def export_from_nuke(format_type):
