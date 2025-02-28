@@ -303,6 +303,154 @@
 
 
 #################################################################################################################################
+# import os
+# import sys
+# import subprocess
+# from PySide6 import QtWidgets, QtGui, QtCore
+
+# #  ShotGrid API 파일 가져오기
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+# from shotgrid_connector import ShotGridConnector
+
+
+# class FileLoaderGUI(QtWidgets.QMainWindow):
+#     """ShotGrid에서 퍼블리시된 파일을 불러오고 실행하는 GUI"""
+
+#     def __init__(self, user_id):
+#         super().__init__()
+#         self.setWindowTitle("ShotGrid File Loader")
+#         self.setGeometry(100, 100, 900, 600)
+#         self.user_id = user_id
+#         self.initUI()
+
+#     def initUI(self):
+#         """GUI 레이아웃 설정"""
+#         main_widget = QtWidgets.QWidget()
+#         self.setCentralWidget(main_widget)
+#         layout = QtWidgets.QVBoxLayout(main_widget)
+
+#         # 사용자 Task 정보 불러오기
+#         self.user_label = QtWidgets.QLabel(f" 사용자 ID: {self.user_id}")
+#         layout.addWidget(self.user_label)
+
+#         # 파일 경로 입력창
+#         self.file_path_input = QtWidgets.QLineEdit()
+#         self.file_path_input.setPlaceholderText(" 파일 경로를 입력하세요.")
+#         layout.addWidget(self.file_path_input)
+
+#         # 파일 목록
+#         self.file_list = QtWidgets.QListWidget()
+#         self.file_list.itemDoubleClicked.connect(self.open_selected_file)
+#         layout.addWidget(self.file_list)
+
+#         # 버튼 영역
+#         button_layout = QtWidgets.QHBoxLayout()
+#         self.set_path_button = QtWidgets.QPushButton("경로 설정")
+#         self.set_path_button.clicked.connect(self.set_file_path)
+#         button_layout.addWidget(self.set_path_button)
+
+#         self.open_button = QtWidgets.QPushButton("파일 실행")
+#         self.open_button.clicked.connect(self.run_file)
+#         button_layout.addWidget(self.open_button)
+
+#         layout.addLayout(button_layout)
+
+#         # 퍼블리시된 파일 불러오기
+#         self.load_published_files()
+
+#     def load_published_files(self):
+#         """퍼블리시된 파일을 불러옴"""
+#         self.file_list.clear()
+#         tasks = ShotGridConnector.get_user_tasks(self.user_id)
+
+#         for task in tasks:
+#             files = ShotGridConnector.get_publishes_for_task(task["id"])
+#             if not files:
+#                 continue
+
+#             for file in files:
+#                 list_item = QtWidgets.QListWidgetItem(f"{file['file_name']} ({file['created_at']})")
+#                 list_item.setData(QtCore.Qt.UserRole, file)
+#                 self.file_list.addItem(list_item)
+
+#     def set_file_path(self):
+#         """사용자가 파일 경로를 설정"""
+#         file_dialog = QtWidgets.QFileDialog()
+#         file_path, _ = file_dialog.getOpenFileName(self, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;All Files (*.*)")
+
+#         if file_path:
+#             self.file_path_input.setText(file_path)
+
+#     def run_file(self):
+#         """설정된 파일 경로를 읽고 Maya 또는 Nuke에서 실행"""
+#         file_path = self.file_path_input.text().strip()
+        
+#         if not file_path or not os.path.exists(file_path):
+#             QtWidgets.QMessageBox.warning(self, "오류", "유효한 파일 경로를 입력하세요.")
+#             return
+
+#         if file_path.endswith((".ma", ".mb")):
+#             self.launch_maya(file_path)
+#         elif file_path.endswith(".nk"):
+#             self.launch_nuke(file_path)
+#         else:
+#             QtWidgets.QMessageBox.warning(self, "오류", "지원되지 않는 파일 형식입니다.")
+
+#     def open_selected_file(self, item):
+#         """리스트에서 선택한 파일을 실행"""
+#         file_info = item.data(QtCore.Qt.UserRole)
+#         if file_info:
+#             self.file_path_input.setText(file_info["path"])
+#             self.run_file()
+
+#     def launch_maya(self, file_path):
+#         """Maya 실행 후 파일 열기"""
+#         maya_executable = self.find_maya_path()
+#         if maya_executable:
+#             subprocess.Popen([maya_executable, "-file", file_path], shell=True)
+#             print(f" Maya 실행 및 파일 열기: {file_path}")
+#         else:
+#             QtWidgets.QMessageBox.warning(self, "오류", "Maya 실행 파일을 찾을 수 없습니다.")
+
+#     def launch_nuke(self, file_path):
+#         """Nuke 실행 후 파일 열기"""
+#         nuke_executable = self.find_nuke_path()
+#         if nuke_executable:
+#             subprocess.Popen([nuke_executable, file_path], shell=True)
+#             print(f" Nuke 실행 및 파일 열기: {file_path}")
+#         else:
+#             QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행 파일을 찾을 수 없습니다.")
+
+#     def find_maya_path(self):
+#         """Maya 실행 파일 경로 찾기"""
+#         possible_paths = ["/usr/autodesk/maya2023/bin/maya"]
+#         for path in possible_paths:
+#             if os.path.exists(path):
+#                 return path
+#         return None
+
+#     def find_nuke_path(self):
+#         """Nuke 실행 파일 경로 찾기"""
+#         possible_paths = ["/usr/local/Nuke13.2v1/Nuke13.2"]
+#         for path in possible_paths:
+#             if os.path.exists(path):
+#                 return path
+#         return None
+
+
+# # 실행
+# if __name__ == "__main__":
+#     import sys
+#     app = QtWidgets.QApplication(sys.argv)
+#     user_id = 121  # 실제 사용자 ID
+#     window = FileLoaderGUI(user_id)
+#     window.show()
+#     sys.exit(app.exec())
+
+
+#####################################################################################################################################################################
+
+
 import os
 import sys
 import subprocess
@@ -389,6 +537,9 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "오류", "유효한 파일 경로를 입력하세요.")
             return
 
+        # 경로를 절대 경로로 변환
+        file_path = os.path.abspath(file_path)
+
         if file_path.endswith((".ma", ".mb")):
             self.launch_maya(file_path)
         elif file_path.endswith(".nk"):
@@ -407,8 +558,9 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         """Maya 실행 후 파일 열기"""
         maya_executable = self.find_maya_path()
         if maya_executable:
-            subprocess.Popen([maya_executable, "-file", file_path], shell=True)
-            print(f" Maya 실행 및 파일 열기: {file_path}")
+            maya_command = f'"{maya_executable}" -command "file -o \\"{file_path}\\";"'
+            subprocess.Popen(maya_command, shell=True)
+            print(f" Maya에서 파일을 불러왔습니다: {file_path}")
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "Maya 실행 파일을 찾을 수 없습니다.")
 
@@ -416,8 +568,21 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         """Nuke 실행 후 파일 열기"""
         nuke_executable = self.find_nuke_path()
         if nuke_executable:
-            subprocess.Popen([nuke_executable, file_path], shell=True)
-            print(f" Nuke 실행 및 파일 열기: {file_path}")
+               # 3가지 실행 방식 시도
+            try:
+                print("실행 방식 1: Nuke 실행 후 파일 전달")
+                subprocess.run([nuke_executable, file_path], check=True)
+            except:
+                # try:
+                #     print("실행 방식 2: Python 스크립트 실행 방식")
+                #     subprocess.run([nuke_executable, "-t", "-c", f'import nuke; nuke.scriptOpen("{file_path}")'], check=True)
+                # except:
+                    # try:
+                    #     print("실행 방식 3: GUI 실행 후 파일 열기")
+                    #     subprocess.run([nuke_executable, "-i", file_path], check=True)
+                    # except:
+                        QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행에 실패했습니다.")
+            
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행 파일을 찾을 수 없습니다.")
 
@@ -431,7 +596,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
     def find_nuke_path(self):
         """Nuke 실행 파일 경로 찾기"""
-        possible_paths = ["/usr/local/Nuke13.2v1/Nuke13.2"]
+        possible_paths = ["/usr/local/Nuke15.1v5/Nuke15.1"]
         for path in possible_paths:
             if os.path.exists(path):
                 return path
@@ -446,3 +611,4 @@ if __name__ == "__main__":
     window = FileLoaderGUI(user_id)
     window.show()
     sys.exit(app.exec())
+
