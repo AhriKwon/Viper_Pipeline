@@ -2,44 +2,52 @@ import os
 import datetime
 
 class FilePath:
-    """Maya Playblast 또는 Alembic 파일 저장 경로를 자동 생성하는 클래스"""
+    """Maya 씬, MOV, Alembic 캐시, Nuke 파일을 자동 저장하는 클래스"""
 
     @staticmethod
-    def get_publish_path(project, type_or_seq, name_or_shot, task, file_path, version=1):
-        """
-        퍼블리싱 경로 반환
-        """
-        entity = FilePath.get_entity_from_path(file_path) # 파일 경로에서 entity 추출
-        dcc, pub_type = FilePath.get_dcc_from_path(file_path) # DCC 및 pub 타입 추출
-        base_path = f"/nas/show/{project}/{entity}/{type_or_seq}/{name_or_shot}/{task}/pub/{dcc}/{pub_type}"
-        filename = f"{name_or_shot}_{task}_v{version:03d}.mov"
-        return os.path.join(base_path, filename)
-    
-    @staticmethod
-    def get_dcc_from_path(file_path):
-        # 파일 확장자를 기반으로 퍼블리쉬 타입 판단 (DCC: Maya, Nuke)
-    
-        if not isinstance(file_path, str): # 주어진 값이 특정 타입인지 검사하는 함수
-            raise ValueError("file_path must be a string.")
+    def get_timestamp():
+        """현재 날짜(년-월일) 문자열 반환"""
+        return datetime.datetime.now().strftime("%Y-%m%d")
 
-            if file_path.endswith(".ma"):
-                return "maya" 
-            elif file_path.endswith(".nk"): # endswith : 문자열이 특정 문자열로 끝나는지 확인하는 메서드 e.g. suffix 접미사, prefix 접두사...syntax 용어 넣어주면 애가 알아서 이해함. 
-                return "nuke"
-            
-        base_path = os.path.dirname(file_path) # 현재 파일이 있는 폴더
-        publish_folder = os.path.join(base_path, "pub", "dcc", "pub_type")
-        return publish_folder
-    
     @staticmethod
-    def get_entity_from_path(file_path):
-        # 파일 경로를 기반으로 entity (assets, seq, product) 판별
-        path_parts = file_path.split(os.sep) # os.sep의 역할 -> 윈도우(\), 맥&리눅스(/) 에 따라 경로 구분되어있는 걸 알아서 자동 맞춤! 
+    def get_publish_paths(project, entity_type, name, task, version=1):
+        """에셋 또는 샷의 퍼블리시 경로를 반환"""
+        timestamp = FilePath.get_timestamp()
+        base_paths = {
+            "maya": {
+                "work_scene": f"/nas/show/{project}/{entity_type}/{name}/{task}/work/maya/scenes/{name}_{task}_v{version:03d}.ma",
+                "pub_scene": f"/nas/show/{project}/{entity_type}/{name}/{task}/pub/maya/scenes/{name}_{task}_v{version:03d}.ma",
+                "mov_seq": f"/nas/show/{project}/seq/{name}/{task}/pub/maya/data/{name}_{task}_v{version:03d}.mov",
+                "mov_product": f"/nas/show/{project}/product/{timestamp}/seq/{name}_{task}_v{version:03d}.mov",
+                "abc_asset": f"/nas/show/{project}/assets/{entity_type}/{name}/{task}/pub/maya/alembic/{name}_{task}_v{version:03d}.abc",
+                "abc_shot": f"/nas/show/{project}/seq/{name}/{task}/pub/maya/alembic/{name}_{task}_v{version:03d}.abc",
+            },
+            "nuke": {
+                "work_comp": f"/nas/show/{project}/{entity_type}/{name}/{task}/work/nuke/comps/{name}_{task}_v{version:03d}.nk",
+                "pub_comp": f"/nas/show/{project}/{entity_type}/{name}/{task}/pub/nuke/comps/{name}_{task}_v{version:03d}.nk",
+            }
+        }
+        return base_paths
 
-        if "assets" in path_parts:
-            return "assets"
-        elif "seq" in path_parts:
-            return "seq"
+    @staticmethod
+    def save_file(path):
+        """파일을 실제로 저장 (더미 파일 생성)"""
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        with open(path, "w") as f:
+            f.write("Dummy file for testing")
+        print(f"Saved: {path}")
+
+    @classmethod
+    def save_all(cls, project, entity_type, name, task, version=1):
+        """필요한 모든 파일 저장"""
+        paths = cls.get_publish_paths(project, entity_type, name, task, version)
+        for dcc_paths in paths.values():
+            for path in dcc_paths.values():
+                cls.save_file(path)
+
+# 테스트 실행
+FilePath.save_all("my_project", "assets", "hero", "anim", version=1)
+
 
 
     
