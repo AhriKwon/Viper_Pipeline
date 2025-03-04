@@ -153,7 +153,7 @@ class MayaPublisher():
 
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}")
 
-        publish_paths = FilePath.get_publish_path("Viper", "Character", "Hero_Character" , "MDL", version=1) 
+        publish_paths = FilePath.get_publish_paths(project, entity_type, name, task) 
         
         self.save_playblast(publish_paths)
 
