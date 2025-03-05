@@ -6,8 +6,12 @@ class ShotGridDB:
     """
 
     def __init__(self, db_name="shotgrid_db", host="localhost", port=27017):
-        self.client = MongoClient(host, port)
-        self.db = self.client[db_name]  # 데이터베이스 선택
+        try:
+            self.client = MongoClient(host, port)
+            self.db = self.client[db_name]  # 데이터베이스 선택
+            print(f"연결 성공: {host}:{port}, 데이터베이스: {db_name}")
+        except Exception as e:
+            print(f"dusruf tlfgo: {e}")
 
     def get_project(self, project_name):
         """
@@ -29,7 +33,14 @@ class ShotGridDB:
         """
         특정 유저의 Task 목록을 가져오기
         """
-        return list(self.db.tasks.find({"assigned_to": user_id}))
+        tasks = list(self.db.tasks.find({"assigned_to": user_id}))
+
+        if tasks:
+            print(f"검색된 Task: {tasks}")
+        else:
+            print(f"유저 {user_id}에게 할당된 Task가 없음")
+
+        return tasks
 
     def get_published_files(self, task_id):
         """

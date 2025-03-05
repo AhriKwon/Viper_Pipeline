@@ -16,6 +16,16 @@ class ShotGridManager:
         유저 ID를 받아서 할당된 테스크 조회
         """
         return self.db.get_tasks_by_user(user_id)
+    
+    def show_all_tasks(self):
+        """
+        DB에 저장된 모든 Task 조회
+        """
+        tasks = list(self.db.tasks.find({}))
+        if tasks:
+            print(f"현재 저장된 모든 Task: {tasks}")
+        else:
+            print("데이터베이스에 Task가 존재하지 않음")
 
     def get_project_assets(self, project_name):
         """

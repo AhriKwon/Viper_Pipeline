@@ -14,7 +14,7 @@ if __name__ == "__main__":
     print(f"📂 프로젝트 {project_name}의 에셋 목록: {assets}")
 
     # 특정 Task의 퍼블리시 파일 가져오기
-    task_id = 1234
+    task_id = 6049
     published_files = manager.get_task_published_files(task_id)
     print(f"🗂 Task {task_id}의 퍼블리시 파일: {published_files}")
 
@@ -22,7 +22,9 @@ if __name__ == "__main__":
     work_files = manager.find_work_files(project_name)
     print(f"💾 로컬 Work 파일 목록: {work_files}")
 
-    # 특정 Task 설명 업데이트
-    manager.update_task_description(task_id, "이 테스크는 중요함!")
+    manager.show_all_tasks()
+
+    # # 특정 Task 설명 업데이트
+    # manager.update_task_description(task_id, "이 테스크는 중요함!")
 
     manager.close()

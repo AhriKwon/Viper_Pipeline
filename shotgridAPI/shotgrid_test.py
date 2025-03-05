@@ -22,7 +22,7 @@ status = ShotGridConnector.get_task_status(task_id)
 print(f"Task {task_id} 상태: {status}")
 
 # Task 안에 있는 published 파일 가져오기
-task_id = 5867 # 퍼블리시 파일이 있는 경우에만 내부 파일이 떠서 임의로 특정 테스크 아이디를 사용
+task_id = 6057 # 퍼블리시 파일이 있는 경우에만 내부 파일이 떠서 임의로 특정 테스크 아이디를 사용
 publish_list = ShotGridConnector.get_publishes_for_task(task_id)
 print(f"Task {task_id} 퍼블리시 파일: {publish_list}")
 
