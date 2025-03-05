@@ -11,6 +11,7 @@ class FilePath:
 
     @staticmethod
     def generate_paths(project, entity_type, seq_or_type, shot_or_name, task, version=1):
+        version = int(version) # 정수 변환
         """에셋 또는 샷의 경로를 반환"""
         timestamp = FilePath.get_timestamp()
         base_paths = {
@@ -30,12 +31,6 @@ class FilePath:
         }
         return base_paths
     
-    @staticmethod
-    def get_next_version(folder_path, asset_name): # e.g. v001, v002, ... 순서대로 카운팅되게 만드는 함수
-        if folder_path:
-            existing_files = [f for f in os.listdir(folder_path) if f.startswith(asset_name) and f.endswith(".abc")]
-            versions = [int(f.split("_v")[1].split(".")[0]) for f in existing_files if "_v" in f]
-            return max(versions, default=0) + 1
     
 
     

@@ -29,8 +29,7 @@ class MayaPublisher():
         self.prod_path = publish_paths["maya"]["mov_product"]
         self.abc_path = publish_paths["maya"]["abc_cache"]
         
-    def publish(self):
-     # Task 유형에 맞는 퍼블리쉬 실행
+    def publish(self): # Task 유형에 맞는 퍼블리쉬 실행
         if self.task_type in ["MDL", "RIG", "TXT"]:
             self._publish_asset()
         elif self.task_type in ["MM", "LAY", "ANM"]:
@@ -88,7 +87,8 @@ class MayaPublisher():
             full_path = Path(self.abc_path) / file_name
 
             # Alembic Export 실행
-            alembic_command = f"{grp} -file {full_path}"
+            alembic_command = f"-frameRange 1 100 -root {grp} -file {full_path}"
+            cmds.AbcExport(j=alembic_command)
         
         try:
             # Alembic 내보내기 명령어 실행
