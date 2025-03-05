@@ -10,8 +10,9 @@ sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
 
-    def __init__(self, project, entity_type, task_type, asset_type=None, name=None, seq=None, shot=None, version=1):
+    def __init__(self, project, entity_type, task_type, options, asset_type=None, name=None, seq=None, shot=None, version=1):
         self.task_type = task_type
+        self.options = options
         self.asset_type = asset_type
         self.name = name
         self.seq = seq
@@ -42,14 +43,16 @@ class MayaPublisher():
         cmds.file(save=True, type="mayaAscii")
 
         # Alembic Cache 만들기
-        self.save_alembic(self.abc_path)
+        self.save_alembic()
 
         # Playblast 만들기
         self.make_turntable()
-        self.export_playblast(self.plb_path)
-        self.export_playblast(self.prod_path)
+        self.playblast_publish(self.options, self.plb_path)
+        self.playblast_publish(self.options, self.prod_path)
         print(f"{self.task_type} Publishing is completed!!")
-        
+
+        """ playblast 실행 후 사용한 카메라 그룹을 지워주는 코드 하나 추가"""
+        cmds.delete("turntable_cam_grp")
     def _publish_shot(self):        
         # MM, LAY, ANM 퍼블리쉬 실행
 
@@ -58,12 +61,11 @@ class MayaPublisher():
         cmds.file(save=True, type="mayaAscii")
 
         # Alembic Cache 만들기
-        self.save_alembic(self.abc_path)
+        self.save_alembic()
 
         # Playblast 만들기
-
-        self.export_playblast(self.plb_path)
-        self.export_playblast(self.prod_path)
+        self.playblast_publish(self.options, self.plb_path)
+        self.playblast_publish(self.options, self.prod_path)
         print(f"{self.task_type} Publishing is completed!!")
 
     def save_alembic(self):
@@ -71,6 +73,10 @@ class MayaPublisher():
         # 다중선택된 오브젝트들을 개별적으로 Alembic(.abc) 파일저장
         # 자동으로 그룹 전체를 선택, for 문으로 save alembic을 실행해주는 함수
         
+        if not os.path.exists(self.abc_path):
+            os.makedirs(self.abc_path)
+            print(f"Alembic 경로가 존재하지 않아 생성되었습니다: {self.abc_path}")
+
         # 씬 내 모든 transform 노드 검색 (최상위 그룹 포함)
         all_transforms = cmds.ls(type="transform", long=True)
 
@@ -89,7 +95,7 @@ class MayaPublisher():
             # Alembic Export 실행
             alembic_command = f"-frameRange 1 100 -root {grp} -file {full_path}"
             cmds.AbcExport(j=alembic_command)
-        
+
         try:
             # Alembic 내보내기 명령어 실행
             cmds.AbcExport(j=alembic_command)
@@ -119,13 +125,11 @@ class MayaPublisher():
         cmds.setKeyframe(cam_grp, attribute="rotateY", value=360, time=end_frame)
         cmds.keyTangent(inTangentType="linear", outTangentType="linear")
 
-        print(f"Turntable Camera '{cam_name }' created from frame {start_frame} to {end_frame}.")
+        print(f"Turntable Camera '{cam_name}' created from frame {start_frame} to {end_frame}.")
 
     @staticmethod
     def save_playblast(output_path):
         """Playblast 실행 후 저장"""
-        
-        # cmds.optionVar(intValue=("playblastFormat", 8))
         
         cmds.playblast(
             format="qt", #QuickTime(.mov)형식 "image"를 사용하면 프레임 이미지 시퀀스로 저장할 수도 있음
@@ -160,7 +164,7 @@ class MayaPublisher():
 
         print(f"뷰포트 설정 변경: {option}")
 
-    def export_playblast(self, publish_paths):
+    def export_playblast(self, publish_path):
         
         """씬안에 새로 생성된 카메라를 사용하여 Playblast 실행"""
         all_cameras = cmds.ls(type="camera", long=True)
@@ -179,17 +183,32 @@ class MayaPublisher():
 
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
-        self.save_playblast(publish_paths)
+        self.save_playblast(publish_path)
 
-    def playblast_publish(self, options):
+        
+
+    def playblast_publish(self, options, publish_path):
         """UI 옵션 리스트에 따라 Playblast 실행"""
         for option in options:
             self.set_viewport_option(option)
-            self.export_playblast()
-   
-if __name__ == "__main__":
-    maya_pub = MayaPublisher()
-    selected_options = ["shaded", "wireframe on shaded"]
-    maya_pub.playblast_publish(selected_options)
-    maya_pub.save_alembic()
+            
+            if option == "wireframe on shaded":
+                type_name = "WireOnShaded"
+            elif option == "wireframe on textured":
+                type_name = "WireOnTextured"
+            else:
+                type_name = option
+
+            file_name = f"_{type_name}_v{self.version:03d}.mov"
+            full_path = publish_path+file_name
+
+            print(full_path)
+
+            self.export_playblast(full_path)
+    
+# if __name__ == "__main__":
+#     maya_pub = MayaPublisher()
+#     selected_options = ["shaded", "wireframe on shaded"]
+#     maya_pub.playblast_publish(selected_options)
+#     maya_pub.save_alembic()
     
