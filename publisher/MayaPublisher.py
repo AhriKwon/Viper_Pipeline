@@ -10,18 +10,19 @@ sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
 
-    def __init__(self, project, entity_type, task_type, asset_type=None, name=None, seq=None, shot=None):
+    def __init__(self, project, entity_type, task_type, asset_type=None, name=None, seq=None, shot=None, version=1):
         self.task_type = task_type
         self.asset_type = asset_type
         self.name = name
         self.seq = seq
         self.shot = shot
+        self.version = version
         self.publish_data = {} 
         
         if asset_type:
-            publish_paths = FilePath.generate_paths(project, entity_type, asset_type, name, task_type)
+            publish_paths = FilePath.generate_paths(project, entity_type, asset_type, name, task_type, version)
         elif seq:
-            publish_paths = FilePath.generate_paths(project, entity_type, seq, shot, task_type)
+            publish_paths = FilePath.generate_paths(project, entity_type, seq, shot, task_type, version)
 
         self.scene_path = publish_paths["maya"]["pub_scene"]
         self.plb_path = publish_paths["maya"]["mov_plb"]
@@ -83,8 +84,7 @@ class MayaPublisher():
         for grp in groups:
             cmds.select(grp, replace=True)
             asset_name = grp.split("_")[0] # split()을 사용하여 문자열을 분리하고 첫 번째 요소만 반환
-            version = FilePath.get_next_version(self.abc_path, asset_name)
-            file_name = f"{asset_name}_{self.task_type}_v{version:03d}.abc"
+            file_name = f"{asset_name}_{self.task_type}_v{self.version:03d}.abc"
             full_path = Path(self.abc_path) / file_name
 
             # Alembic Export 실행
