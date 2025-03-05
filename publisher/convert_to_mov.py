@@ -47,7 +47,7 @@ class FileConverter:
             "-r", "24", # 프레임 속도 설정
             "-i", input_pattern, # 입력 이미지 시퀀스
             "-c:v", "prores_ks", # ProRes 코덱
-            "-pix_fmt", "yuv422p101e", # 10bit ProRes 설정
+            "-pix_fmt", "yuv422p10le", # 10bit ProRes 설정
             output_file # 출력 파일 경로
         ]
         subprocess.run(ffmpeg_cmd, check=True)

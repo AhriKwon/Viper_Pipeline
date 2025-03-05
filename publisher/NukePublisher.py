@@ -2,29 +2,33 @@ import os
 import sys
 import nuke
 # sys.path.append(os.path.abspath("/nas/Viper/hyerin/Publisher"))
-from publisher.convert_to_mov import FileConverter  # import FileConverter class
+from publisher.convert_to_mov import FileConverter  # Importing FileConverter class 
 
 class NukePublisher:
     def __init__(self, output_dir="/nas/Viper/hyerin/Publisher"):
         self.output_dir = output_dir
         if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
+            os.makedirs(self.output_dir, exist_ok=True) # 디렉토리 존재 여부 확인 후 생성
 
     def save_nuke_and_set_paths(self, nuke_file_name):
         """Nuke 파일 저장 및 Write 노드의 경로 설정"""
         nuke_file_path = os.path.join(self.output_dir, nuke_file_name)
+
         nuke.scriptSaveAs(nuke_file_path)  # Nuke 파일 저장
         print(f"Nuke 파일 저장 완료: {nuke_file_path}")
 
         write_nodes = self.get_all_write_nodes()
+
         if not write_nodes:
             print("Write 노드가 없습니다.")
             return
 
         for write_node in write_nodes:
-            exr_path = os.path.join(self.output_dir, f"{os.path.splitext(nuke_file_name)[0]}.####.exr")
+            node_name = write_node.name() # 각 Write node 이름 가져오기 (write node 별 다른 파일명 저장/ 덮어쓰기 방지)
+            exr_path = os.path.join(self.output_dir, f"{os.path.splitext(nuke_file_name)[0]}_{node_name}.####.exr") ####는 Nuke에서 프레임 넘버 e.g. render.####.exr, render.0001.exr
             write_node["file"].setValue(exr_path)
             print(f"{write_node.name()} 경로 설정 완료: {exr_path}")
+
 
     def get_all_write_nodes(self):
         """현재 씬에서 모든 Write 노드 반환"""
