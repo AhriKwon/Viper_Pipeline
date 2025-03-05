@@ -1,8 +1,11 @@
 import os
 import sys
 import nuke
-# sys.path.append(os.path.abspath("/nas/Viper/hyerin/Publisher"))
-from publisher.convert_to_mov import FileConverter  # Importing FileConverter class 
+sys.path.append(os.path.abspath("/nas/Viper/hyerin/Publisher"))
+try:
+    from publisher.convert_to_mov import FileConverter  # Importing FileConverter class 
+except ImportError:
+    print("FileConverter 모듈을 찾을 수 없습니다. 경로를 확인하세요.")
 
 class NukePublisher:
     def __init__(self, output_dir="/nas/Viper/hyerin/Publisher"):
@@ -13,7 +16,6 @@ class NukePublisher:
     def save_nuke_and_set_paths(self, nuke_file_name):
         """Nuke 파일 저장 및 Write 노드의 경로 설정"""
         nuke_file_path = os.path.join(self.output_dir, nuke_file_name)
-
         nuke.scriptSaveAs(nuke_file_path)  # Nuke 파일 저장
         print(f"Nuke 파일 저장 완료: {nuke_file_path}")
 
@@ -66,8 +68,7 @@ class NukePublisher:
         write_nodes = self.get_all_write_nodes()
         if not write_nodes:
             print("Write 노드가 없습니다.")
-            return
-        
+            return        
         self.set_write_nodes_mov(write_nodes)
         self.execute_write_nodes(write_nodes)  # MOV 렌더링 실행
 
