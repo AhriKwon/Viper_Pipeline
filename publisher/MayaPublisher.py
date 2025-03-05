@@ -1,20 +1,33 @@
 import os
-import datetime
+import sys
 import shutil
+from pathlib import Path
 import maya.cmds as cmds
-from PublishPath import FilePath
-from publisher.convert_to_mov import FileConverter
+from GeneratingPath import FilePath
+from convert_to_mov import FileConverter
 
+sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
 
-    def __init__(self, task_type, asset_name=None, seq=None, shot=None):
+    def __init__(self, project, entity_type, task_type, asset_type=None, name=None, seq=None, shot=None):
         self.task_type = task_type
-        self.asset_name = asset_name
+        self.asset_type = asset_type
+        self.name = name
         self.seq = seq
         self.shot = shot
         self.publish_data = {} 
+        
+        if asset_type:
+            publish_paths = FilePath.generate_paths(project, entity_type, asset_type, name, task_type)
+        elif seq:
+            publish_paths = FilePath.generate_paths(project, entity_type, seq, shot, task_type)
 
+        self.scene_path = publish_paths["maya"]["pub_scene"]
+        self.plb_path = publish_paths["maya"]["mov_plb"]
+        self.prod_path = publish_paths["maya"]["mov_product"]
+        self.abc_path = publish_paths["maya"]["abc_cache"]
+        
     def publish(self):
      # Task 유형에 맞는 퍼블리쉬 실행
         if self.task_type in ["MDL", "RIG", "TXT"]:
@@ -22,55 +35,68 @@ class MayaPublisher():
         elif self.task_type in ["MM", "LAY", "ANM"]:
             self._publish_shot()
 
-    def _publish_asset(self):
-        # MDL, RIG, TXT 퍼블리시 실행
-        publish_paths = FilePath.get_publish_path(self.task_type, {"asset_name": self.asset_name})
+    def _publish_asset(self): # MDL, RIG, TXT 퍼블리쉬 실행
 
         # Maya 씬 저장 (.ma)
-        cmds.file(rename=publish_paths["scene"])
+        cmds.file(rename=self.scene_path)
         cmds.file(save=True, type="mayaAscii")
 
         # Alembic Cache 만들기
-        alembic_path = publish_paths["cache"]
-        cmds.AbcExport(j=f"-root |Asset -file {alembic_path}")
+        self.save_alembic(self.abc_path)
 
         # Playblast 만들기
-        mov_path = publish_paths["mov"]
-        self._generate_playblast(mov_path)
+        self.make_turntable()
+        self.export_playblast(self.plb_path)
+        self.export_playblast(self.prod_path)
         print(f"{self.task_type} Publishing is completed!!")
-        self.publish_data = publish_paths # 결과 저장
         
     def _publish_shot(self):        
         # MM, LAY, ANM 퍼블리쉬 실행
-        publish_paths = FilePath.get_publish_path(self.task_type, {"seq": self.seq, "shot": self.shot})
-        cmds.file(rename=publish_paths["scene"])
+
+        # Maya 씬 저장 (.ma)
+        cmds.file(rename=self.scene_path)
         cmds.file(save=True, type="mayaAscii")
 
-        self.publish_data = publish_paths
+        # Alembic Cache 만들기
+        self.save_alembic(self.abc_path)
+
+        # Playblast 만들기
+
+        self.export_playblast(self.plb_path)
+        self.export_playblast(self.prod_path)
+        print(f"{self.task_type} Publishing is completed!!")
 
     def save_alembic(self):
-        # 선택된 오브젝트의 Alembic(.abc) 파일을 저장
-        selected_objects = cmds.ls(selection=True)
-        alembic_path = "/nas/Viper/hyerin/test.abc"
 
-        if not selected_objects:
-            print("Error: 선택된 오브젝트가 없습니다.")
+        # 다중선택된 오브젝트들을 개별적으로 Alembic(.abc) 파일저장
+        # 자동으로 그룹 전체를 선택, for 문으로 save alembic을 실행해주는 함수
+        
+        # 씬 내 모든 transform 노드 검색 (최상위 그룹 포함)
+        all_transforms = cmds.ls(type="transform", long=True)
+
+        # Alembic 내보낼 그룹 필터링 (자식이 있는 transform만 선택)
+        groups = list(set(cmds.listRelatives(all_transforms, parent=True)))
+        if not groups:
+            print("Error: Alembic 내보낼 그룹이 없습니다.")
             return
 
-        # 선택된 오브제를 -root 옵션으로 설정
-        objects_str = " ".join([f"-root {obj}" for obj in selected_objects])
-        alembic_command = f"{objects_str}"
+        for grp in groups:
+            cmds.select(grp, replace=True)
+            asset_name = grp.split("_")[0] # split()을 사용하여 문자열을 분리하고 첫 번째 요소만 반환
+            version = FilePath.get_next_version(self.abc_path, asset_name)
+            file_name = f"{asset_name}_{self.task_type}_v{version:03d}.abc"
+            full_path = Path(self.abc_path) / file_name
 
-        # Alembic Export 실행
-        alembic_command = f"{objects_str} -file {alembic_path}"
+            # Alembic Export 실행
+            alembic_command = f"{grp} -file {full_path}"
         
         try:
             # Alembic 내보내기 명령어 실행
             cmds.AbcExport(j=alembic_command)
-            print(f"Alembic 저장되었습니다: {alembic_path}")
+            print(f"Alembic 저장되었습니다: {full_path}")
             
         except Exception as e:
-            print(f"Error: Alembic 내보내기 실패 - {str(e)}") 
+            print(f"Error: Alembic 내보내기 실패 - {str(e)}")
 
     def make_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
         """
@@ -134,9 +160,9 @@ class MayaPublisher():
 
         print(f"뷰포트 설정 변경: {option}")
 
-    def export_playblast(self):
+    def export_playblast(self, publish_paths):
         
-        """턴테이블 카메라를 사용하여 Playblast 실행"""
+        """씬안에 새로 생성된 카메라를 사용하여 Playblast 실행"""
         all_cameras = cmds.ls(type="camera", long=True)
         scene_cameras = [cam for cam in all_cameras if "persp" not in cam and "top" not in cam and "side" not in cam and "front" not in cam]
 
@@ -151,9 +177,7 @@ class MayaPublisher():
         cmds.lookThru(panel, camera_to_use) # lookThru() 특정 뷰패널을 특정 카메라로 전환하는 명령어!
         cmds.viewFit(all=True) # 씬 전체에 맞게 뷰 핏
 
-        print(f"뷰포트 카메라 설정 완료: {camera_to_use}")
-
-        publish_paths = FilePath.get_publish_paths(project, entity_type, name, task) 
+        print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
         self.save_playblast(publish_paths)
 
@@ -168,3 +192,4 @@ if __name__ == "__main__":
     selected_options = ["shaded", "wireframe on shaded"]
     maya_pub.playblast_publish(selected_options)
     maya_pub.save_alembic()
+    
