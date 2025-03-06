@@ -71,26 +71,33 @@ class FileConverter:
         else:
             font_path = "/usr/share/fonts/truetyipe/msttcorefonts/Courier_New.ttf" # Mac, Linux os
 
-        # FFmpeg filter
+        # FFmpeg filter 명령어 
         ffmpeg_cmd = [
             "ffmpeg", "-i", input_video,
             "-vf",
             f"pad={width}:{height + (letterbox_height * 2)}:{0}:{letterbox_height}:black,"
-            f"drawtext=text='{shot_info}':x=(w-text_w)/2:y={letterbox_height - font_size -5}:"
+            f"drawtext=text='{shot_info['up_left']}':x=10:y={letterbox_height - font_size - 5}:"
+            f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
+            f"fontfile='{font_path}',"
+            f"drawtext=text='{shot_info['up_center']}':x=(w-text_w)/2:y={letterbox_height - font_size - 5}:"
+            f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
+            f"fontfile='{font_path}',"
+            f"drawtext=text='{shot_info['up_right']}':x=w-text_w-10:y={letterbox_height - font_size - 5}:"
+            f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
+            f"fontfile='{font_path}',"
+            f"drawtext=text='{shot_info['down_left']}':x=10:y=h-{letterbox_height}-10:"
+            f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
+            f"fontfile='{font_path}',"
+            f"drawtext=text='{shot_info['down_center']}':x=(w-text_w)/2:y=h-{letterbox_height}-10:"
+            f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
+            f"fontfile='{font_path}',"
+            f"drawtext=text='{shot_info['down_right']}':x=w-text_w-10:y=h-{letterbox_height}-10:"
             f"fontsize={font_size}:fontcolor=white:shadowcolor=black:shadowx=2:shadowy=2:"
             f"fontfile='{font_path}'",
             "-c:a", "copy", output_video
         ]
-            # -i (입력 파일 지정:input video), input_video(처리할 동영상 파일 경로), -vf (video filter), pad(add letterbox) 
-            # drawtext(overlay the shot data), pad=width:height+2*letterbox_height:x:y:color 패딩 추가하여 새로운 해상도로 변경
-            # {width}기존 가로크기 유지, {height + (letterbox_height * 2)} 기존 세로 크기 + 위아래 레터박스 추가, {0} 왼쪽 패딩 x 좌표값 0
-            # {letterbox_height} 위쪽 패딩 크기 설정(아랫쪽은 자동 추가), black (letterbox colour : black), drawtext : 샷 정보 추가
-            # x=(w-text_w)/2 텍스트 중앙정렬, y={letterbox_height - font_size - 5} 위쪽 레터박스 내부에 위치하도록 설정
-            # shadowx=2, shadowy=2 :그림자 위치 (우측 & 아래쪽으로 2px 이동), -c:a (set audio codec), "copy"(원본 재인코딩 없이 그대로 복사-> 비디오만 변환)
-            
         subprocess.run(ffmpeg_cmd, shell=True)
         print(f"overlay_shot_data is completed!!: {output_video}")
-
     @staticmethod
     def convert_to_mov(output_dir, output_file):
         """
