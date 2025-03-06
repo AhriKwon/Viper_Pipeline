@@ -174,7 +174,7 @@ class LoadUI(QMainWindow):
         self.animations.append(fade_anim)  
         fade_anim.start()
 
-    #=============================GroupBox를 ListWidget에 추가====================================
+    #=============================GroupBox를 ListWidget에 추가======================================
 
     # groupbox = 파일 listwidget= 파일을 담는 행 
 
