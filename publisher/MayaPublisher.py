@@ -5,25 +5,50 @@ from pathlib import Path
 import maya.cmds as cmds
 from GeneratingPath import FilePath
 from convert_to_mov import FileConverter
-
 sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
 
-    def __init__(self, project, entity_type, task_type, options, asset_type=None, name=None, seq=None, shot=None, version=1):
-        self.task_type = task_type
-        self.options = options
-        self.asset_type = asset_type
-        self.name = name
-        self.seq = seq
-        self.shot = shot
-        self.version = version
-        self.publish_data = {} 
+    def __init__(self, shot_data):
+    # 기본값을 설정한 후 shot_data에서 받은 값으로 덮어쓰기
+        default_data = {
+        "project": "Viper",
+        "entity_type": "assets",
+        "task_type": "MDL",
+        "options": ["shaded", "wireframe"],
+        "asset_type": None,
+        "name": None,
+        "seq": None,
+        "shot": None,
+        "version": 1
+        }
+    
+        # shot_data가 전달되면 기존 default_data를 업데이트
+        default_data.update(shot_data)
+
+        # 클래스 속성 할당
+        self.project = default_data["project"]
+        self.entity_type = default_data["entity_type"]
+        self.task_type = default_data["task_type"]
+        self.options = default_data["options"]
+        self.asset_type = default_data["asset_type"]
+        self.name = default_data["name"]
+        self.seq = default_data["seq"]
+        self.shot = default_data["shot"]
+        self.version = default_data["version"]
+        self.publish_data = {}
         
-        if asset_type:
-            publish_paths = FilePath.generate_paths(project, entity_type, asset_type, name, task_type, version)
-        elif seq:
-            publish_paths = FilePath.generate_paths(project, entity_type, seq, shot, task_type, version)
+        # 경로 생성 로직 (seq or asset_type에 따라 다르게 처리)
+        if self.asset_type:
+            publish_paths = FilePath.generate_paths(
+                shot_data["project"], shot_data["entity_type"], 
+                self.asset_type, self.name, self.task_type, self.version
+                )
+        elif self.seq:
+            publish_paths = FilePath.generate_paths(
+                shot_data["project"], shot_data["entity_type"], 
+                self.seq, self.shot, self.task_type, self.version
+                )
 
         self.scene_path = publish_paths["maya"]["pub_scene"]
         self.plb_path = publish_paths["maya"]["mov_plb"]
@@ -78,10 +103,15 @@ class MayaPublisher():
             print(f"Alembic 경로가 존재하지 않아 생성되었습니다: {self.abc_path}")
 
         # 씬 내 모든 transform 노드 검색 (최상위 그룹 포함)
-        all_transforms = cmds.ls(type="transform", long=True)
+        all_transforms = cmds.ls(type="transform", long=True) or []
+        
+        if not all_transforms:
+            print("Error: 씬에 변환 가능한 오브젝트가 없습니다.")
+            return
 
         # Alembic 내보낼 그룹 필터링 (자식이 있는 transform만 선택)
-        groups = list(set(cmds.listRelatives(all_transforms, parent=True)))
+        groups = cmds.listRelatives(all_transforms, parent=True) or []
+        groups = list(set(groups))
         if not groups:
             print("Error: Alembic 내보낼 그룹이 없습니다.")
             return
@@ -184,8 +214,6 @@ class MayaPublisher():
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
         self.save_playblast(publish_path)
-
-        
 
     def playblast_publish(self, options, publish_path):
         """UI 옵션 리스트에 따라 Playblast 실행"""
