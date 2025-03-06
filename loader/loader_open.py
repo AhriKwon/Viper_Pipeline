@@ -146,7 +146,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def launch_maya(self, file_path):
         """Maya 실행 후 파일 열기 (환경 변수 추가)"""
         maya_executable = self.find_maya_path()
-        if maya_executable:
+        if maya_executable:                       
             maya_command = f'bash -c "source /home/rapa/env/maya.env && {maya_executable} -command \\"file -o \\\\\\"{file_path}\\\\\\";\\""'
             subprocess.Popen(maya_command, shell=True)
             print(f"Maya에서 파일을 불러왔습니다: {file_path}")

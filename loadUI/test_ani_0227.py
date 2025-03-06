@@ -13,7 +13,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from user_authenticator import UserAuthenticator
 from shotgrid_connector import ShotGridConnector
 
-from test_drag import DragDropHandler
+# from test_drag import DragDropHandler
 
 
  #============================================================================================
