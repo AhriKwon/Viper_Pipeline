@@ -28,7 +28,9 @@ class LoginWindow(QDialog):
         self.load_ui()
     
     def load_ui(self):
-        ui_file_path = "/home/rapa/teamwork/Viper/loadUI/login.ui"
+        current_directory = os.path.dirname(__file__)
+        ui_file_path = f"{current_directory}/login.ui"
+
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
@@ -73,7 +75,9 @@ class LoadUI(QMainWindow):
 
 
     def load_ui(self):
-        ui_file_path = "/home/rapa/teamwork/Viper/loadUI/load.ui"
+        current_directory = os.path.dirname(__file__)
+        ui_file_path = f"{current_directory}/load.ui"
+
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
@@ -105,6 +109,13 @@ class LoadUI(QMainWindow):
 
         self.tab_widget = self.ui.findChild(QTabWidget, "tabWidget_2")
         self.label_filename = self.ui.findChild(QLabel, "label_filename")
+        self.label_startdate = self.ui.findChild(QLabel, "label_startdate")
+        self.label_duedate = self.ui.findChild(QLabel, "label_duedate")
+
+        self.label_filetype = self.ui.findChild(QLabel, "label_filetype")
+
+
+
 
         # 클릭 이벤트 전에는 숨기기 
         self.tab_widget.hide()
@@ -236,6 +247,9 @@ class LoadUI(QMainWindow):
 
     def show_task_details(self, task_name):
         self.label_filename.setText(task_name)
+        self.label_type.setText()
+        self.label_startdate.setText()
+        self.lable_duedate.setText()
         self.tab_widget.show()
 
 if __name__ == "__main__":
