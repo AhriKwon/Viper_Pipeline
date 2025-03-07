@@ -9,9 +9,11 @@ from PySide6.QtGui import QPixmap, QColor
 import sys, os
 from shotgun_api3 import Shotgun
 
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
-from shotgrid_connector import ShotGridConnector
+from shotgrid_manager import ShotGridManager
+manager = ShotGridManager()
 
 # from test_drag import DragDropHandler
 
@@ -62,7 +64,7 @@ class LoadUI(QMainWindow):
         self.animations = []
         self.effects = []
         self.load_ui()
-        self.animate_list_widgets() 
+        # self.animate_list_widgets() 
         self.login_and_load_tasks()
 
 
@@ -78,8 +80,8 @@ class LoadUI(QMainWindow):
         self.setCentralWidget(self.ui)
         self.ui.show()
 
-        # 배경 색상 변경 (기본 검정 계열, 명도 차이를 둠)
-        self.setStyleSheet("background-color: #101010;")  
+        # # 배경 색상 변경 (기본 검정 계열, 명도 차이를 둠)
+        # self.setStyleSheet("background-color: #101010;")  
 
         # load.ui 사이즈 조절 
         self.setGeometry(100, 100, 1200, 800)
@@ -97,9 +99,9 @@ class LoadUI(QMainWindow):
         self.main_layout.layout().addWidget(self.scroll_area)
         self.scroll_area.setWidget(self.scroll_widget)
 
-        # 스크롤 영역과 컨테이너 배경색을 어두운 회색으로 설정
-        self.scroll_area.setStyleSheet("background-color: #181818;")
-        self.scroll_widget.setStyleSheet("background-color: #181818;")
+        # # 스크롤 영역과 컨테이너 배경색을 어두운 회색으로 설정
+        # self.scroll_area.setStyleSheet("background-color: #181818;")
+        # self.scroll_widget.setStyleSheet("background-color: #181818;")
 
         self.tab_widget = self.ui.findChild(QTabWidget, "tabWidget_2")
         self.label_filename = self.ui.findChild(QLabel, "label_filename")
@@ -111,8 +113,8 @@ class LoadUI(QMainWindow):
         self.list_widgets = []
         row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
 
-        # 행이 될 4개의 listwidget (크기, 간격, 색 조정하여 tableWidget_2에 삽입) 
-        for i in range(4):
+        # 행이 될 3개의 listwidget (크기, 간격, 색 조정하여 tableWidget_2에 삽입) 
+        for i in range(3):
             list_widget = QListWidget()
             list_widget.setFixedWidth(220)
             list_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -130,7 +132,7 @@ class LoadUI(QMainWindow):
 
         if "error" not in user_data:
             user_id = user_data["id"]
-            user_tasks = ShotGridConnector.get_user_tasks(user_id) 
+            user_tasks = manager.get_tasks_by_user(user_id) 
             self.populate_table(user_tasks)
         else:
             print("Error")
@@ -138,41 +140,41 @@ class LoadUI(QMainWindow):
     #=============================ListWidget 애니메이션 추가====================================
 
 
-    def animate_list_widgets(self):
-        delay = 400  # 0.4초 간격으로 순차적 애니메이션 실행 
+    # def animate_list_widgets(self):
+    #     delay = 400  # 0.4초 간격으로 순차적 애니메이션 실행 
 
-        for index, list_widget in enumerate(self.list_widgets):
-            QTimer.singleShot(index * delay, lambda lw=list_widget: self.animate_widget(lw, duration=600))
+    #     for index, list_widget in enumerate(self.list_widgets):
+    #         QTimer.singleShot(index * delay, lambda lw=list_widget: self.animate_widget(lw, duration=600))
 
 
     #=============================애니메이션 적용=============================================
 
 
-    def animate_widget(self, widget, duration=600):
-        start_y = widget.y() + 40
-        end_y = widget.y()  
+    # def animate_widget(self, widget, duration=600):
+    #     start_y = widget.y() + 40
+    #     end_y = widget.y()  
 
-        anim = QPropertyAnimation(widget, b"geometry")
-        anim.setDuration(duration)  
+    #     anim = QPropertyAnimation(widget, b"geometry")
+    #     anim.setDuration(duration)  
 
-        # (고정 : x 좌표, 넓이, 길이/   이동: y좌표 )
-        anim.setStartValue(QRect(widget.x(), start_y, widget.width(), widget.height()))
-        anim.setEndValue(QRect(widget.x(), end_y, widget.width(), widget.height()))
+    #     # (고정 : x 좌표, 넓이, 길이/   이동: y좌표 )
+    #     anim.setStartValue(QRect(widget.x(), start_y, widget.width(), widget.height()))
+    #     anim.setEndValue(QRect(widget.x(), end_y, widget.width(), widget.height()))
 
 
-        self.animations.append(anim)  
-        anim.start()
+    #     self.animations.append(anim)  
+    #     anim.start()
 
-        effect = QGraphicsOpacityEffect()
-        widget.setGraphicsEffect(effect)
-        # 투명도 조절 [시작(0) > (1)]
-        fade_anim = QPropertyAnimation(effect, b"opacity")
-        fade_anim.setDuration(duration)
-        fade_anim.setStartValue(0.0)
-        fade_anim.setEndValue(1.0)
-        self.effects.append(effect)  
-        self.animations.append(fade_anim)  
-        fade_anim.start()
+    #     effect = QGraphicsOpacityEffect()
+    #     widget.setGraphicsEffect(effect)
+    #     # 투명도 조절 [시작(0) > (1)]
+    #     fade_anim = QPropertyAnimation(effect, b"opacity")
+    #     fade_anim.setDuration(duration)
+    #     fade_anim.setStartValue(0.0)
+    #     fade_anim.setEndValue(1.0)
+    #     self.effects.append(effect)  
+    #     self.animations.append(fade_anim)  
+    #     fade_anim.start()
 
     #=============================GroupBox를 ListWidget에 추가======================================
 
@@ -183,15 +185,20 @@ class LoadUI(QMainWindow):
             return
 
         index = 0
-        delay = 400  
+        # delay = 400
 
-        for task in tasks:
-            task_id = task["id"] 
-            task_name = task["content"] 
-            versions = ShotGridConnector.get_publishes_for_task(task_id)
+        status_list = ["wtg", "ip", "fin"]
 
-            for version in versions:
-                thumbnail_url = version.get("thumbnail", None)
+        for status in status_list:
+            filtered_tasks = manager.filter_tasks_by_status(tasks, status)
+
+            for task in filtered_tasks:
+                task_id = task["id"] 
+                task_name = task["content"] 
+                versions = manager.get_publishes_for_task(task_id)
+
+                # for version in versions:
+                #     thumbnail_url = version.get("thumbnail", None)
 
                 file_box = QGroupBox()
                 file_box.setStyleSheet("""
@@ -204,28 +211,28 @@ class LoadUI(QMainWindow):
                 layout = QVBoxLayout()
 
                 label_thumbnail = QLabel()
-                if thumbnail_url:
-                    pixmap = QPixmap(thumbnail_url)
-                    label_thumbnail.setPixmap(pixmap.scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio))
-                layout.addWidget(label_thumbnail, alignment=Qt.AlignCenter)
+                # if thumbnail_url:
+                #     pixmap = QPixmap(thumbnail_url)
+                #     label_thumbnail.setPixmap(pixmap.scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio))
+                # layout.addWidget(label_thumbnail, alignment=Qt.AlignCenter)
 
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_task_name)
                 
                 file_box.setLayout(layout)
-                file_box.mousePressEvent = lambda event, t=task_name: self.show_task_details(t)
+                file_box.mousePressEvent = lambda event, t=task_name, tid=task_id: self.show_task_details(t)
 
                 list_item = QListWidgetItem()
                 list_item.setSizeHint(file_box.sizeHint())
 
-                target_list = self.list_widgets[index % 4]
+                target_list = self.list_widgets[index]
                 target_list.addItem(list_item)
                 target_list.setItemWidget(list_item, file_box)
 
-                QTimer.singleShot(index * delay, lambda fb=file_box: self.animate_widget(fb, duration=1800))
+                # QTimer.singleShot(index * delay, lambda fb=file_box: self.animate_widget(fb, duration=1800))
 
-                index += 1
+            index += 1
 
     def show_task_details(self, task_name):
         self.label_filename.setText(task_name)

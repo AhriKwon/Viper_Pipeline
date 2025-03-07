@@ -27,13 +27,13 @@ from shotgrid_connector import ShotGridConnector
 # 마야 publisher 연동
 # sys.path.append(os.path.abspath(os.path.join(viper_path, 'Publisher')))
 # from MayaPublisher import MayaPublisher
-# from PublishPath import FilePath
+# from Generating import FilePath
 # from publisher.convert_to_mov import FileConverter
 
 ICON_PATHS = {
-    "maya": "/home/rapa/Downloads/maya.png",
-    "nuke": "/home/rapa/Downloads/nuke.png",
-    "houdini": "/home/rapa/Downloads/hou.png"
+    "maya": "/nas/Viper/minseo/icon/maya.png",
+    "nuke": "/nas/Viper/minseo/icon/nuke.png",
+    "houdini": "/nas/Viper/minseo/icon/hou.png"
 }
 
 class PublishUI(QMainWindow):
@@ -52,23 +52,23 @@ class PublishUI(QMainWindow):
         self.resize(850, 750)
 
 
-        #폰트 적용 
-        font_path = os.path.join(publish_path, "MYRIADPRO-SEMIBOLD.OTF")  # 확장자 추가
+        # #폰트 적용 
+        # font_path = os.path.join(publish_path, "MYRIADPRO-SEMIBOLD.OTF")  # 확장자 추가
 
-        if os.path.exists(font_path):  # 파일 존재 여부 확인
-            font_id = QFontDatabase.addApplicationFont(font_path)
+        # if os.path.exists(font_path):  # 파일 존재 여부 확인
+        #     font_id = QFontDatabase.addApplicationFont(font_path)
 
-            if font_id != -1:
-                font_families = QFontDatabase.applicationFontFamilies(font_id)
-                if font_families:
-                    custom_font = QFont(font_families[0], 12)
+        #     if font_id != -1:
+        #         font_families = QFontDatabase.applicationFontFamilies(font_id)
+        #         if font_families:
+        #             custom_font = QFont(font_families[0], 12)
 
-                    # 🔹 스타일시트 적용
-                    self.ui.setStyleSheet(f"* {{ font-family: '{font_families[0]}'; font-size: 12pt; }}")
+        #             # 🔹 스타일시트 적용
+        #             self.ui.setStyleSheet(f"* {{ font-family: '{font_families[0]}'; font-size: 12pt; }}")
 
-                    print(f"✅ 폰트 스타일시트 적용 성공: {font_families[0]}")
-                else:
-                    print("🚨 폰트 로드 성공했지만 적용할 수 없습니다.")
+        #             print(f"폰트 스타일시트 적용 성공: {font_families[0]}")
+        #         else:
+        #             print("폰트 로드 성공했지만 적용할 수 없습니다.")
 
 
 
@@ -78,7 +78,6 @@ class PublishUI(QMainWindow):
         self.publish_button = self.ui.findChild(QPushButton, "publish_button")
         if self.publish_button:
             self.publish_button.clicked.connect(self.publish_selected_file)
-
 
         # 파일 : 로고, 이름 , 메모 
         self.lineEdit_memo = self.ui.findChild(QLineEdit, "lineEdit_memo")
@@ -251,6 +250,8 @@ class PublishUI(QMainWindow):
         if selected_items:
             selected_item = selected_items[1]
             file_name = selected_item.text()
+
+  
         # 2-1 : 2. <메모> 각 행에 정보가 별개로 할당되도록 이전 메모 상태 저장 
         if self.current_file:
             self.memo_states[self.current_file] = self.lineEdit_memo.text()
@@ -309,6 +310,7 @@ class PublishUI(QMainWindow):
      #----------------------------------------3-1. 로드 ------------------------------------------
 
     def load_ui(self):
+
         ui_file_path = os.path.join( publish_path ,"publish2.ui")
 
         ui_file = QFile(ui_file_path)
