@@ -1,32 +1,3 @@
-
-
-
-
-"""
-user가 마야나 누크에서 작업중인 상태에서 loader를 실행하고 loader의 import 버튼을 누르면 user가 선택한 파일을 불러와서 
-현재 작업하고 있는 마야나 누크 창에 파일이 열리도록 하는 함수 
-
-
-로그인 task id해도 work path로 연결되도록 하는 함수
-
-"""
-
-"""
-경로 : /nas/show/{PROJECT}/assets/{ASSET_TYPE}/{ASSET_NAME}/{TASK}/work/maya/scenes/{ASSET_NAME}_{TASK}_v001.{EXT}
-      /nas/show/Viper/assets/Character/Hero_Character/MDL/work/maya/scenes/Hero_Character_MDL_v001.ma
-    
-    
-    
-    
-경로 : /nas/show/{PROJECT}/seq/{SEQ}/{SHOT}/{TASK}/work/maya/scenes/{SHOT}_{TASK}_v001.{EXT}
-      /nas/show/Viper/seq/SEQ001/SH010/ANM/work/maya/scenes/SEQ001_SH010_Animation_v001.mov
-    
-    
-"""
-
-            
-##########################################################################################################################
-   
 import os
 import sys
 import subprocess
@@ -92,6 +63,11 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         self.new_scene_button = QtWidgets.QPushButton("새 파일 Open")
         self.new_scene_button.clicked.connect(self.open_new_scene_maya)
         button_layout.addWidget(self.new_scene_button)
+
+
+        self.task_button = QtWidgets.QPushButton("Task 파일 열기")
+        self.task_button.clicked.connect(self.open_or_create_task_file)
+        button_layout.addWidget(self.task_button)
 
         layout.addLayout(button_layout)
 
@@ -174,6 +150,66 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, "알림", "새로운 Maya 창이 열렸습니다.")
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "Maya 실행 파일을 찾을 수 없습니다.")
+
+
+
+    def open_or_create_task_file(self):
+        """Task 파일을 열거나, 없으면 자동으로 생성"""
+        task_info = self.get_task_info()
+        if not task_info:
+            QtWidgets.QMessageBox.warning(self, "오류", "Task 정보를 가져올 수 없습니다.")
+            return
+
+        file_path = self.get_task_file_path(task_info)
+
+        if os.path.exists(file_path):
+            print(f"Task 파일 존재: {file_path}")
+            self.launch_program(file_path)
+        else:
+            new_file_path = self.get_next_version_file(file_path)
+            os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
+
+            with open(new_file_path, "w") as f:
+                f.write("")  # 빈 파일 생성
+
+            print(f"새로운 Task 파일 생성: {new_file_path}")
+            self.launch_program(new_file_path)
+
+
+    def get_task_info(self):
+        """사용자의 Task 정보를 가져오는 함수"""
+        tasks = manager.get_tasks_by_user(self.user_id)
+        if not tasks:
+            return None
+        return tasks[0]  # 첫 번째 Task를 가져옴
+
+    def get_task_file_path(self, task_info):
+        """Task 정보를 기반으로 파일 경로 생성"""
+        base_path = "/nas/show/Viper/assets"
+        asset_type = task_info.get("asset_type", "Unknown")
+        asset_name = task_info.get("asset_name", "Unknown")
+        task_name = task_info.get("task", "Unknown")
+        ext = "ma" if task_name in ["MDL", "ANM"] else "nk"
+
+        return f"{base_path}/{asset_type}/{asset_name}/{task_name}/work/maya/scenes/{asset_name}_{task_name}_v001.{ext}"
+
+    def get_next_version_file(self, file_path):
+        """파일 버전을 자동으로 업그레이드"""
+        base, ext = os.path.splitext(file_path)
+        version = 1
+
+        while os.path.exists(file_path):
+            version += 1
+            file_path = f"{base[:-3]}v{str(version).zfill(3)}{ext}"
+
+        return file_path
+
+    def launch_program(self, file_path):
+        """파일 확장자에 따라 Maya 또는 Nuke 실행"""
+        if file_path.endswith(".ma") or file_path.endswith(".mb"):
+            self.launch_maya(file_path)
+        elif file_path.endswith(".nk"):
+            self.launch_nuke(file_path)
 
 
 
@@ -498,5 +534,3 @@ if __name__ == "__main__":
     window = FileLoaderGUI(user_id)
     window.show()
     sys.exit(app.exec())
-
-    

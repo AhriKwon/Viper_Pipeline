@@ -21,6 +21,18 @@ class MayaLoader:
         else:
             print("Maya 실행 파일을 찾을 수 없습니다.")
 
+
+    @staticmethod
+    def open_new_scene_maya():
+        """기존 Maya를 종료하지 않고 새로운 Maya 창을 띄움"""
+        maya_executable = MayaLoader.find_maya_path()
+        if maya_executable:
+            maya_command = f'bash -c "source /home/rapa/env/maya.env && {maya_executable}"'
+            subprocess.Popen(maya_command, shell=True)
+            print(f"알림", "새로운 Maya 창이 열렸습니다.")
+        else:
+            print(f"오류", "Maya 실행 파일을 찾을 수 없습니다.")
+
     @staticmethod
     def find_maya_path():
         """Maya 실행 파일 경로 찾기"""
