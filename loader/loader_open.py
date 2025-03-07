@@ -35,7 +35,8 @@ from PySide6 import QtWidgets, QtGui, QtCore
 
 #  ShotGrid API 파일 가져오기
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
-from shotgrid_connector import ShotGridConnector
+from shotgrid_manager import ShotGridManager
+manager = ShotGridManager()
 
 
 class FileLoaderGUI(QtWidgets.QMainWindow):
@@ -91,14 +92,15 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
         # 퍼블리시된 파일 불러오기
         self.load_published_files()
+        
 
     def load_published_files(self):
         """샷그리드의 user에게 퍼블리시된 파일을 불러옴"""
         self.file_list.clear()
-        tasks = ShotGridConnector.get_user_tasks(self.user_id)
+        tasks = manager.get_tasks_by_user(user_id)
 
         for task in tasks:
-            files = ShotGridConnector.get_publishes_for_task(task["id"])
+            files = manager.get_publishes_for_task(task["id"])
             if not files:
                 continue
 
