@@ -40,9 +40,10 @@ class ShotGridManager:
             for task in asset.get("tasks", []):
                 tasks.append(task)
 
-        for shot in project.get("shots", []):
-            for task in shot.get("tasks", []):
-                tasks.append(task)
+        for sequence in project.get("sequences", []):
+            for shot in sequence.get("shots", []):
+                for task in shot.get("tasks", []):
+                    tasks.append(task)
 
         return tasks
 
@@ -61,10 +62,11 @@ class ShotGridManager:
                     if any(assignee["id"] == user_id for assignee in task.get("task_assignees", [])):
                         tasks.append(task)
 
-            for shot in project.get("shots", []):
-                for task in shot.get("tasks", []):
-                    if any(assignee["id"] == user_id for assignee in task.get("task_assignees", [])):
-                        tasks.append(task)
+            for sequence in project.get("sequences", []):
+                for shot in sequence.get("shots", []):
+                    for task in shot.get("tasks", []):
+                        if any(assignee["id"] == user_id for assignee in task.get("task_assignees", [])):
+                            tasks.append(task)
 
         return tasks
     
@@ -93,10 +95,11 @@ class ShotGridManager:
                     if task["id"] == task_id:
                         return task
 
-            for shot in project.get("shots", []):
-                for task in shot.get("tasks", []):
-                    if task["id"] == task_id:
-                        return task
+            for sequence in project.get("sequences", []):
+                for shot in sequence.get("shots", []):
+                    for task in shot.get("tasks", []):
+                        if task["id"] == task_id:
+                            return task
 
         return None  # Task가 존재하지 않을 경우 None 반환
 
