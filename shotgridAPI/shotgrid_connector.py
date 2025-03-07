@@ -125,7 +125,6 @@ class ShotGridAPI:
         특정 Task의 로컬 Work 파일 검색
         """
         name, task_name = task['content'].rsplit('_', 1)
-        print(f"{name}, {task_name}")
 
         search_patterns = [
             f"/nas/show/*/assets/*/{name}/{task_name}/work/*/*/*.*",
