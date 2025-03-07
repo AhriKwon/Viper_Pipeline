@@ -95,14 +95,14 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def set_file_path(self):
         """사용자가 파일 경로를 직접 설정"""
         file_dialog = QtWidgets.QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;All Files (*.*)")
+        file_path, _ = file_dialog.getOpenFileName(self, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;Houdini Files (*.hip *.hiplc);;All Files (*.*)")
 
         if file_path:
             self.file_path_input.setText(file_path)
 
 
     def run_file(self):
-        """설정된 파일 경로를 읽고 Maya 또는 Nuke에서 실행"""
+        """설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행"""
         file_path = self.file_path_input.text().strip()
         
         if not file_path or not os.path.exists(file_path):
@@ -116,6 +116,8 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             self.launch_maya(file_path)
         elif file_path.endswith(".nk"):
             self.launch_nuke(file_path)
+        elif file_path.endswith((".hip", ".hiplc")):
+            self.launch_houdini(file_path)
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "지원되지 않는 파일 형식입니다.")
 
@@ -154,31 +156,50 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
 
     def open_or_create_task_file(self):
-        """Task 파일을 열거나, 없으면 자동으로 생성"""
+        """할당된 Task 파일을 열거나, 없으면 자동으로 생성"""
+
         task_info = self.get_task_info()
         if not task_info:
             QtWidgets.QMessageBox.warning(self, "오류", "Task 정보를 가져올 수 없습니다.")
             return
 
         file_path = self.get_task_file_path(task_info)
+    
+        # 디버깅 로그 추가
+        print(f"생성할 Task 파일 경로: {file_path}")
 
+        # 디렉토리 존재 확인 및 생성
+        directory = os.path.dirname(file_path)
+        if not os.path.exists(directory):
+            print(f"디렉토리가 존재하지 않습니다. 생성 중: {directory}")
+            os.makedirs(directory, exist_ok=True)
+
+        # 파일이 존재하면 새로운 버전 파일 생성
         if os.path.exists(file_path):
-            print(f"Task 파일 존재: {file_path}")
-            self.launch_program(file_path)
-        else:
+            print(f"파일이 이미 존재합니다: {file_path}")
             new_file_path = self.get_next_version_file(file_path)
-            os.makedirs(os.path.dirname(new_file_path), exist_ok=True)
+        else:
+            print(f"파일이 존재하지 않습니다. 새 파일 생성 예정: {file_path}")
+            new_file_path = file_path
 
+        # 빈 파일 생성
+        try:
             with open(new_file_path, "w") as f:
                 f.write("")  # 빈 파일 생성
+            print(f"새로운 Task 파일 생성됨: {new_file_path}")
+        except Exception as e:
+            print(f"파일 생성 실패: {e}")
+            QtWidgets.QMessageBox.warning(self, "오류", f"파일 생성 실패: {e}")
+            return
 
-            print(f"새로운 Task 파일 생성: {new_file_path}")
-            self.launch_program(new_file_path)
+        # 프로그램 실행
+        self.launch_program(new_file_path)
+
 
 
     def get_task_info(self):
         """사용자의 Task 정보를 가져오는 함수"""
-        tasks = manager.get_tasks_by_user(self.user_id)
+        tasks = manager.get_tasks_by_user(user_id)
         if not tasks:
             return None
         return tasks[0]  # 첫 번째 Task를 가져옴
@@ -191,7 +212,14 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         task_name = task_info.get("task", "Unknown")
         ext = "ma" if task_name in ["MDL", "ANM"] else "nk"
 
-        return f"{base_path}/{asset_type}/{asset_name}/{task_name}/work/maya/scenes/{asset_name}_{task_name}_v001.{ext}"
+        # 파일 경로 생성
+        file_path = f"{base_path}/{asset_type}/{asset_name}/{task_name}/work/maya/scenes/{asset_name}_{task_name}_v001.{ext}"
+    
+        # 디버깅 로그 추가
+        print(f"생성된 파일 경로: {file_path}")
+
+        return file_path
+
 
     def get_next_version_file(self, file_path):
         """파일 버전을 자동으로 업그레이드"""
@@ -202,7 +230,9 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             version += 1
             file_path = f"{base[:-3]}v{str(version).zfill(3)}{ext}"
 
+        print(f"새로운 버전 파일 경로: {file_path}")
         return file_path
+
 
     def launch_program(self, file_path):
         """파일 확장자에 따라 Maya 또는 Nuke 실행"""
@@ -526,11 +556,71 @@ print("Maya에서 파일을 Import 했습니다: {file_path}")
         subprocess.run(["bash", "-c", f"source /home/rapa/env/maya.env && {mayapy_path} -c '{import_script}'"], env=env, check=True)
 
 
+
+
+
+    def launch_houdini(self, file_path):
+        """Houdini 실행 후 파일 열기"""
+        houdini_executable = self.find_houdini_path()
+        if houdini_executable:
+            subprocess.Popen([houdini_executable, file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"Houdini에서 파일을 실행했습니다: {file_path}")
+        else:
+            QtWidgets.QMessageBox.warning(self, "오류", "Houdini 실행 파일을 찾을 수 없습니다.")
+
+    def import_houdini(self, file_path):
+        """현재 실행 중인 Houdini에 특정 파일 Import"""
+        if self.is_houdini_running():
+            import_script = f'''
+import hou
+hou.hipFile.load("{file_path}", merge=True)
+print("Houdini에서 파일을 Import 했습니다: {file_path}")
+'''
+            self.send_houdini_command(import_script)
+        else:
+            print("Houdini가 실행 중이지 않습니다. 새로 실행 후 Import 진행.")
+            self.launch_houdini(file_path)
+
+    def is_houdini_running(self):
+        """Houdini 실행 여부 확인"""
+        try:
+            result = subprocess.run(["pgrep", "-f", "houdini"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            return bool(result.stdout.strip())
+        except Exception as e:
+            print(f"Houdini 실행 확인 오류: {e}")
+            return False
+
+    def send_houdini_command(self, command):
+        """Houdini에서 Python 명령 실행"""
+        houdini_executable = self.find_houdini_path()
+        if houdini_executable:
+            try:
+                subprocess.run([houdini_executable, "-c", command], check=True)
+                print(f"Houdini 명령 실행: {command}")
+            except Exception as e:
+                print(f"Houdini 명령 실행 실패: {e}")
+                QtWidgets.QMessageBox.warning(None, "오류", f"Houdini 명령 실행 실패: {e}")
+        else:
+            QtWidgets.QMessageBox.warning(None, "오류", "Houdini 실행 파일을 찾을 수 없습니다.")
+
+    def find_houdini_path(self):
+        """Houdini 실행 파일 경로 찾기"""
+        possible_paths = [
+            "/opt/hfs19.5/bin/houdini",
+            "/usr/local/bin/houdini",
+            "/usr/bin/houdini",
+        ]
+        for path in possible_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                return path
+        return None
+
+
 # 실행
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    user_id = 132  # 실제 사용자 ID
+    user_id = 125 #132  # 실제 사용자 ID
     window = FileLoaderGUI(user_id)
     window.show()
     sys.exit(app.exec())
