@@ -4,8 +4,8 @@ from PySide6.QtGui import QDrag
 from PySide6.QtCore import Qt, QMimeData, QUrl
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
-from shotgrid_connector import ShotGridConnector  # ShotGrid API 연결
-
+from shotgrid_manager import ShotGridManager  # ShotGrid API 연결
+manager = ShotGridManager()
 
 class DragDropHandler(QTableWidget):
     """
@@ -66,18 +66,7 @@ class DragDropHandler(QTableWidget):
         file_paths = []
         for task_id in self.selected_task_ids:
 
-            file = ShotGridConnector.get_publishes_for_task(task_id)[0]
-            # 수정 예정
-            """
-            현재 방식은 클릭한 테이블 위젯의 테스크ID를 인식하고
-            샷그리드API로 퍼블리시 경로를 불러오는 방식 (임시)
-            
-            해당 방법이 아니라 로더를 열 때 샷그리드 API로 정보들을 불러오고
-            각 테스크 셀에 필요한 인포메이션이 정리된 데이터를 따로 저장해서
-            셀을 누르면 그 셀에 해당하는 work 폴더 경로가 연결되게 (LIB 탭일 경우에는 그 LIB폴더로)
-
-            캐시화 (반복해서 API로 조회하는게 아니라 한번에 정보 받아온 후 따로 빼서 저장한 정보에서 조회할수 있게 최적화)
-            """
+            file = manager.get_works_for_task(task_id)[0]
 
             file_path = file.get('path')
             file_paths.append(file_path)
