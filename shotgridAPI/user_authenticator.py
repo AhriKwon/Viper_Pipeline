@@ -1,7 +1,5 @@
-from shotgridAPI.old_shotgrid_connector import ShotGridConnector
-
 from shotgrid_db import ShotgridDB
-from shotgridAPI.old_shotgrid_connector import ShotGridAPI
+from shotgrid_connector import ShotGridAPI
 sg_db = ShotgridDB()
 sg_api = ShotGridAPI()
 
@@ -13,7 +11,7 @@ class UserAuthenticator:
         """
         사용자 로그인 인증
         """
-        user = ShotGridConnector.sg.find_one(
+        user = sg_api.sg.find_one(
             "HumanUser",
             [["login", "is", username]],
             ["id", "name", "permission_rule_set"]
@@ -36,7 +34,7 @@ class UserAuthenticator:
         """
         현재 로그인한 사용자의 역할(Role) 확인
         """
-        user = ShotGridConnector.sg.find_one(
+        user = sg_db.sg.find_one(
             "HumanUser",
             [["id", "is", user_id]],
             ["permission_rule_set"]
