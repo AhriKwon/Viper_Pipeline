@@ -4,7 +4,9 @@ sg_db = ShotgridDB()
 sg_api = ShotGridAPI()
 
 class UserAuthenticator:
-    """ShotGrid 사용자 로그인 및 권한 확인"""
+    """
+    ShotGrid 사용자 로그인 및 권한 확인
+    """
 
     @staticmethod
     def login(username):
@@ -18,12 +20,12 @@ class UserAuthenticator:
         )
 
         if user:
-            # 특정 유저 ID로 해당 유저가 속한 프로젝트 조회
-            user_projects = sg_api.get_user_projects(user['id'])
-            # 유저의 프로젝트 정보를 데이터베이스에 저장
-            for project in user_projects:
-                project_data = sg_api.get_project_details(project["id"])
-                sg_db.save_project_data(project_data)
+            # # 특정 유저 ID로 해당 유저가 속한 프로젝트 조회
+            # user_projects = sg_api.get_user_projects(user['id'])
+            # # 유저의 프로젝트 정보를 데이터베이스에 저장
+            # for project in user_projects:
+            #     project_data = sg_api.get_project_details(project["id"])
+            #     sg_db.save_project_data(project_data)
 
             return user
         else:
