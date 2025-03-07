@@ -100,6 +100,15 @@ class ShotGridManager:
 
         return None  # Task가 존재하지 않을 경우 None 반환
 
+    def get_works_for_task(self, task_id):
+        """
+        특정 Task의 워크 파일 가져오기
+        """
+        task = self.get_task_by_id(task_id)
+        works = task["works"]
+
+        return works
+
     def get_publishes_for_task(self, task_id):
         """
         특정 Task의 퍼블리시 파일 가져오기
