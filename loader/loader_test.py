@@ -240,6 +240,8 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             self.launch_maya(file_path)
         elif file_path.endswith(".nk"):
             self.launch_nuke(file_path)
+        elif file_path.endswith((".hip", ".hiplc")):
+            self.launch_houdini(file_path)
 
 
 
@@ -333,6 +335,7 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
                 return path
         return None
 
+
     def find_nuke_path(self):
         """Nuke 실행 파일 경로 찾기"""
         possible_paths = [
@@ -349,16 +352,18 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
 
 
     def import_file(self):
-        """Maya에서 파일 Import"""
+        """파일 Import"""
         file_path = self.file_path_input.text().strip()
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(self, "오류", "유효한 파일 경로를 입력하세요.")
             return
 
-        if file_path.endswith((".ma", ".mb", ".abc", ".obj")):
+        if file_path.endswith((".ma", ".mb")):
             self.import_maya(file_path)
-        elif file_path.endswith((".nk", ".mov")):
+        elif file_path.endswith((".nk", ".mov", ".abc", ".obj")):
             self.import_nuke(file_path)
+        elif file_path.endswith((".hip", ".hiplc")):
+            self.launch_houdini(file_path)
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "지원되지 않는 파일 형식입니다.")
 
@@ -370,6 +375,7 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
             QtWidgets.QMessageBox.warning(self, "오류", "유효한 파일 경로를 입력하세요.")
             return
         self.create_reference_maya(file_path)            
+
 
     def is_maya_running(self):
         """Maya 실행 여부 확인"""
@@ -395,11 +401,13 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
             print("cmdPort가 비활성화됨")
             return False
 
+
     def enable_maya_cmd_port(self):
         """Maya에서 cmdPort 활성화"""
         print("Maya에서 cmdPort 활성화를 시도합니다...")
         mel_command = 'commandPort -name ":7001" -sourceType "python";'
         self.send_maya_command(mel_command)
+
 
     def send_maya_command(self, command):
         """Maya cmdPort를 통해 명령어 실행 후 응답 확인"""
@@ -430,7 +438,6 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
             QtWidgets.QMessageBox.warning(self, "오류", "Nuke가 실행 중인지 확인하세요.")
 
 
-
     def import_maya(self, file_path):
         """Maya에서 Import 수행"""
         if self.is_maya_running():
@@ -441,42 +448,13 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
 
             if self.is_cmd_port_open():
                 print("`cmdPort` 활성화됨! Maya에서 파일 Import 시도.")
-                
                 self.send_maya_command(f'''
 import maya.cmds as cmds
-import time
-cmds.file("{file_path}", i=True)
 cmds.evalDeferred(lambda: cmds.file("{file_path}", i=True))
-cmds.file("{file_path}", i=True, namespace="imported")
 cmds.evalDeferred(lambda: cmds.refresh())
-time.sleep(2)  # Import가 적용될 시간을 줌
 cmds.evalDeferred(lambda: cmds.file(q=True, modified=True))
 cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었습니다."))
 ''')
-#                 self.send_maya_command(f'''
-# import maya.cmds as cmds
-# cmds.evalDeferred(lambda: cmds.file("{file_path}", i=True))
-# cmds.evalDeferred(lambda: cmds.refresh())
-# cmds.evalDeferred(lambda: print("Import 완료!"))
-# ''')
-#                 self.send_maya_command(f'''
-# import maya.cmds as cmds
-# cmds.file("{file_path}", i=True, namespace="imported")
-# cmds.evalDeferred(lambda: cmds.refresh())
-# cmds.evalDeferred(lambda: print("Import 완료!"))
-# ''')
-#                 self.send_maya_command(f'''
-# import maya.cmds as cmds
-# import time
-# cmds.file("{file_path}", i=True)
-# cmds.refresh()
-# time.sleep(2)  # Import가 적용될 시간을 줌
-# cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었습니다."))
-# ''')
-
-                # mel_command = f"file -import -type 'mayaBinary' '{file_path}';"
-                # self.send_maya_command(f'import maya.mel as mel; mel.eval("{mel_command}")')
-                # self.send_maya_command(f'__import__("maya.cmds").file("{file_path}", i=True)')
             else:
                 print("`cmdPort` 활성화 실패. `mayapy`로 Import 시도.")
                 self.import_with_mayapy(file_path)
@@ -484,8 +462,6 @@ cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었
             print("Maya가 실행 중이 아님. `mayapy`를 사용하여 Import 진행합니다.")
             self.import_with_mayapy(file_path)
 
-
-    
 
     def create_reference_maya(self, file_path):
         """Maya에서 Create Reference 수행"""
@@ -508,9 +484,6 @@ cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었
             self.create_reference_with_mayapy(file_path)
 
         
-
-
-
     def import_with_mayapy(self, file_path):
         """Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Import"""
         mayapy_path = "/usr/autodesk/maya2023/bin/mayapy"
@@ -531,8 +504,6 @@ print("Maya에서 파일을 Import 했습니다: {file_path}")
 
         subprocess.run(["bash", "-c", f"source /home/rapa/env/maya.env && {mayapy_path} -c '{import_script}'"], env=env, check=True)
 
-
-   
 
     def create_reference_with_mayapy(self, file_path):
         """Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Create Reference"""
@@ -620,7 +591,7 @@ print("Houdini에서 파일을 Import 했습니다: {file_path}")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    user_id = 125 #132  # 실제 사용자 ID
+    user_id = 132 #132  # 실제 사용자 ID
     window = FileLoaderGUI(user_id)
     window.show()
     sys.exit(app.exec())
