@@ -273,20 +273,18 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         """Nuke 실행 후 파일 열기"""
         nuke_executable = self.find_nuke_path()
         if nuke_executable:
+            env = os.environ.copy()
+            env["FOUNDRY_LICENSE_FILE"] = "/usr/local/foundry/RLM/nuke.lic"
+            env["RLM_LICENSE"] = "/usr/local/foundry/RLM"
+
             try:
-                print("Nuke 실행 중...")
-
-                # 기존 방식 → 응답이 멈출 가능성 있음
-                # subprocess.run([nuke_executable, file_path], check=True)
-
-                # 해결 방법: subprocess.Popen을 사용하여 비동기 실행
-                subprocess.Popen([nuke_executable, file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
+                subprocess.Popen([nuke_executable, file_path], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print(f"Nuke에서 파일을 실행했습니다: {file_path}")
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "오류", f"Nuke 실행 실패: {e}")
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행 파일을 찾을 수 없습니다.")
+
 
 
     def is_nuke_running(self):
@@ -358,14 +356,26 @@ print("Nuke에서 파일을 Import 했습니다: {file_path}")
             QtWidgets.QMessageBox.warning(self, "오류", "유효한 파일 경로를 입력하세요.")
             return
 
-        if file_path.endswith((".ma", ".mb")):
-            self.import_maya(file_path)
-        elif file_path.endswith((".nk", ".mov", ".abc", ".obj")):
-            self.import_nuke(file_path)
-        elif file_path.endswith((".hip", ".hiplc")):
-            self.launch_houdini(file_path)
-        else:
-            QtWidgets.QMessageBox.warning(self, "오류", "지원되지 않는 파일 형식입니다.")
+        # Maya 실행 중인지 확인 후 import
+        if self.is_maya_running():
+            if file_path.endswith((".ma", ".mb", ".abc", ".obj")):
+                self.import_maya(file_path)
+                return
+
+        # Nuke 실행 중인지 확인 후 import
+        if self.is_nuke_running():
+            if file_path.endswith((".nk", ".mov", ".abc", ".obj")):
+                self.import_nuke(file_path)
+                return
+
+        # Houdini 실행 중인지 확인 후 import
+        if self.is_houdini_running():
+            if file_path.endswith((".hip", ".hiplc", ".abc", ".obj")):
+                self.import_houdini(file_path)
+                return
+
+        # 해당하는 프로그램이 실행 중이지 않을 때 경고 메시지 표시
+        QtWidgets.QMessageBox.warning(self, "오류", "파일을 불러올 프로그램이 실행되지 않았습니다.")
 
 
     def create_reference_file(self):
@@ -591,7 +601,7 @@ print("Houdini에서 파일을 Import 했습니다: {file_path}")
 if __name__ == "__main__":
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    user_id = 132 #132  # 실제 사용자 ID
+    user_id = 132 # 실제 사용자 ID
     window = FileLoaderGUI(user_id)
     window.show()
     sys.exit(app.exec())
