@@ -21,6 +21,7 @@ manager = ShotGridManager()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
 from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
+from final_test import FileLoaderGUI
 # 로더 UI
 import popup
 from Viper_loader_lib import LibraryTab
@@ -165,7 +166,6 @@ class LoadUI(QMainWindow):
 
                 # 리스트 아이템 클릭 시 show_task_details 실행
                 target_list.itemClicked.connect(self.on_item_clicked)
-                target_list.itemClicked.connect(self.show_task_works)
                 
 
             self.update_list_items(self.list_widgets[index])
@@ -244,10 +244,9 @@ class LoadUI(QMainWindow):
         클릭한 테스크의 work파일들을 리스트 위젯에 보여주는 함수
         """
         self.ui.listWidget_works.clear()
-        print(task_id)
+
         # 데이터베이스에서 works 가져오기
         works = manager.get_works_for_task(task_id)
-        print(f"💾 로컬 Work 파일 목록: {works}")
 
         if not works:
             return
@@ -255,48 +254,60 @@ class LoadUI(QMainWindow):
         # works 데이터 추가
         for work in works:
             file_name = work.get("file_name", "Unknown File")  # 파일 이름이 없을 경우 기본값 설정
-            item = QListWidgetItem(file_name)  # 리스트 아이템 생성
-            item.setData(Qt.UserRole, work)  # work 데이터를 저장
+            file_date = work.get("modified_date")
+            
+            # 파일 이름 QLabel
+            label_name = QLabel(file_name)
+            label_name.setAlignment(Qt.AlignLeft)
+            # 파일 날짜 QLabel
+            label_date = QLabel(file_date)
+            label_date.setAlignment(Qt.AlignRight)
+            # H_layout에 라벨 추가
+            H_layout = QHBoxLayout()
+            H_layout.addWidget(label_name)
+            H_layout.addWidget(label_date)
+            # 레이아웃을 QWidget에 설정
+            item_widget = QWidget()
+            item_widget.setLayout(H_layout)
 
+            item = QListWidgetItem()  # 리스트 아이템 생성
+            item.setSizeHint(item_widget.sizeHint())
+            # QListWidget에 아이템 추가 후 위젯 설정
             self.ui.listWidget_works.addItem(item)
+            self.ui.listWidget_works.setItemWidget(item, item_widget)
+            item.setData(Qt.UserRole, work)
 
     def run_file(self):
         """
         설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
         """
-        selected_items = [widget.currentItem() for widget in self.list_widgets if widget.currentItem()]
+        selected_items = [self.ui.listWidget_works.currentItem()]
+        print(f"선택된 아이템: {selected_items}")
         
         for selected_item in selected_items:
-            task_data = selected_item.data(Qt.UserRole)
-            if not task_data:
-                print("Task 데이터를 찾을 수 없습니다.")
+            work_data = selected_item.data(Qt.UserRole)
+            if not work_data:
+                popup.show_message("error", "오류", "work 데이터를 찾을 수 없습니다.")
                 continue
 
-            task_id = task_data["id"]
-            file_paths = manager.get_works_for_task(task_id)
+            work_name = work_data["file_name"]
 
-            if not file_paths:
-                popup.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
-                continue
+            file_path = work_data["path"]
+            print(f"파일 경로: {file_path}")
 
-            file_path = file_paths[-1]["path"]
             if not file_path:
-                popup.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
+                popup.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
                 continue
-        
-        if not file_path or not os.path.exists(file_path):
-            popup.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
-            return
 
         # 경로를 절대 경로로 변환
         file_path = os.path.abspath(file_path)
 
         if file_path.endswith((".ma", ".mb")):
             MayaLoader.launch_maya(file_path)
-        elif file_path.endswith(".nk"):
+        elif file_path.endswith((".nk", ".nknc")):
             NukeLoader.launch_nuke(file_path)
-        # elif file_path.endswith((".hip", ".hiplc")):
-        #     self.launch_houdini(file_path)
+        elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
+            FileLoaderGUI.launch_houdini(file_path)
         else:
             popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
