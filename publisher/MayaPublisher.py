@@ -1,6 +1,6 @@
 import os
 import sys
-import shutil
+import json
 from pathlib import Path
 import maya.cmds as cmds
 from GeneratingPath import FilePath
@@ -8,7 +8,10 @@ from convert_to_mov import FileConverter
 sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
-
+    """
+    Maya Publishing Process Managing Class
+    씬 저장, Alembic 내보내기, Playblast 생성, 그리고 FFmpeg을 통한 mov 컨버팅 포함(객체 파일로 수행) 
+    """
     def __init__(self, shot_data):
     # 기본값을 설정한 후 shot_data에서 받은 값으로 덮어쓰기
         default_data = {
@@ -55,21 +58,103 @@ class MayaPublisher():
         self.prod_path = publish_paths["maya"]["mov_product"]
         self.abc_path = publish_paths["maya"]["abc_cache"]
         
+        # LDV 작업일 경우에만 쉐이더 파일 경로 추가
+        if self.task_type == "LDV":
+            self.shader_ma_path = publish_paths["maya"].get("shader_ma", None)
+            self.shader_json_path = publish_paths["maya"].get("shader_json", None)
+
+            if not self.shader_ma_path or not self.shader_json_path:
+                print("Warning: Shader export paths are not defined in the publishing paths.")
+        
     def publish(self): # Task 유형에 맞는 퍼블리쉬 실행
-        if self.task_type in ["MDL", "RIG", "TXT"]:
+        if self.task_type in ["MDL", "RIG", "LDV"]:
             self._publish_asset()
+            if self.task_type == "LDV":
+                self._publish_shader()
         elif self.task_type in ["MM", "LAY", "ANM"]:
             self._publish_shot()
+    
+    def export_shader(ma_output_path):
+        """
+        현재 선택된 오브젝트에 연결된 쉐이더를 포함한 .ma 파일로 저장
+        """
+        selection = cmds.ls(selection=True) # 현재 선택된 오브제 목록 가져오기
+        
+        if not selection: # 선택된 오브제 없으면 오류 메세지 출력
+            print("Error: No object selected.")
+            return
+       
+        # 선택된 오브제와 연결된 쉐이딩 엔진(Shading Engine) 찾기
+        shading_engines = cmds.listConnections(selection, type="shadingEngine")
+        if not shading_engines: # 쉐이딩 엔진 없으면 오류 메세지 출력
+            print("Error: No shading engine connected.")
+            return
+        
+        # copy network, and save as new file : 현재 마야 파일을 새 경로에 저장(ASCII)
+        cmds.file(rename=ma_output_path) # 파일 이름 변경
+        cmds.file(save=True, type="mayaAscii") # ASCII 파일 형식으로 저장
+        print(f"Shader exported to : {ma_output_path}") # 저장 완료 메세지 출력
+    
+    def save_shader_info_json(json_output_path):
+        """
+        현재 선택된 오브젝트에 연결된 쉐이더 정보를 JSON으로 저장
+        """
+        selection = cmds.ls(selection=True) # 선택된 오브제 목록 가져오기
+        if not selection:
+            print("Error: No object selected.") # 선택된 오브제 없으면 오류 메세지 출력
+            return
+        
+        # 선택된 오브제와 연결된 쉐이딩 엔진 찾기
+        shading_engines = cmds.listConnections(selection, type="shadingEngine")
+        if not shading_engines: # 쉐이딩 엔진이 없으면 오류 메세지 출력
+            print("Error: No shading engine connected.")
+            return
+        
+        # 쉐이더 정보 저장할 딕셔너리 생성
+        shader_info = {}
+        for sg in shading_engines: # 각 쉐이딩 엔진에 대해 반복
+            # 쉐디딩 엔진(SG)과 연결된 쉐이더 찾기
+            shaders = cmds.listConnections(sg + ".surfaceShader")
+            if shaders: # 쉐이더가 존재하면 딕셔너리에 저장
+                shader_info[sg] =  shaders[0] # {쉐이딩 엔진 : 쉐이더 이름} 형태로 저장
 
+        # JSON file 로 저장
+        with open(json_output_path, "w") as f:
+            json.dump(shader_info, f, indent=4) # JSON 파일로 저장 (들여쓰기 포함)
+
+        print(f"Shader information saved to: {json_output_path}") # 저장 완료 메세지 출력
+
+    
+    def _publish_shader(self): # LDV에서 하나의 오브제에 연결된 쉐이더 값 받아와서 퍼블리쉬
+        """
+        LDV 퍼블리쉬 : 쉐이더를 .ma & .json 파일로 저장
+        """
+        os.makedirs(os.path.dirname(self.shader_ma_path), exist_ok=True) # 폴더가 없으면 자동으로 생성
+        
+        # 쉐이더를 .ma 파일로 저장
+        self.export_shader(self.shader_ma_path)
+
+        # 쉐이더 정보를 Json 파일로 저장
+        self.save_shader_info_json(self.shader_json_path)
+        print(f"Shader Publishing completed: {self.shader_ma_path}, {self.shader_json_path}")
+        
     def _publish_asset(self): # MDL, RIG, TXT 퍼블리쉬 실행
 
         # Maya 씬 저장 (.ma)
+        if not os.path.exists(self.scene_path):
+            os.makedirs(self.scene_path)
         cmds.file(rename=self.scene_path)
         cmds.file(save=True, type="mayaAscii")
+
+        print ("publish asset")
 
         # Alembic Cache 만들기
         self.save_alembic()
 
+        print ("alembic 나옴.")
+
+
+        print ("턴테이블 만들기 시작")
         # Playblast 만들기
         self.make_turntable()
         self.playblast_publish(self.options, self.plb_path)
@@ -78,9 +163,12 @@ class MayaPublisher():
 
         """ playblast 실행 후 사용한 카메라 그룹을 지워주는 코드 하나 추가"""
         cmds.delete("turntable_cam_grp")
+
     def _publish_shot(self):        
         # MM, LAY, ANM 퍼블리쉬 실행
 
+        if not os.path.exists(self.scene_path):
+            os.makedirs(self.scene_path)
         # Maya 씬 저장 (.ma)
         cmds.file(rename=self.scene_path)
         cmds.file(save=True, type="mayaAscii")
@@ -110,8 +198,7 @@ class MayaPublisher():
             return
 
         # Alembic 내보낼 그룹 필터링 (자식이 있는 transform만 선택)
-        groups = cmds.listRelatives(all_transforms, parent=True) or []
-        groups = list(set(groups))
+        groups = list(set(cmds.listRelatives(all_transforms, parent=True) or []))
         if not groups:
             print("Error: Alembic 내보낼 그룹이 없습니다.")
             return
@@ -133,6 +220,29 @@ class MayaPublisher():
             
         except Exception as e:
             print(f"Error: Alembic 내보내기 실패 - {str(e)}")
+
+    def playblast_publish(self, options, publish_path):
+        """UI 옵션 리스트에 따라 Playblast 실행"""
+        for option in options:
+            self.set_viewport_option(option)
+            type_name = option.replace(" ", "")
+            in_name = f"_{type_name}.mov"
+            in_path = publish_path+in_name
+            out_name = f"_{type_name}_v{self.version:03d}.mov"
+            out_path = publish_path+out_name
+
+            # Playblast 실행
+            self.export_playblast(in_path)
+
+            # FFmpeg을 사용한 변환 및 레터박스 + 오버레이 적용
+
+            FileConverter.convert_with_overlay_and_letterbox(in_path, out_path, "test", "test1", "test3", "test4", 1, 100)
+            
+            # 원본 Playblast 파일 삭제
+            if os.path.exists(in_path):
+                os.remove(in_path)
+            
+            print(f"Final MOV 생성 완료: {out_path}")
 
     def make_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
         """
@@ -201,6 +311,7 @@ class MayaPublisher():
         scene_cameras = [cam for cam in all_cameras if "persp" not in cam and "top" not in cam and "side" not in cam and "front" not in cam]
 
         if not scene_cameras:
+        
             self.make_turntable()
             all_cameras = cmds.ls(type="camera", long=True)
             scene_cameras = [cam for cam in all_cameras if "persp" not in cam and "top" not in cam and "side" not in cam and "front" not in cam]
@@ -214,25 +325,6 @@ class MayaPublisher():
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
         self.save_playblast(publish_path)
-
-    def playblast_publish(self, options, publish_path):
-        """UI 옵션 리스트에 따라 Playblast 실행"""
-        for option in options:
-            self.set_viewport_option(option)
-            
-            if option == "wireframe on shaded":
-                type_name = "WireOnShaded"
-            elif option == "wireframe on textured":
-                type_name = "WireOnTextured"
-            else:
-                type_name = option
-
-            file_name = f"_{type_name}_v{self.version:03d}.mov"
-            full_path = publish_path+file_name
-
-            print(full_path)
-
-            self.export_playblast(full_path)
     
 # if __name__ == "__main__":
 #     maya_pub = MayaPublisher()
