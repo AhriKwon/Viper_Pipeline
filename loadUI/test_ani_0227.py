@@ -5,10 +5,12 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile, Qt, QPropertyAnimation, QRect, QTimer, QMimeData, QUrl
-from PySide6.QtGui import QPixmap, QColor, QDrag
+from PySide6.QtGui import QPixmap, QColor, QDrag, QIcon
 import sys, os, glob
 from shotgun_api3 import Shotgun
 from functools import partial 
+from PySide6.QtCore import Qt
+
 
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
@@ -22,6 +24,9 @@ from NukeLoader import NukeLoader
 
 import popup
 
+
+
+
  #============================================================================================
  #================================로그인 창 : LoginWindow==============================================
 
@@ -30,6 +35,7 @@ class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.load_ui()
+
     
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -43,13 +49,56 @@ class LoginWindow(QDialog):
 
         # 로그인 창 크기 조정 
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(600, 700)
+        self.resize(734, 491)
+        # # 창 프레임 제거
+        # self.setWindowFlags(Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+
+        # 창 배경을 검정색으로 설정하여 투명도 문제 해결
+        self.setStyleSheet("background-color: black; border: none;")
+
         
-        
+                        
+
+        self.label_background = self.ui.findChild(QLabel, "label_background")
+        self.label_id = self.ui.findChild(QLabel, "label_id")
         self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
         self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
+        self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help")
+
+        image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
+        self.label_background.setPixmap(QPixmap(image_path))
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        image_path = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인
+        self.label_id.setPixmap(QPixmap(image_path))
+        self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
        
         self.pushButton_login.clicked.connect(self.attempt_login)
+
+    def resizeEvent(self, event):
+   
+        self.label_background.setGeometry(0, 0, self.width(), self.height())
+        current_directory = os.path.dirname(__file__)
+
+        # 원본 이미지를 직접 가져와서 크기 조정 (고화질 유지)
+        pixmap = QPixmap(f"{current_directory}/forui/Group 3994.png")
+
+        # QLabel 크기에 맞게 고품질 리사이징 적용
+        self.label_background.setPixmap(
+            pixmap.scaled(
+                self.label_background.size(),  
+                Qt.KeepAspectRatioByExpanding,  # 원본 비율 유지하면서 확장
+                Qt.SmoothTransformation  # 고품질 스케일링 적용
+            )
+        )
+
+        super().resizeEvent(event)
+        
+
 
     # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
     def attempt_login(self):
@@ -68,6 +117,45 @@ class LoginWindow(QDialog):
         else:
             popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
             return
+
+class ImageListWidget(QListWidget):
+        def __init__(self, parent=None, image_paths=[]):
+            super().__init__(parent)
+
+            # 리스트 배경을 투명하게 설정
+            self.setStyleSheet("""
+                QListWidget {
+                    background: transparent;
+                    border: none;
+                }
+                QListWidget::item {
+                    background: transparent;
+                    border: none;
+                }
+            """)
+
+            # 리스트 아이템을 PNG 이미지로 추가
+            for image_path in image_paths:
+                self.add_image_item(image_path)
+
+        def add_image_item(self, image_path):
+            """QListWidgetItem을 PNG 이미지로 대체"""
+            item = QListWidgetItem(self)  # 리스트 아이템 생성
+            item_widget = QWidget()  # 아이템을 담을 위젯 생성
+            layout = QVBoxLayout()
+
+            # QLabel을 사용하여 이미지 표시
+            label = QLabel()
+            pixmap = QPixmap(image_path)
+            label.setPixmap(pixmap)
+            label.setScaledContents(True)  # 크기 조정 가능하도록 설정
+
+            layout.addWidget(label)
+            item_widget.setLayout(layout)
+
+            item.setSizeHint(pixmap.size())  # 아이템 크기 설정
+            self.addItem(item)
+            self.setItemWidget(item, item_widget)  # 아이템을 이미지 위젯으로 대체
 
 
  #============================================================================================
@@ -90,6 +178,49 @@ class LoadUI(QMainWindow):
 
         self.pushButton_open = self.ui.findChild(QPushButton, "pushButton_open")
         self.ui.pushButton_open.clicked.connect(self.loadmayanuke) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
+
+        # my task ///////////////////뒷배경 이미지 설정 /////////////////////////////////
+        self.label = self.ui.findChild(QLabel, "label")
+        self.label_bar = self.ui.findChild(QLabel,"label_bar")
+        self.listWidget_wtg = self.ui.findChild(QListWidget, "listWidget_wtg")
+        self.listWidget_ip = self.ui.findChild(QListWidget, "listWidget_ip")
+        self.listWidget_fin = self.ui.findChild(QListWidget, "listWidget_fin")
+
+        current_directory = os.path.dirname(__file__)
+        image_path = f"{current_directory}/forui/verbig.png"
+      
+        self.label.setPixmap(QPixmap(image_path))
+        self.label.setScaledContents(True)  
+
+        image_path_2 = f"{current_directory}/forui/barui.png" 
+        self.label_bar.setPixmap(QPixmap(image_path_2))
+        self.label_bar.setScaledContents(True) 
+
+        image_path_3 = f"{current_directory}/forui/list1.png"
+        self.listWidget_wtg = ImageListWidget(self, [
+            image_path_3
+        ])
+        # ✅ listWidget_wtg가 QTabWidget 내부의 특정 탭에서만 존재하도록 설정
+        tab_1 = self.ui.tabWidget.widget(0)  # 첫 번째 탭 가져오기
+        self.listWidget_wtg.setParent(tab_1)  # 탭 내부로 이동
+
+        # ✅ 위치 조정: 탭 내부에서 보이게 설정
+        self.listWidget_wtg.setGeometry(20, 50, 270, 500)
+
+        # ✅ 탭이 변경될 때 listWidget_wtg를 자동으로 보이거나 숨기도록 설정
+        self.ui.tabWidget.currentChanged.connect(self.update_listwidget_visibility)
+
+    def update_listwidget_visibility(self, index):
+            """탭이 변경될 때 listWidget_wtg를 현재 탭에서만 보이도록 설정"""
+            if index == 0:  # 첫 번째 탭일 때만 보이게
+                self.listWidget_wtg.show()
+            else:
+                self.listWidget_wtg.hide()  # 다른 탭에서는 숨김
+            
+
+
+
+
 
 
   #====================================loadui 로드=======================================
@@ -118,27 +249,21 @@ class LoadUI(QMainWindow):
 
         # 클릭 이벤트 전에는 숨기기 
         self.ui.tabWidget_info.hide()
+    
 
         # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
         list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
-        row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
+        # row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
+
+       
 
         """
         리스트 위젯에 디자인이나 애니메이션 넣는게 필요하면 여기에 추가할 수 있을 것 같아요~!
         리스트라 그런건지는 모르겠는데 누르면 구멍 뚤리는? 배경 사라지는? 현상이 생김
         디자인작업 할 때 고려하면서 문제 해결해줄 수 있으면 좋을 것 같아욥
         """
-        # 행이 될 3개의 listwidget (색, 형태 조정)
-        for i, list_widget in enumerate(self.list_widgets):
-            list_widget.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
-            # list_widget.setSpacing(10)
-        
-        """
-        아래 디자인도 임시로 맞춰 넣어둔거라 조절 해주시면 좋을 것 같음
-        """
-        for i, list_label in enumerate(list_labels):
-            list_label.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
+    
 
         # 리스트 위젯 드래그 및 드랍 활성화 설정
         self.ui.listWidget_wtg.setDragEnabled(True)    # 0번 리스트에서 드래그 가능
@@ -204,44 +329,6 @@ class LoadUI(QMainWindow):
             popup.show_message("error", "오류", "부여받은 Task가 없습니다")
 
 
-    #=============================ListWidget 애니메이션 추가====================================
-
-
-    # def animate_list_widgets(self):
-    #     delay = 400  # 0.4초 간격으로 순차적 애니메이션 실행 
-
-    #     for index, list_widget in enumerate(self.list_widgets):
-    #         QTimer.singleShot(index * delay, lambda lw=list_widget: self.animate_widget(lw, duration=600))
-
-
-    #=============================애니메이션 적용=============================================
-
-
-    # def animate_widget(self, widget, duration=600):
-    #     start_y = widget.y() + 40
-    #     end_y = widget.y()  
-
-    #     anim = QPropertyAnimation(widget, b"geometry")
-    #     anim.setDuration(duration)  
-
-    #     # (고정 : x 좌표, 넓이, 길이/   이동: y좌표 )
-    #     anim.setStartValue(QRect(widget.x(), start_y, widget.width(), widget.height()))
-    #     anim.setEndValue(QRect(widget.x(), end_y, widget.width(), widget.height()))
-
-
-    #     self.animations.append(anim)  
-    #     anim.start()
-
-    #     effect = QGraphicsOpacityEffect()
-    #     widget.setGraphicsEffect(effect)
-    #     # 투명도 조절 [시작(0) > (1)]
-    #     fade_anim = QPropertyAnimation(effect, b"opacity")
-    #     fade_anim.setDuration(duration)
-    #     fade_anim.setStartValue(0.0)
-    #     fade_anim.setEndValue(1.0)
-    #     self.effects.append(effect)  
-    #     self.animations.append(fade_anim)  
-    #     fade_anim.start()
 
     #=============================GroupBox를 ListWidget에 추가======================================
 
@@ -277,10 +364,7 @@ class LoadUI(QMainWindow):
                 layout = QVBoxLayout()
 
                 label_thumbnail = QLabel()
-                # if thumbnail_url:
-                #     pixmap = QPixmap(thumbnail_url)
-                #     label_thumbnail.setPixmap(pixmap.scaled(120, 120, Qt.AspectRatioMode.KeepAspectRatio))
-                # layout.addWidget(label_thumbnail, alignment=Qt.AlignCenter)
+            
 
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
@@ -379,6 +463,9 @@ class LoadUI(QMainWindow):
             else:
                 print(f"지원되지 않는 파일 유형: {file_path}")
 
+ #//////////////////////////////////////listwidget ui 설정용 ////////////////
+
+    
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>520</width>
-    <height>531</height>
+    <width>734</width>
+    <height>491</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -23,69 +23,222 @@
    <iconset>
     <normaloff>:/icon_email/다운로드/png/email _basic.png</normaloff>:/icon_email/다운로드/png/email _basic.png</iconset>
   </property>
-  <layout class="QHBoxLayout" name="horizontalLayout">
-   <item>
-    <widget class="QGroupBox" name="groupBox_loginbox">
-     <property name="minimumSize">
-      <size>
-       <width>321</width>
-       <height>311</height>
-      </size>
-     </property>
-     <property name="maximumSize">
-      <size>
-       <width>321</width>
-       <height>311</height>
-      </size>
-     </property>
-     <property name="title">
-      <string/>
-     </property>
-     <widget class="QLineEdit" name="lineEdit_id">
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>160</y>
-        <width>221</width>
-        <height>31</height>
-       </rect>
-      </property>
-     </widget>
-     <widget class="QPushButton" name="pushButton_login">
-      <property name="geometry">
-       <rect>
-        <x>50</x>
-        <y>230</y>
-        <width>221</width>
-        <height>41</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string>Login</string>
-      </property>
-     </widget>
-     <widget class="QLabel" name="label_idicon">
-      <property name="geometry">
-       <rect>
-        <x>60</x>
-        <y>160</y>
-        <width>21</width>
-        <height>31</height>
-       </rect>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-      <property name="pixmap">
-       <pixmap>:/icon_email/다운로드/png/email _basic.png</pixmap>
-      </property>
-      <property name="scaledContents">
-       <bool>true</bool>
-      </property>
-     </widget>
-    </widget>
-   </item>
-  </layout>
+  <widget class="QLabel" name="label_background">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>741</width>
+     <height>491</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>forui/login.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_id">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>250</y>
+     <width>480</width>
+     <height>54</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="pixmap">
+    <pixmap>forui/Group 3995.png</pixmap>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_login">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>340</y>
+     <width>141</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    background-color: #ffffff;  /* 배경색: 흰색 */
+   
+    border-radius: 15px;  /* 모서리를 둥글게 */
+    color: black; /* 글자 색 (흰색 배경이라 검정 추천) */
+    font-size: 14px; /* 글자 크기 */
+    padding: 5px; /* 내부 여백 */
+}
+
+QPushButton:hover {
+    background-color: #2980b9;
+}
+
+
+</string>
+   </property>
+   <property name="text">
+    <string>Login</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="pushButton_help">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>340</y>
+     <width>141</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    color: white;  /* 기본 글자색: 흰색 */
+  
+    border: 1px solid #ffffff;  /* 테두리: 흰색 */
+    border-radius: 15px;  /* 모서리를 둥글게 */
+    font-size: 14px;  /* 글자 크기 */
+    padding: 5px;  /* 내부 여백 */
+}
+
+QPushButton:hover {
+    color: black;  /* Hover 시 글자색: 검정 */
+	background-color: #ffffff; 
+}
+
+
+</string>
+   </property>
+   <property name="text">
+    <string>Help</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="lineEdit_id">
+   <property name="geometry">
+    <rect>
+     <x>130</x>
+     <y>250</y>
+     <width>471</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Droid Sans</family>
+     <pointsize>-1</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLineEdit {
+    background: rgba(0, 0, 0, 0); /* 배경 투명 */
+    border: none;
+    color: #6B82BA;  /* 기본 텍스트 색상 */
+    font-size: 11px; /* 기본 글자 크기 */
+}
+
+/* 사용자가 입력 중일 때 스타일 변경 */
+QLineEdit:focus {
+    color: white;  /* 입력 중에는 흰색 */
+    font-size: 30px; /* 입력 중에는 글자 크기 변경 */
+}
+
+</string>
+   </property>
+   <property name="placeholderText">
+    <string>Please enter your e-mail  </string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>160</y>
+     <width>231</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+
+    font-family: &quot;/home/rapa/Viper/loadUI/pont/public/static/Pretendard-SemiBold.otf&quot;;
+    font-size: 26px;
+
+    color: white;  /* 글자 색상 (흰색) */
+   
+   
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+   </property>
+   <property name="text">
+    <string>LOADER VIPER</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>280</x>
+     <y>210</y>
+     <width>321</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+
+    font-family: &quot;/home/rapa/Viper/loadUI/pont/public/static/Pre-thin.otf&quot;;
+    font-size: 10px;
+
+    color: #A9A9A9;  /* 글자 색상 (흰색) */
+   
+   
+  
+}</string>
+   </property>
+   <property name="text">
+    <string>2025 Team Viper, all rights reserved</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>90</x>
+     <y>40</y>
+     <width>63</width>
+     <height>19</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_4">
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>60</y>
+     <width>101</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel {
+
+    font-family: &quot;/home/rapa/Viper/loadUI/pont/public/static/Pretendard-ExtraLight.otf&quot;;
+    font-size: 10px;
+
+    color: White;  /* 글자 색상 (흰색) */
+   
+   
+  
+}</string>
+   </property>
+   <property name="text">
+    <string>Load to Shotgrid</string>
+   </property>
+  </widget>
  </widget>
  <resources>
   <include location="../../../resources.qrc"/>
