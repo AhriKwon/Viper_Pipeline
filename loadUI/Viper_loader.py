@@ -84,13 +84,17 @@ class LoadUI(QMainWindow):
         self.effects = []
         self.load_ui()
         
+        """My Task tab"""
         self.login_and_load_tasks()
 
-        self.setGeometry(100, 100, 1800, 1000)
-        self.resize(1000, 650)
+        """Lib tab"""
+        self.library_manager = LibraryTabManager(self.ui)
 
-        self.pushButton_open = self.ui.findChild(QPushButton, "pushButton_open")
-        self.ui.pushButton_open.clicked.connect(self.loadmayanuke) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
+        # self.setGeometry(100, 100, 1800, 1000)
+        # self.resize(1000, 650)
+
+        """이벤트"""
+        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
@@ -109,7 +113,6 @@ class LoadUI(QMainWindow):
         self.setCentralWidget(self.ui)
         self.ui.show()
 
-        """My Task tab"""
         # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
         list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
@@ -121,10 +124,6 @@ class LoadUI(QMainWindow):
         
         for i, list_label in enumerate(list_labels):
             list_label.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
-
-
-        """Lib tab"""
-        self.library_manager = LibraryTabManager(self.ui)
 
 
 #=============================로그인, task 목록을 가져오는 함수====================================
@@ -236,12 +235,12 @@ class LoadUI(QMainWindow):
 
         self.ui.tabWidget_info.show()
 
-    def loadmayanuke(self):
+    def run_file(self):
         """
-        선택된 Task의 파일을 열기
+        설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
         """
         selected_items = [widget.currentItem() for widget in self.list_widgets if widget.currentItem()]
-
+        
         for selected_item in selected_items:
             task_data = selected_item.data(Qt.UserRole)
             if not task_data:
@@ -250,28 +249,31 @@ class LoadUI(QMainWindow):
 
             task_id = task_data["id"]
             file_paths = manager.get_works_for_task(task_id)
-            count = len(file_paths)-1
 
             if not file_paths:
-                print(f"Task {task_id}에 연결된 파일이 없습니다.")
+                popup.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
                 continue
 
-            file_path = file_paths[count]["path"]
+            file_path = file_paths[-1]["path"]
             if not file_path:
-                print(f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
+                popup.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
                 continue
+        
+        if not file_path or not os.path.exists(file_path):
+            popup.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
+            return
 
-            # 파일 확장자에 따라 Maya 또는 Nuke 실행
-            if file_path.endswith((".ma", ".mb")):
-                print(f"Maya에서 열기: {file_path}")
-                MayaLoader.launch_maya(file_path)  
+        # 경로를 절대 경로로 변환
+        file_path = os.path.abspath(file_path)
 
-            elif file_path.endswith(".nk"):
-                print(f"Nuke에서 열기: {file_path}")
-                NukeLoader.launch_nuke(file_path)  
-
-            else:
-                print(f"지원되지 않는 파일 유형: {file_path}")
+        if file_path.endswith((".ma", ".mb")):
+            MayaLoader.launch_maya(file_path)
+        elif file_path.endswith(".nk"):
+            NukeLoader.launch_nuke(file_path)
+        # elif file_path.endswith((".hip", ".hiplc")):
+        #     self.launch_houdini(file_path)
+        else:
+            popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
 
 #=============================Lib탭 테이블 위젯 생성====================================
