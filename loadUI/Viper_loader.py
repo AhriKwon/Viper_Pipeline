@@ -91,9 +91,6 @@ class LoadUI(QMainWindow):
         """Lib tab"""
         self.library_manager = LibraryTab(self.ui)
 
-        # self.setGeometry(100, 100, 1800, 1000)
-        # self.resize(1000, 650)
-
         """이벤트"""
         self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
 
