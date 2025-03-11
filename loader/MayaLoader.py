@@ -176,3 +176,4 @@ print("Maya에서 Reference 파일을 불러왔습니다: {file_path}")
 '''
 
         subprocess.run(["bash", "-c", f"source /home/rapa/env/maya.env && {mayapy_path} -c '{import_script}'"], env=env, check=True)
+

@@ -2,7 +2,10 @@ import os
 import sys
 import subprocess
 import socket
-
+import xmlrpc.server
+import xmlrpc.client
+# import nuke
+# import hou
 from PySide6 import QtWidgets, QtGui, QtCore
 
 #  ShotGrid API 파일 가져오기
@@ -55,7 +58,6 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         self.import_button.clicked.connect(self.import_file)
         button_layout.addWidget(self.import_button)
 
-        layout.addLayout(button_layout)
 
         self.reference_button = QtWidgets.QPushButton("파일 Reference")
         self.reference_button.clicked.connect(self.create_reference_file)
@@ -96,7 +98,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def set_file_path(self):
         """사용자가 파일 경로를 직접 설정"""
         file_dialog = QtWidgets.QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;Houdini Files (*.hip *.hiplc);;All Files (*.*)")
+        file_path, _ = file_dialog.getOpenFileName(self, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;Houdini Files (*.hip *.hiplc *.hipnc);;All Files (*.*)")
 
         if file_path:
             self.file_path_input.setText(file_path)
@@ -121,6 +123,105 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             self.launch_houdini(file_path)
         else:
             QtWidgets.QMessageBox.warning(self, "오류", "지원되지 않는 파일 형식입니다.")
+
+
+    def launch_houdini(self, file_path):
+        """Houdini 실행 후 파일 열기"""
+        houdini_executable = self.find_houdini_path()
+        if houdini_executable:
+            subprocess.Popen([houdini_executable, file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+            print(f"Houdini에서 파일을 실행했습니다: {file_path}")
+        else:
+            QtWidgets.QMessageBox.warning(self, "오류", "Houdini 실행 파일을 찾을 수 없습니다.")
+
+    def import_houdini(self, file_path):
+        """Houdini에서 파일을 Import"""
+        if not os.path.exists(file_path):
+            print(f"파일이 존재하지 않습니다: {file_path}")
+            return
+
+        houdini_python = "/opt/hfs20.5.487/bin/hython"
+
+        # Houdini 실행 환경 설정
+        env = os.environ.copy()
+        env["HOUDINI_MAJOR_RELEASE"] = "20"
+        env["HOUDINI_VERSION"] = "20.5.487"
+        env["HOUDINI_PATH"] = "/opt/hfs20.5.487"
+        env["PATH"] = f"/opt/hfs20.5.487/bin:{env['PATH']}"
+        env["LD_LIBRARY_PATH"] = f"/opt/hfs20.5.487/dsolib:{env.get('LD_LIBRARY_PATH', '')}"
+
+        # Houdini Import 실행 스크립트 생성
+        script_path = "/tmp/import_houdini.py"
+        script_content = f'''import hou
+    hou.hipFile.merge("{file_path}")
+    print("Houdini에서 파일을 import 했습니다: {file_path}")
+    '''
+
+        # Python 스크립트 생성 (들여쓰기 문제 해결)
+        with open(script_path, "w", encoding="utf-8") as script_file:
+            script_file.write(script_content)
+
+        # Houdini Python 실행 (houdini_setup을 로드한 후 실행)
+        command = f'''
+        source /opt/hfs20.5.487/houdini_setup && {houdini_python} {script_path}
+        '''
+
+        try:
+            result = subprocess.run(
+                ["/bin/bash", "-c", command],  # Bash를 사용하여 실행
+                check=True,
+                capture_output=True,
+                text=True,
+                env=env  # Houdini 환경변수 적용
+            )
+            print(f"Houdini Import 완료\n출력: {result.stdout}")
+
+        except subprocess.CalledProcessError as e:
+            print(f"Houdini Import 실패: {e}\n출력: {e.stdout}\n오류 메시지: {e.stderr}")
+
+
+    def is_houdini_running(self):
+        """Houdini 실행 여부 확인"""
+        try:
+            result = subprocess.run(["pgrep", "-f", "houdini"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            return bool(result.stdout.strip())
+        except Exception as e:
+            print(f"Houdini 실행 확인 오류: {e}")
+            return False
+
+    def find_houdini_path(self):
+        """Houdini 실행 파일 경로 찾기"""
+        possible_paths = [
+            "/opt/hfs20.5.487/bin/houdini",
+            "/usr/local/bin/houdini",
+            "/usr/bin/houdini",
+        ]
+        for path in possible_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                return path
+        return None
+
+
+
+    def send_houdini_command(command):
+        """Houdini의 hserver를 통해 외부에서 Python 명령 실행"""
+        houdini_command = f"/opt/hfs20.5.487/bin/hython -c '{command}'"
+        result = subprocess.run(houdini_command, shell=True, capture_output=True, text=True)
+        
+        if result.returncode == 0:
+            print(f"Houdini에서 명령 실행 성공:\n{result.stdout}")
+        else:
+            print(f"Houdini 명령 실행 실패:\n{result.stderr}")
+
+    # send_houdini_command("import hou; hou.hipFile.load('/home/rapa/test.hipnc', suppress_save_prompt=True)")
+
+    def import_houdini_file(file_path):
+        """Houdini에서 외부 파일을 Import"""
+        send_houdini_command(f"import hou; hou.hipFile.merge('{file_path}')")
+    
+    # import_houdini_file("/home/rapa/test_import.hipnc")
+
+
 
 
     def open_selected_file(self, item):
@@ -274,48 +375,31 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
     def import_nuke(self, file_path):
         """현재 실행 중인 Nuke에 특정 파일 Import"""
-        """Nuke에서 특정 .nk 파일을 Import"""
-        
-        if not os.path.exists(file_path):
-            print(f"오류: 파일이 존재하지 않습니다: {file_path}")
-            return
+        nuke_executable = "/usr/local/Nuke15.1v5/Nuke15.1"
 
-        if not file_path.endswith(".nk", ".mov", ".abc", ".obj"):
-            print("지원되지 않는 파일 형식입니다. .nk 파일만 Import 가능합니다.")
-            return
+        if self.is_nuke_running():
+            try:
+                import_script_path = "/home/rapa/import_nuke_script.py"
 
-        try:
-            nuke.scriptReadFile(file_path)  # Nuke에서 .nk 파일을 불러오기
-            print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-        except Exception as e:
-            print(f"Nuke Import 실패: {e}")
+                with open(import_script_path, "w") as script_file:
+                    script_file.write(f'''
+import nuke
+nuke.scriptReadFile("{file_path}")
+print("Nuke에서 파일을 Import 했습니다: {file_path}")
+''')
 
-        
-#         nuke_executable = "/usr/local/Nuke15.1v5/Nuke15.1"
+                env = os.environ.copy()
+                env["NUKE_PATH"] = "/usr/local/Nuke15.1v5"
+                env["LD_LIBRARY_PATH"] = "/usr/local/Nuke15.1v5/lib:" + env.get("LD_LIBRARY_PATH", "")
 
-#         if self.is_nuke_running():
-#             try:
-#                 import_script_path = "/home/rapa/import_nuke_script.py"
+                subprocess.run([nuke_executable, "-t", import_script_path], check=True, env=env, capture_output=True, text=True)
+                print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
 
-#                 with open(import_script_path, "w") as script_file:
-#                     script_file.write(f'''
-# import nuke
-# nuke.scriptReadFile("{file_path}")
-# print("Nuke에서 파일을 Import 했습니다: {file_path}")
-# ''')
-
-#                 env = os.environ.copy()
-#                 env["NUKE_PATH"] = "/usr/local/Nuke15.1v5"
-#                 env["LD_LIBRARY_PATH"] = "/usr/local/Nuke15.1v5/lib:" + env.get("LD_LIBRARY_PATH", "")
-
-#                 subprocess.run([nuke_executable, "-t", import_script_path], check=True, env=env, capture_output=True, text=True)
-#                 print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-
-#             except subprocess.CalledProcessError as e:
-#                 print(f"Nuke 파일 Import 실패: {e}\n출력: {e.stdout}")
-#         else:
-#             print("실행 중인 Nuke가 없습니다. 새로 실행 후 Import 진행.")
-#             subprocess.Popen([nuke_executable, file_path])
+            except subprocess.CalledProcessError as e:
+                print(f"Nuke 파일 Import 실패: {e}\n출력: {e.stdout}")
+        else:
+            print("실행 중인 Nuke가 없습니다. 새로 실행 후 Import 진행.")
+            subprocess.Popen([nuke_executable, file_path])
 
 
     def find_maya_path(self):
@@ -529,94 +613,6 @@ print("Maya에서 Reference 파일을 불러왔습니다: {file_path}")
 
         subprocess.run(["bash", "-c", f"source /home/rapa/env/maya.env && {mayapy_path} -c '{import_script}'"], env=env, check=True)
 
-
-
-    
-
-    def launch_houdini(self, file_path):
-        """Houdini 실행 후 파일 열기"""
-        houdini_executable = self.find_houdini_path()
-        if houdini_executable:
-            subprocess.Popen([houdini_executable, file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            print(f"Houdini에서 파일을 실행했습니다: {file_path}")
-        else:
-            QtWidgets.QMessageBox.warning(self, "오류", "Houdini 실행 파일을 찾을 수 없습니다.")
-
-    
-    
-
-    def import_houdini(self, file_path):
-        """Houdini에서 파일을 Import"""
-        if not os.path.exists(file_path):
-            print(f"파일이 존재하지 않습니다: {file_path}")
-            return
-
-        houdini_seup = "/opt/hfs20.5.487/houdini_setup"
-        houdini_python = "/opt/hfs20.5.487/bin/hython"
-
-        # Houdini 환경변수 직접 설정
-        env = os.environ.copy()
-        env["HOUDINI_MAJOR_RELEASE"] = "20"
-        env["HOUDINI_VERSION"] = "20.5.487"
-        env["HOUDINI_PATH"] = "/opt/hfs20.5.487"
-        env["PATH"] = f"/opt/hfs20.5.487/bin:{env['PATH']}"
-        env["LD_LIBRARY_PATH"] = f"/opt/hfs20.5.487/dsolib:{env.get('LD_LIBRARY_PATH', '')}"
-
-        script_content = f'''import hou
-    hou.hipFile.load("{file_path}", merge=True)
-    print("Houdini에서 파일을 import 했습니다: {file_path}")'''
-
-        script_path = "/tmp/import_houdini.py"
-        with open(script_path, "w") as script_file:
-            script_file.write(script_content)
-
-        try:
-            result = subprocess.run(
-                [houdini_python, script_path], 
-                check=True, 
-                capture_output=True, 
-                text=True,
-                env=env  # Houdini 환경변수 적용
-            )
-            print(f"Houdini Import 완료\n출력: {result.stdout}")
-
-        except subprocess.CalledProcessError as e:
-            print(f"Houdini Import 실패: {e}\n출력: {e.stdout}\n오류 메시지: {e.stderr}")
-
-
-    def is_houdini_running(self):
-        """Houdini 실행 여부 확인"""
-        try:
-            result = subprocess.run(["pgrep", "-f", "houdini"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            return bool(result.stdout.strip())
-        except Exception as e:
-            print(f"Houdini 실행 확인 오류: {e}")
-            return False
-
-    def send_houdini_command(self, command):
-        """Houdini에서 Python 명령 실행"""
-        houdini_executable = self.find_houdini_path()
-        if houdini_executable:
-            try:
-                subprocess.run([houdini_executable, "-c", command], check=True)
-                print(f"Houdini 명령 실행: {command}")
-            except Exception as e:
-                print(f"Houdini 명령 실행 실패: {e}")
-                QtWidgets.QMessageBox.warning(None, "오류", f"Houdini 명령 실행 실패: {e}")
-        else:
-            QtWidgets.QMessageBox.warning(None, "오류", "Houdini 실행 파일을 찾을 수 없습니다.")
-
-    def find_houdini_path(self):
-        """Houdini 실행 파일 경로 찾기"""
-        possible_paths = [
-            "/opt/hfs20.5.487/bin/houdini",
-            "/usr/local/bin/houdini",
-            "/usr/bin/houdini",
-        ]
-        for path in possible_paths:
-            if os.path.exists(path) and os.access(path, os.X_OK):
-                return path
-        return None
 
 
 # 실행
