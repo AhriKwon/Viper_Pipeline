@@ -10,7 +10,13 @@ manager = ShotGridManager()
 
 # # 사용 예시
 # user_name= "owlgrowl0v0@gmail.com"
-# UserAuthenticator.login(user_name)
+# user = UserAuthenticator.login(user_name)
+# # 특정 유저 ID로 해당 유저가 속한 프로젝트 조회
+# user_projects = sg_api.get_user_projects(user['id'])
+# # 유저의 프로젝트 정보를 데이터베이스에 저장
+# for project in user_projects:
+#     project_data = sg_api.get_project_details(project["id"])
+#     sg_db.save_project_data(project_data)
 
 # 특정 프로젝트의 에셋 조회
 project_name = "Viper"
@@ -42,8 +48,8 @@ ip_tasks = manager.filter_tasks_by_status(tasks, "ip")
 print(f"🔍 유저 {user_id}의 ip 테스크 목록: {ip_tasks}")
 
 # 로컬 Work 파일 검색
-# work_files = manager.find_work_files(project_name)
-# print(f"💾 로컬 Work 파일 목록: {work_files}")
+work_files = manager.get_works_for_task(6050)
+print(f"💾 로컬 Work 파일 목록: {work_files}")
 
 # # 특정 Task 설명 업데이트
 # manager.update_task_description(task_id, "이 테스크는 중요함!")

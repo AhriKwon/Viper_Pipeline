@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import (
     QTableWidget, QWidget, QVBoxLayout, QLabel, QCheckBox,
-    QTableWidgetItem
+    QTableWidgetItem,QHeaderView, QSizePolicy, QHBoxLayout
     )
 from PySide6.QtCore import(
     Qt, 
@@ -33,10 +33,16 @@ class LibraryTab:
         테이블 위젯 초기 설정
         """
         self.table_widget.setColumnCount(3)
-        self.table_widget.setColumnWidth(0, 200)  # 폴더 이름 너비
         self.table_widget.setRowCount(0)  # 초기 행 개수 0
         self.table_widget.setEditTriggers(QTableWidget.NoEditTriggers)  # 수정 불가
         self.table_widget.setShowGrid(False)  # 그리드 없애기
+
+        self.table_widget.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch) 
+
+        # 스크롤바 숨기기
+        self.table_widget.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.table_widget.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
         # 테이블 위젯의 헤더 숨기기
         self.table_widget.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
         self.table_widget.verticalHeader().setVisible(False)  # 세로 헤더 숨기기
@@ -97,14 +103,15 @@ class LibraryTab:
         # 셀에 들어갈 위젯 생성
         cell_widget = QWidget()
         layout = QVBoxLayout()
+        H_layout = QHBoxLayout()
 
         # 썸네일 QLabel (기본값 제공)
         label_thumbnail = QLabel()
         if thumbnail_path and os.path.exists(thumbnail_path):
             pixmap = QPixmap(thumbnail_path)
         else:
-            pixmap = QPixmap(80, 80)  # 기본 썸네일 생성
-        label_thumbnail.setPixmap(pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            pixmap = QPixmap(200, 150)  # 기본 썸네일 생성
+        label_thumbnail.setPixmap(pixmap.scaled(200, 150, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         label_thumbnail.setAlignment(Qt.AlignCenter)
 
         # 폴더 이름 QLabel
@@ -118,15 +125,16 @@ class LibraryTab:
 
         # 레이아웃에 추가
         layout.addWidget(label_thumbnail)
-        layout.addWidget(label_name)
-        layout.addWidget(bookmark_checkbox)
+        H_layout.addWidget(label_name)
+        H_layout.addWidget(bookmark_checkbox)
+        layout.addLayout(H_layout)
         layout.setAlignment(Qt.AlignCenter)  # 모든 요소 중앙 정렬
         cell_widget.setLayout(layout)
 
         # 테이블에 위젯 추가
         self.table_widget.setCellWidget(row, col, cell_widget)
-        self.table_widget.setColumnWidth(col, 120)  # 컬럼 너비 설정
-        self.table_widget.setRowHeight(row, 120)  # 행 높이 설정
+        self.table_widget.setColumnWidth(col, 200)  # 컬럼 너비 설정
+        self.table_widget.setRowHeight(row, 150)  # 행 높이 설정
 
     def update_bookmark(self, state, folder_name):
         """

@@ -165,6 +165,8 @@ class LoadUI(QMainWindow):
 
                 # 리스트 아이템 클릭 시 show_task_details 실행
                 target_list.itemClicked.connect(self.on_item_clicked)
+                target_list.itemClicked.connect(self.show_task_works)
+                
 
             self.update_list_items(self.list_widgets[index])
             index += 1
@@ -203,6 +205,7 @@ class LoadUI(QMainWindow):
         if task_data:
             task_id = task_data["id"]
             self.show_task_details(task_id)
+            self.show_task_works(task_id)
 
     def get_filetype(self, file_name):
         if file_name == None:
@@ -217,6 +220,9 @@ class LoadUI(QMainWindow):
             return "알 수 없는 파일 형식"
 
     def show_task_details(self, task_id, event=None):
+        """
+        클릭한 테스크 정보를 info탭에 띄워주는 함수
+        """
         task = manager.get_task_by_id(task_id)
         works = manager.get_works_for_task(task_id)
         if works:
@@ -232,6 +238,27 @@ class LoadUI(QMainWindow):
         self.ui.label_type.setText(file_type)  
 
         self.ui.tabWidget_info.show()
+
+    def show_task_works(self, task_id, event=None):
+        """
+        클릭한 테스크의 work파일들을 리스트 위젯에 보여주는 함수
+        """
+        self.ui.listWidget_works.clear()
+        print(task_id)
+        # 데이터베이스에서 works 가져오기
+        works = manager.get_works_for_task(task_id)
+        print(f"💾 로컬 Work 파일 목록: {works}")
+
+        if not works:
+            return
+
+        # works 데이터 추가
+        for work in works:
+            file_name = work.get("file_name", "Unknown File")  # 파일 이름이 없을 경우 기본값 설정
+            item = QListWidgetItem(file_name)  # 리스트 아이템 생성
+            item.setData(Qt.UserRole, work)  # work 데이터를 저장
+
+            self.ui.listWidget_works.addItem(item)
 
     def run_file(self):
         """
