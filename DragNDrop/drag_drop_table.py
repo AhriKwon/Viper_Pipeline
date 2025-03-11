@@ -7,7 +7,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from shotgrid_manager import ShotGridManager  # ShotGrid API 연결
 manager = ShotGridManager()
 
-class DragDropHandler(QTableWidget):
+class DragDropTable(QTableWidget):
     """
     QTableWidget을 상속받아 마우스 이벤트 직접 처리
     """

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1102</width>
-    <height>557</height>
+    <width>1072</width>
+    <height>605</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
     <item>
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab_mytask">
        <attribute name="title">
@@ -26,7 +26,7 @@
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout_3">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6">
+         <layout class="QVBoxLayout" name="verticalLayout_wtg">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -50,16 +50,31 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>220</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="dragEnabled">
+             <bool>true</bool>
+            </property>
+            <property name="dragDropMode">
+             <enum>QAbstractItemView::DragDrop</enum>
+            </property>
+            <property name="defaultDropAction">
+             <enum>Qt::MoveAction</enum>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_5">
+         <layout class="QVBoxLayout" name="verticalLayout_ip">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -83,16 +98,31 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>220</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="dragEnabled">
+             <bool>false</bool>
+            </property>
+            <property name="dragDropMode">
+             <enum>QAbstractItemView::DropOnly</enum>
+            </property>
+            <property name="defaultDropAction">
+             <enum>Qt::CopyAction</enum>
             </property>
            </widget>
           </item>
          </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_3">
+         <layout class="QVBoxLayout" name="verticalLayout_fin">
           <item>
            <widget class="QLabel" name="label_fin">
             <property name="text">
@@ -113,9 +143,27 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>220</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
+            </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="dragDropMode">
+             <enum>QAbstractItemView::NoDragDrop</enum>
+            </property>
+            <property name="defaultDropAction">
+             <enum>Qt::CopyAction</enum>
+            </property>
+            <property name="currentRow">
+             <number>-1</number>
+            </property>
+            <property name="sortingEnabled">
+             <bool>false</bool>
             </property>
            </widget>
           </item>
@@ -125,7 +173,7 @@
          <widget class="QTabWidget" name="tabWidget_info">
           <property name="minimumSize">
            <size>
-            <width>330</width>
+            <width>300</width>
             <height>0</height>
            </size>
           </property>
@@ -143,6 +191,18 @@
             <string>Info</string>
            </attribute>
            <layout class="QVBoxLayout" name="verticalLayout_2">
+            <property name="leftMargin">
+             <number>14</number>
+            </property>
+            <property name="topMargin">
+             <number>14</number>
+            </property>
+            <property name="rightMargin">
+             <number>14</number>
+            </property>
+            <property name="bottomMargin">
+             <number>14</number>
+            </property>
             <item>
              <layout class="QGridLayout" name="gridLayout">
               <property name="leftMargin">
@@ -273,7 +333,7 @@
              <widget class="QListWidget" name="listWidget">
               <property name="minimumSize">
                <size>
-                <width>280</width>
+                <width>250</width>
                 <height>150</height>
                </size>
               </property>
@@ -307,229 +367,183 @@
        <attribute name="title">
         <string>Lib</string>
        </attribute>
-       <widget class="QTabWidget" name="tabWidget_lib">
-        <property name="geometry">
-         <rect>
-          <x>10</x>
-          <y>30</y>
-          <width>691</width>
-          <height>561</height>
-         </rect>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="tab_3">
-         <attribute name="title">
-          <string>asset</string>
-         </attribute>
-         <widget class="QTableWidget" name="tableWidget_asset">
-          <property name="geometry">
-           <rect>
-            <x>-10</x>
-            <y>0</y>
-            <width>701</width>
-            <height>531</height>
-           </rect>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QTabWidget" name="tabWidget_lib">
+          <property name="currentIndex">
+           <number>4</number>
           </property>
+          <widget class="QWidget" name="tab_asset">
+           <attribute name="title">
+            <string>asset</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_rig">
+           <attribute name="title">
+            <string>rig</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_exr">
+           <attribute name="title">
+            <string>exr</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_clip">
+           <attribute name="title">
+            <string>clip</string>
+           </attribute>
+          </widget>
+          <widget class="QWidget" name="tab_bookmark">
+           <attribute name="title">
+            <string>★</string>
+           </attribute>
+          </widget>
          </widget>
-        </widget>
-        <widget class="QWidget" name="tab_4">
-         <attribute name="title">
-          <string>clip</string>
-         </attribute>
-         <widget class="QTableWidget" name="tableWidget_clip">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>691</width>
-            <height>531</height>
-           </rect>
+        </item>
+        <item>
+         <widget class="QTabWidget" name="tabWidget_info2">
+          <property name="minimumSize">
+           <size>
+            <width>300</width>
+            <height>0</height>
+           </size>
           </property>
-         </widget>
-        </widget>
-        <widget class="QWidget" name="tab_6">
-         <attribute name="title">
-          <string>exr</string>
-         </attribute>
-         <widget class="QTableWidget" name="tableWidget_exr">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>10</y>
-            <width>671</width>
-            <height>511</height>
-           </rect>
+          <property name="maximumSize">
+           <size>
+            <width>300</width>
+            <height>16777215</height>
+           </size>
           </property>
-         </widget>
-        </widget>
-        <widget class="QWidget" name="tab_8">
-         <attribute name="title">
-          <string>rig</string>
-         </attribute>
-         <widget class="QTableWidget" name="tableWidget_rig">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>701</width>
-            <height>531</height>
-           </rect>
+          <property name="currentIndex">
+           <number>0</number>
           </property>
-         </widget>
-        </widget>
-        <widget class="QWidget" name="tab_9">
-         <attribute name="title">
-          <string>★</string>
-         </attribute>
-         <widget class="QTableWidget" name="tableWidget_bookmark">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>0</y>
-            <width>701</width>
-            <height>531</height>
-           </rect>
-          </property>
-         </widget>
-        </widget>
-       </widget>
-       <widget class="QTabWidget" name="tabWidget_4">
-        <property name="geometry">
-         <rect>
-          <x>710</x>
-          <y>50</y>
-          <width>251</width>
-          <height>551</height>
-         </rect>
-        </property>
-        <property name="currentIndex">
-         <number>0</number>
-        </property>
-        <widget class="QWidget" name="tab_7">
-         <attribute name="title">
-          <string>Tab 1</string>
-         </attribute>
-         <widget class="QTreeWidget" name="treeWidget_2">
-          <property name="geometry">
-           <rect>
-            <x>0</x>
-            <y>10</y>
-            <width>241</width>
-            <height>201</height>
-           </rect>
-          </property>
-          <column>
-           <property name="text">
-            <string notr="true">1</string>
-           </property>
-          </column>
-         </widget>
-         <widget class="QPushButton" name="pushButton_reference">
-          <property name="geometry">
-           <rect>
-            <x>60</x>
-            <y>350</y>
-            <width>131</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>reference</string>
-          </property>
-         </widget>
-         <widget class="QPushButton" name="pushButton_import">
-          <property name="geometry">
-           <rect>
-            <x>60</x>
-            <y>300</y>
-            <width>131</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="font">
-           <font>
-            <pointsize>14</pointsize>
-           </font>
-          </property>
-          <property name="text">
-           <string>import</string>
-          </property>
-         </widget>
-         <widget class="QGroupBox" name="groupBox_infor_2">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>40</y>
-            <width>219</width>
-            <height>121</height>
-           </rect>
-          </property>
-          <property name="title">
-           <string/>
-          </property>
-          <widget class="QWidget" name="gridLayoutWidget_2">
-           <property name="geometry">
-            <rect>
-             <x>-1</x>
-             <y>20</y>
-             <width>221</width>
-             <height>101</height>
-            </rect>
-           </property>
-           <layout class="QGridLayout" name="gridLayout_2">
+          <widget class="QWidget" name="tab_libinfo">
+           <attribute name="title">
+            <string>info</string>
+           </attribute>
+           <layout class="QVBoxLayout" name="verticalLayout">
             <property name="leftMargin">
-             <number>8</number>
+             <number>14</number>
             </property>
             <property name="topMargin">
-             <number>3</number>
+             <number>14</number>
             </property>
             <property name="rightMargin">
-             <number>0</number>
+             <number>14</number>
             </property>
             <property name="bottomMargin">
-             <number>5</number>
+             <number>14</number>
             </property>
-            <property name="horizontalSpacing">
-             <number>19</number>
-            </property>
-            <property name="verticalSpacing">
-             <number>8</number>
-            </property>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_filename_2">
+            <item>
+             <layout class="QGridLayout" name="gridLayout_2">
+              <property name="leftMargin">
+               <number>8</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>250</number>
+              </property>
+              <property name="horizontalSpacing">
+               <number>19</number>
+              </property>
+              <property name="verticalSpacing">
+               <number>8</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QLabel" name="label_filename_2">
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_6">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>35</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>Saved time</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="label_savedtime">
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_5">
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>35</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>file name</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_import">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>40</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>14</pointsize>
+               </font>
+              </property>
               <property name="text">
-               <string/>
+               <string>import</string>
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_6">
-              <property name="text">
-               <string>Saved time</string>
+            <item>
+             <widget class="QPushButton" name="pushButton_reference">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>40</height>
+               </size>
               </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_savedtime">
               <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_5">
-              <property name="text">
-               <string>file name</string>
+               <string>reference</string>
               </property>
              </widget>
             </item>
            </layout>
           </widget>
          </widget>
-        </widget>
-       </widget>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -540,7 +554,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1102</width>
+     <width>1072</width>
      <height>24</height>
     </rect>
    </property>
