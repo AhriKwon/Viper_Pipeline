@@ -3,7 +3,9 @@ import sys
 import subprocess
 import socket
 
-from PySide6 import QtWidgets, QtGui, QtCore
+
+from PySide6 import QtWidgets, QtGui, QtCore 
+from PySide6.QtWidgets import QFileDialog, QMessageBox
 
 #  ShotGrid API 파일 가져오기
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
@@ -55,7 +57,6 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         self.import_button.clicked.connect(self.import_file)
         button_layout.addWidget(self.import_button)
 
-        layout.addLayout(button_layout)
 
         self.reference_button = QtWidgets.QPushButton("파일 Reference")
         self.reference_button.clicked.connect(self.create_reference_file)
@@ -262,33 +263,79 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행 파일을 찾을 수 없습니다.")
 
 
+   
+
+    def import_nuke(self):
+        """사용자가 선택한 Nuke(.nk) 파일을 현재 실행 중인 Nuke에 Import"""
+
+        # 파일 선택 대화 상자 열기
+        file_dialog = QtWidgets.QFileDialog()
+        file_path, _ = file_dialog.getOpenFileName(self, "Nuke 파일 선택", "", "Nuke Files (*.nk);;All Files (*.*)")
+
+        if not file_path:
+            print("파일 선택 취소됨.")
+            return
+
+        if not os.path.exists(file_path):
+            QtWidgets.QMessageBox.warning(self, "오류", "파일이 존재하지 않습니다.")
+            return
+
+        if not file_path.endswith(".nk"):
+            QtWidgets.QMessageBox.warning(self, "오류", "올바른 Nuke 파일을 선택하세요.")
+            return
+
+        # Nuke 실행 여부 확인 (self.is_nuke_running() 호출)
+        if not self.is_nuke_running():
+            QtWidgets.QMessageBox.warning(self, "오류", "Nuke가 실행 중이지 않습니다. 먼저 Nuke를 실행하세요.")
+            return
+
+        # Nuke에서 실행할 Python 코드
+        nuke_script = f'''
+    import nuke
+    nuke.scriptReadFile("{file_path}")
+    print("Nuke에서 파일을 Import 했습니다: {file_path}")
+    '''
+
+        try:
+            # 실행 중인 Nuke에 명령어 전달
+            result = subprocess.run(["/usr/bin/nuke", "-t", "-c", nuke_script], check=True, capture_output=True, text=True)
+            print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
+            print(f"Nuke 실행 결과: {result.stdout}")
+        except Exception as e:
+            QtWidgets.QMessageBox.warning(self, "오류", f"Nuke Import 실패: {e}")
+
 
     def is_nuke_running(self):
-        """현재 Nuke가 실행 중인지 확인"""
+        """현재 실행 중인 Nuke 프로세스를 확인하는 함수 (클래스 메서드로 변경)"""
         try:
-            result = subprocess.run(["pgrep", "-f", "Nuke"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            return bool(result.stdout.strip())
+            # 실행 중인 모든 프로세스를 검사하여 Nuke가 있는지 확인
+            result = subprocess.run(["ps", "aux"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            return any("Nuke" in line or "nuke" in line for line in result.stdout.split("\n"))
         except Exception as e:
             print(f"Nuke 실행 확인 오류: {e}")
             return False
 
-    def import_nuke(self, file_path):
-        """현재 실행 중인 Nuke에 특정 파일 Import"""
-        """Nuke에서 특정 .nk 파일을 Import"""
+
+
+    
+
+    
+
         
-        if not os.path.exists(file_path):
-            print(f"오류: 파일이 존재하지 않습니다: {file_path}")
-            return
+        
+        # if not os.path.exists(file_path):
+        #     print(f"오류: 파일이 존재하지 않습니다: {file_path}")
+        #     return
 
-        if not file_path.endswith(".nk", ".mov", ".abc", ".obj"):
-            print("지원되지 않는 파일 형식입니다. .nk 파일만 Import 가능합니다.")
-            return
+        # if not file_path.endswith(".nk", ".mov", ".abc", ".obj"):
+        #     print("지원되지 않는 파일 형식입니다. .nk 파일만 Import 가능합니다.")
+        #     return
 
-        try:
-            nuke.scriptReadFile(file_path)  # Nuke에서 .nk 파일을 불러오기
-            print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-        except Exception as e:
-            print(f"Nuke Import 실패: {e}")
+        # try:
+        #     nuke.scriptReadFile(file_path)  # Nuke에서 .nk 파일을 불러오기
+        #     print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
+        # except Exception as e:
+        #     print(f"Nuke Import 실패: {e}")
 
         
 #         nuke_executable = "/usr/local/Nuke15.1v5/Nuke15.1"
