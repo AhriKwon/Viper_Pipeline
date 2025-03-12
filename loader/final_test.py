@@ -4,8 +4,11 @@ import subprocess
 import socket
 
 
+
+
 from PySide6 import QtWidgets, QtGui, QtCore 
 from PySide6.QtWidgets import QFileDialog, QMessageBox
+
 
 #  ShotGrid API 파일 가져오기
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
@@ -255,7 +258,8 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             env["RLM_LICENSE"] = "/usr/local/foundry/RLM"
 
             try:
-                subprocess.Popen([nuke_executable, file_path], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+                nuke_command = f"source /home/rapa/env/nuke.env && {nuke_executable} {file_path}"
+                subprocess.Popen(["/bin/bash", "-c", nuke_command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print(f"Nuke에서 파일을 실행했습니다: {file_path}")
             except Exception as e:
                 QtWidgets.QMessageBox.warning(self, "오류", f"Nuke 실행 실패: {e}")
@@ -263,47 +267,47 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "오류", "Nuke 실행 파일을 찾을 수 없습니다.")
 
 
-   
-
-    def import_nuke(self):
-        """사용자가 선택한 Nuke(.nk) 파일을 현재 실행 중인 Nuke에 Import"""
-
-        # 파일 선택 대화 상자 열기
-        file_dialog = QtWidgets.QFileDialog()
-        file_path, _ = file_dialog.getOpenFileName(self, "Nuke 파일 선택", "", "Nuke Files (*.nk);;All Files (*.*)")
-
-        if not file_path:
-            print("파일 선택 취소됨.")
-            return
-
-        if not os.path.exists(file_path):
-            QtWidgets.QMessageBox.warning(self, "오류", "파일이 존재하지 않습니다.")
-            return
-
-        if not file_path.endswith(".nk"):
-            QtWidgets.QMessageBox.warning(self, "오류", "올바른 Nuke 파일을 선택하세요.")
-            return
-
-        # Nuke 실행 여부 확인 (self.is_nuke_running() 호출)
-        if not self.is_nuke_running():
-            QtWidgets.QMessageBox.warning(self, "오류", "Nuke가 실행 중이지 않습니다. 먼저 Nuke를 실행하세요.")
-            return
-
-        # Nuke에서 실행할 Python 코드
-        nuke_script = f'''
-    import nuke
-    nuke.scriptReadFile("{file_path}")
-    print("Nuke에서 파일을 Import 했습니다: {file_path}")
-    '''
-
+    def send_nuke_command(self, command, host="127.0.0.1", port=7007):
+        """Nuke에 Python 명령을 보내고 실행 결과를 받는 정적 메서드"""
         try:
-            # 실행 중인 Nuke에 명령어 전달
-            result = subprocess.run(["/usr/bin/nuke", "-t", "-c", nuke_script], check=True, capture_output=True, text=True)
-            print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-            print(f"Nuke 실행 결과: {result.stdout}")
-        except Exception as e:
-            QtWidgets.QMessageBox.warning(self, "오류", f"Nuke Import 실패: {e}")
+            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            client.connect((host, port))
+            client.send(command.encode("utf-8"))
 
+            response = client.recv(4096)
+            print(response.decode("utf-8"))
+        
+        except ConnectionRefusedError:
+            print("오류: Nuke 서버가 실행되지 않았습니다. 먼저 Nuke를 실행하세요.")
+        
+        except Exception as e:
+            print(f"오류 발생: {e}")
+        
+        finally:
+            client.close()
+
+
+    def import_nuke(self, file_path):
+        """사용자가 직접 Nuke 파일(.nk)을 선택하여 Import하는 기능"""
+        self.send_nuke_command(f"nuke.nodePaste(r'{file_path}')")
+
+    
+    def find_nuke_path():
+        """Nuke 실행 파일 경로 찾기"""
+        possible_paths = [
+            "/usr/local/Nuke15.1v5/Nuke15.1",
+            "/opt/Nuke15.1v5/Nuke15.1",
+            "/usr/bin/Nuke15.1v5",
+            "/usr/local/bin/Nuke15.1",
+        ]
+
+        for path in possible_paths:
+            if os.path.exists(path) and os.access(path, os.X_OK):
+                return path
+
+        return None
+    
+        
 
     def is_nuke_running(self):
         """현재 실행 중인 Nuke 프로세스를 확인하는 함수 (클래스 메서드로 변경)"""
@@ -315,56 +319,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             print(f"Nuke 실행 확인 오류: {e}")
             return False
 
-
-
-    
-
-    
-
-        
-        
-        # if not os.path.exists(file_path):
-        #     print(f"오류: 파일이 존재하지 않습니다: {file_path}")
-        #     return
-
-        # if not file_path.endswith(".nk", ".mov", ".abc", ".obj"):
-        #     print("지원되지 않는 파일 형식입니다. .nk 파일만 Import 가능합니다.")
-        #     return
-
-        # try:
-        #     nuke.scriptReadFile(file_path)  # Nuke에서 .nk 파일을 불러오기
-        #     print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-        # except Exception as e:
-        #     print(f"Nuke Import 실패: {e}")
-
-        
-#         nuke_executable = "/usr/local/Nuke15.1v5/Nuke15.1"
-
-#         if self.is_nuke_running():
-#             try:
-#                 import_script_path = "/home/rapa/import_nuke_script.py"
-
-#                 with open(import_script_path, "w") as script_file:
-#                     script_file.write(f'''
-# import nuke
-# nuke.scriptReadFile("{file_path}")
-# print("Nuke에서 파일을 Import 했습니다: {file_path}")
-# ''')
-
-#                 env = os.environ.copy()
-#                 env["NUKE_PATH"] = "/usr/local/Nuke15.1v5"
-#                 env["LD_LIBRARY_PATH"] = "/usr/local/Nuke15.1v5/lib:" + env.get("LD_LIBRARY_PATH", "")
-
-#                 subprocess.run([nuke_executable, "-t", import_script_path], check=True, env=env, capture_output=True, text=True)
-#                 print(f"Nuke에서 파일을 Import 했습니다: {file_path}")
-
-#             except subprocess.CalledProcessError as e:
-#                 print(f"Nuke 파일 Import 실패: {e}\n출력: {e.stdout}")
-#         else:
-#             print("실행 중인 Nuke가 없습니다. 새로 실행 후 Import 진행.")
-#             subprocess.Popen([nuke_executable, file_path])
-
-
+      
     def find_maya_path(self):
         """Maya 실행 파일 경로 찾기"""
         possible_paths = ["/usr/autodesk/maya2023/bin/maya"]
@@ -381,12 +336,24 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             "/opt/Nuke15.1v5/Nuke15.1",
             "/usr/bin/Nuke15.1v5",
             "/usr/local/bin/Nuke15.1",
+            "/usr/foundry/Nuke15.1v5/Nuke15.1"
         ]
-    
+
         for path in possible_paths:
             if os.path.exists(path) and os.access(path, os.X_OK):
                 return path
+        
+        # `which` 명령어를 사용하여 Nuke 경로 자동 검색
+        try:
+            result = subprocess.run(["which", "Nuke15.1v5"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            nuke_path = result.stdout.strip()
+            if os.path.exists(nuke_path):
+                return nuke_path
+        except Exception as e:
+            print(f"Nuke 경로 검색 오류: {e}")
+
         return None
+
 
 
     def import_file(self):
@@ -407,7 +374,10 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             if file_path.endswith((".nk", ".mov", ".abc", ".obj")):
                 self.import_nuke(file_path)
                 return
-
+                 
+                
+            
+        
         # Houdini 실행 중인지 확인 후 import
         if self.is_houdini_running():
             if file_path.endswith((".hip", ".hiplc", ".hipnc", ".abc", ".obj")):
@@ -475,17 +445,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "오류", f"Maya `cmdPort` 연결 실패: {e}")
 
 
-    def send_nuke_command(self, command):
-        """실행 중인 Nuke에서 Python 명령 실행"""
-        if self.is_nuke_running():
-            try:
-                subprocess.run(["nuke", "-t", "-c", command], check=True)
-                print(f"Nuke 명령 실행: {command}")
-            except Exception as e:
-                print(f"Nuke 명령 실행 실패: {e}")
-                QtWidgets.QMessageBox.warning(self, "오류", f"Nuke 명령 실행 실패: {e}")
-        else:
-            QtWidgets.QMessageBox.warning(self, "오류", "Nuke가 실행 중인지 확인하세요.")
+ 
 
 
     def import_maya(self, file_path):
@@ -664,6 +624,10 @@ print("Maya에서 Reference 파일을 불러왔습니다: {file_path}")
             if os.path.exists(path) and os.access(path, os.X_OK):
                 return path
         return None
+    
+
+
+
 
 
 # 실행
