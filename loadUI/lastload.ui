@@ -67,7 +67,7 @@
     </property>
     <property name="styleSheet">
      <string notr="true">QLabel {
-    background-image: url(&quot;/nas/Viper/minseo/forui/newfor.png&quot;);
+    
     background-repeat: no-repeat;  /* 반복 방지 */
     background-position: center;  /* 중앙 정렬 */
     background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
@@ -890,6 +890,11 @@ QTabBar::tab {
               <height>158</height>
              </size>
             </property>
+            <property name="font">
+             <font>
+              <family>Myriad Pro</family>
+             </font>
+            </property>
             <property name="styleSheet">
              <string notr="true">QListWidget {
     background: url(&quot;/nas/Viper/minseo/forui/version&quot;) no-repeat center;
@@ -923,8 +928,8 @@ QListWidget::item:selected {
             <property name="font">
              <font>
               <pointsize>-1</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
+              <weight>50</weight>
+              <bold>false</bold>
              </font>
             </property>
             <property name="layoutDirection">
@@ -952,7 +957,7 @@ QPushButton {
     background-color: #FF9B53;
     border-radius: 25px;
     font-size: 18px;
-    color: white;
+    color: black;
     padding: 10px;
 }
 /* 버튼을 눌렀을 때 (Pressed 상태) */
@@ -966,7 +971,7 @@ QPushButton#pushButton_open:hover {
 }</string>
             </property>
             <property name="text">
-             <string>open</string>
+             <string>Open</string>
             </property>
            </widget>
           </item>
@@ -1044,17 +1049,20 @@ QPushButton#pushButton_open:hover {
           <string>info</string>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout">
+          <property name="spacing">
+           <number>23</number>
+          </property>
           <property name="leftMargin">
-           <number>14</number>
+           <number>18</number>
           </property>
           <property name="topMargin">
-           <number>14</number>
+           <number>36</number>
           </property>
           <property name="rightMargin">
-           <number>14</number>
+           <number>16</number>
           </property>
           <property name="bottomMargin">
-           <number>14</number>
+           <number>23</number>
           </property>
           <item>
            <layout class="QGridLayout" name="gridLayout_3">
@@ -1071,13 +1079,13 @@ QPushButton#pushButton_open:hover {
              <number>0</number>
             </property>
             <property name="bottomMargin">
-             <number>150</number>
+             <number>146</number>
             </property>
             <property name="horizontalSpacing">
-             <number>25</number>
+             <number>42</number>
             </property>
             <property name="verticalSpacing">
-             <number>8</number>
+             <number>10</number>
             </property>
             <item row="3" column="1">
              <widget class="QLabel" name="label_duedate_2">
@@ -1267,7 +1275,7 @@ QPushButton#pushButton_open:hover {
             </property>
             <property name="minimumSize">
              <size>
-              <width>190</width>
+              <width>264</width>
               <height>50</height>
              </size>
             </property>
@@ -1289,7 +1297,7 @@ QPushButton#pushButton_open:hover {
     border-radius: 30px;  /* 버튼 모서리를 둥글게 */
 }
 
-QPushButton#pushButton_open {
+QPushButton#pushButton_import {
     margin: 0 auto;  /* 가로 가운데 정렬 */
     display: block;
     text-align: center;
@@ -1302,12 +1310,12 @@ QPushButton {
     padding: 10px;
 }
 /* 버튼을 눌렀을 때 (Pressed 상태) */
-QPushButton#pushButton_open:pressed {
+QPushButton#pushButton_import:pressed {
     background-color: #E68942;  /* 더 어두운 오렌지 색 */
 }
 
 /* 버튼 위에 마우스를 올렸을 때 (Hover 상태) */
-QPushButton#pushButton_open:hover {
+QPushButton#pushButton_import:hover {
     background-color: #FFA866;  /* 밝은 오렌지 색 */
 }</string>
             </property>
@@ -1326,7 +1334,7 @@ QPushButton#pushButton_open:hover {
             </property>
             <property name="minimumSize">
              <size>
-              <width>190</width>
+              <width>264</width>
               <height>50</height>
              </size>
             </property>
@@ -1347,7 +1355,7 @@ QPushButton#pushButton_open:hover {
     padding: 10px;  /* 내부 여백 */
     border-radius: 30px;  /* 버튼 모서리를 둥글게 */
 }
-QPushButton#pushButton_open {
+QPushButton#pushButton_reference {
     margin: 0 auto;  /* 가로 가운데 정렬 */
     display: block;
     text-align: center;
@@ -1361,12 +1369,12 @@ QPushButton {
     padding: 10px;
 }
 /* 버튼을 눌렀을 때 (Pressed 상태) */
-QPushButton#pushButton_open:pressed {
+QPushButton#pushButton_reference:pressed {
     background-color: #E68942;  /* 더 어두운 오렌지 색 */
 }
 
 /* 버튼 위에 마우스를 올렸을 때 (Hover 상태) */
-QPushButton#pushButton_open:hover {
+QPushButton#pushButton_reference:hover {
     background-color: #FFA866;  /* 밝은 오렌지 색 */
 }</string>
             </property>
