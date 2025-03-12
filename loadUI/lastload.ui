@@ -935,41 +935,6 @@ QListWidget::item:selected {
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton {
-    width: 170px;  /* 버튼 너비 */
-    height: 30px;  /* 버튼 높이 */
-    min-width: 170px;  /* 최소 너비 */
-    min-height: 30px;  /* 최소 높이 */
-    max-width: 170px;  /* 최대 너비 */
-    max-height: 30px;  /* 최대 높이 */
-    padding: 10px;  /* 내부 여백 */
-    border-radius: 30px;  /* 버튼 모서리를 둥글게 */
-}
-
-QPushButton#pushButton_open {
-    margin: 0 auto;  /* 가로 가운데 정렬 */
-    display: block;
-    text-align: center;
-}
-
-QPushButton {
-    background-color: #FF9B53;
-    border-radius: 25px;
-    font-size: 18px;
-    color: black;
-    padding: 10px;
-}
-/* 버튼을 눌렀을 때 (Pressed 상태) */
-QPushButton#pushButton_open:pressed {
-    background-color: #E68942;  /* 더 어두운 오렌지 색 */
-}
-
-/* 버튼 위에 마우스를 올렸을 때 (Hover 상태) */
-QPushButton#pushButton_open:hover {
-    background-color: #FFA866;  /* 밝은 오렌지 색 */
-}</string>
-            </property>
             <property name="text">
              <string>Open</string>
             </property>
