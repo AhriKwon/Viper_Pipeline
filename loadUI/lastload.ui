@@ -246,7 +246,7 @@ QTabBar::tab:hover {
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>0</number>
+     <number>1</number>
     </property>
     <widget class="QWidget" name="tab_mytask">
      <property name="styleSheet">
@@ -959,7 +959,7 @@ QListWidget::item:selected {
          </font>
         </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>2</number>
         </property>
         <widget class="QWidget" name="tab_asset">
          <property name="styleSheet">
@@ -975,14 +975,14 @@ QListWidget::item:selected {
           <string>rig</string>
          </attribute>
         </widget>
-        <widget class="QWidget" name="tab_clip">
-         <attribute name="title">
-          <string>clip</string>
-         </attribute>
-        </widget>
         <widget class="QWidget" name="tab_exr">
          <attribute name="title">
           <string>exr</string>
+         </attribute>
+        </widget>
+        <widget class="QWidget" name="tab_clip">
+         <attribute name="title">
+          <string>clip</string>
          </attribute>
         </widget>
         <widget class="QWidget" name="tab_bookmark">
