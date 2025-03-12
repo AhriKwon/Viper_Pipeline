@@ -110,6 +110,10 @@ class ShotGridManager:
         task = self.get_task_by_id(task_id)
         works = task["works"]
 
+        if task is None:
+            print(f"⚠️ 오류: task_id {task_id}에 해당하는 Task가 없습니다.")
+            return []  # 빈 리스트 반환
+
         return works
 
     def get_publishes_for_task(self, task_id):

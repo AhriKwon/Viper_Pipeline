@@ -161,7 +161,6 @@ class ShotGridAPI:
                 'file_name' : publish['code'],
                 'path' : publish['path']['local_path'],
                 'description' : publish['description'],
-                'thumbnail' : publish['image'],
                 'created_at' : publish['created_at']
             }
             for publish in publishes
