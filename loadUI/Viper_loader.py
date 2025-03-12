@@ -93,7 +93,8 @@ class LoadUI(QMainWindow):
         self.library_manager = LibraryTab(self.ui)
 
         """이벤트"""
-        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
+        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록
+        self.ui.listWidget_works.itemDoubleClicked.connect(self.run_file)
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
@@ -154,6 +155,7 @@ class LoadUI(QMainWindow):
             for task in filtered_tasks:
                 task_id = task["id"]
                 task_name = task["content"]
+                task_thumb = task["content"]
 
                 # 리스트 아이템 생성
                 list_item = QListWidgetItem()
@@ -166,7 +168,6 @@ class LoadUI(QMainWindow):
 
                 # 리스트 아이템 클릭 시 show_task_details 실행
                 target_list.itemClicked.connect(self.on_item_clicked)
-                
 
             self.update_list_items(self.list_widgets[index])
             index += 1
@@ -211,11 +212,11 @@ class LoadUI(QMainWindow):
         if file_name == None:
             return "work file 없음"
         elif file_name.endswith((".ma", ".mb")):
-            return "Maya 파일"
+            return "Maya"
         elif file_name.endswith((".nk", ".nknc")):
-            return "Nuke 파일"
+            return "Nuke"
         elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
-            return "Houdini 파일"
+            return "Houdini"
         else:
             return "알 수 없는 파일 형식"
 
@@ -255,22 +256,24 @@ class LoadUI(QMainWindow):
         for work in works:
             file_name = work["file_name"]  # 파일 이름이 없을 경우 기본값 설정
             file_path = work["path"]
+            file_type = self.get_filetype(file_name)
             
             # 파일 형식에 맞게 로고 QLabel을 설정
             label_logo = QLabel()
-            if file_path.endswith((".ma", ".mb")):
+            if file_type == "Maya":
                 pixmap = QPixmap("/nas/Viper/logo/maya.png")
-            elif file_path.endswith((".nk", ".nknc")):
+            elif file_type == "Nuke":
                 pixmap = QPixmap("/nas/Viper/logo/nuke.png")
-            elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
+            elif file_type == "Houdini":
                 pixmap = QPixmap("/nas/Viper/logo/houdini.png")
             else:
-                pixmap = QPixmap(10, 10)
-            label_logo.setPixmap(pixmap.scaled(10, 10, Qt.KeepAspectRatio, Qt.SmoothTransformation))
-            label_logo.setAlignment(Qt.AlignRight)
+                pixmap = QPixmap(20, 20)
+            label_logo.setPixmap(pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            label_logo.setMaximumSize(20, 20)
+
+
             # 파일 이름 QLabel
             label_name = QLabel(file_name)
-            label_name.setAlignment(Qt.AlignRight)
             # H_layout에 라벨 추가
             H_layout = QHBoxLayout()
             H_layout.addWidget(label_logo)
