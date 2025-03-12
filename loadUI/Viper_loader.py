@@ -37,7 +37,7 @@ class LoginWindow(QDialog):
     
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/login.ui"
+        ui_file_path = f"{current_directory}/newlogin.ui"
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
@@ -105,7 +105,7 @@ class LoadUI(QMainWindow):
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/load.ui"
+        ui_file_path = f"{current_directory}/lastload.ui"
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
@@ -113,17 +113,7 @@ class LoadUI(QMainWindow):
         self.setCentralWidget(self.ui)
         self.ui.show()
 
-        # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
-        list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
-        row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
-
-        # 행이 될 3개의 listwidget (색, 형태 조정)
-        for i, list_widget in enumerate(self.list_widgets):
-            list_widget.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
-        
-        for i, list_label in enumerate(list_labels):
-            list_label.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
 
 
 #=============================로그인, task 목록을 가져오는 함수====================================
@@ -192,7 +182,6 @@ class LoadUI(QMainWindow):
                 layout.addWidget(label_task_name)
                 
                 widget.setLayout(layout)
-                widget.setContentsMargins(20, 0, 0, 0)
 
                 # 기존 list_item의 크기 조정 및 file_box 추가
                 list_item.setSizeHint(widget.sizeHint())

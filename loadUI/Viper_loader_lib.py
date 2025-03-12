@@ -33,7 +33,7 @@ class LibraryTab:
 
         self.load_files(1)
 
-        self.ui.pushButton_import.clicked.connect(self.import_file)
+        # self.ui.pushButton_import.clicked.connect(self.import_file)
 
     def setup_table(self):
         """
