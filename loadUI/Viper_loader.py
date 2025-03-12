@@ -212,9 +212,9 @@ class LoadUI(QMainWindow):
             return "work file 없음"
         elif file_name.endswith((".ma", ".mb")):
             return "Maya 파일"
-        elif file_name.endswith(".nk"):
+        elif file_name.endswith((".nk", ".nknc")):
             return "Nuke 파일"
-        elif file_name.endswith(".hip"):
+        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
             return "Houdini 파일"
         else:
             return "알 수 없는 파일 형식"
@@ -253,19 +253,28 @@ class LoadUI(QMainWindow):
 
         # works 데이터 추가
         for work in works:
-            file_name = work.get("file_name", "Unknown File")  # 파일 이름이 없을 경우 기본값 설정
-            file_date = work.get("modified_date")
+            file_name = work["file_name"]  # 파일 이름이 없을 경우 기본값 설정
+            file_path = work["path"]
             
+            # 파일 형식에 맞게 로고 QLabel을 설정
+            label_logo = QLabel()
+            if file_path.endswith((".ma", ".mb")):
+                pixmap = QPixmap("/nas/Viper/logo/maya.png")
+            elif file_path.endswith((".nk", ".nknc")):
+                pixmap = QPixmap("/nas/Viper/logo/nuke.png")
+            elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
+                pixmap = QPixmap("/nas/Viper/logo/houdini.png")
+            else:
+                pixmap = QPixmap(10, 10)
+            label_logo.setPixmap(pixmap.scaled(10, 10, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            label_logo.setAlignment(Qt.AlignRight)
             # 파일 이름 QLabel
             label_name = QLabel(file_name)
-            label_name.setAlignment(Qt.AlignLeft)
-            # 파일 날짜 QLabel
-            label_date = QLabel(file_date)
-            label_date.setAlignment(Qt.AlignRight)
+            label_name.setAlignment(Qt.AlignRight)
             # H_layout에 라벨 추가
             H_layout = QHBoxLayout()
+            H_layout.addWidget(label_logo)
             H_layout.addWidget(label_name)
-            H_layout.addWidget(label_date)
             # 레이아웃을 QWidget에 설정
             item_widget = QWidget()
             item_widget.setLayout(H_layout)
