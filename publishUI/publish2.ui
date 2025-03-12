@@ -24,29 +24,6 @@
      </rect>
     </property>
    </widget>
-   <widget class="QComboBox" name="comboBox_task">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>11</y>
-      <width>121</width>
-      <height>41</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QGroupBox" name="groupBox_checkbox">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>400</y>
-      <width>231</width>
-      <height>191</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string>GroupBox</string>
-    </property>
-   </widget>
    <widget class="QLabel" name="label_filename">
     <property name="geometry">
      <rect>
@@ -58,57 +35,6 @@
     </property>
     <property name="text">
      <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_user">
-    <property name="geometry">
-     <rect>
-      <x>730</x>
-      <y>10</y>
-      <width>121</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
-   </widget>
-   <widget class="QTableWidget" name="tableWidget_filelist">
-    <property name="geometry">
-     <rect>
-      <x>20</x>
-      <y>60</y>
-      <width>541</width>
-      <height>661</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_publish">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>640</y>
-      <width>161</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Myriad Pro</family>
-     </font>
-    </property>
-    <property name="text">
-     <string>Publish</string>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_memo">
-    <property name="geometry">
-     <rect>
-      <x>590</x>
-      <y>270</y>
-      <width>231</width>
-      <height>111</height>
-     </rect>
     </property>
    </widget>
    <widget class="QLabel" name="label_logo">
@@ -130,19 +56,6 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_thumbnail">
-    <property name="geometry">
-     <rect>
-      <x>600</x>
-      <y>140</y>
-      <width>221</width>
-      <height>111</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -150,7 +63,7 @@
      <x>0</x>
      <y>0</y>
      <width>867</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>
