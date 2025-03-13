@@ -25,7 +25,7 @@
    <string>Form</string>
   </property>
   <property name="windowIcon">
-   <iconset>
+   <iconset resource="../../../resources.qrc">
     <normaloff>:/icon_email/다운로드/png/email _basic.png</normaloff>:/icon_email/다운로드/png/email _basic.png</iconset>
   </property>
   <widget class="QLabel" name="label_background">
