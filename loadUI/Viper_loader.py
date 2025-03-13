@@ -47,13 +47,51 @@ class LoginWindow(QDialog):
 
         # 로그인 창 크기 조정 
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(600, 700)
+        self.resize(734, 491)
+        # 창 프레임 제거
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+
+        # 창 배경을 검정색으로 설정하여 투명도 문제 해결
+        self.setStyleSheet("background-color: black; border: none;")
         
-        
+        self.label_background = self.ui.findChild(QLabel, "label_background")
+        self.label_id = self.ui.findChild(QLabel, "label_id")
         self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
         self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
-       
+        self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help")
+
+        image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
+        self.label_background.setPixmap(QPixmap(image_path))
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        image_path = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인
+        self.label_id.setPixmap(QPixmap(image_path))
+        self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        #로그인 버튼
         self.pushButton_login.clicked.connect(self.attempt_login)
+
+    def resizeEvent(self, event):
+   
+        self.label_background.setGeometry(0, 0, self.width(), self.height())
+        current_directory = os.path.dirname(__file__)
+
+        # 원본 이미지를 직접 가져와서 크기 조정 (고화질 유지)
+        pixmap = QPixmap(f"{current_directory}/forui/Group 3994.png")
+
+        # QLabel 크기에 맞게 고품질 리사이징 적용
+        self.label_background.setPixmap(
+            pixmap.scaled(
+                self.label_background.size(),  
+                Qt.KeepAspectRatioByExpanding,  # 원본 비율 유지하면서 확장
+                Qt.SmoothTransformation  # 고품질 스케일링 적용
+            )
+        )
+
+        super().resizeEvent(event)
+    
 
     # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
     def attempt_login(self):
@@ -73,9 +111,48 @@ class LoginWindow(QDialog):
             popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
             return
 
+class ImageListWidget(QListWidget):
+        def __init__(self, parent=None, image_paths=[]):
+            super().__init__(parent)
 
- #==========================================================================================
- #====================loader ui class : LoadUI==============================================
+            # 리스트 배경을 투명하게 설정
+            self.setStyleSheet("""
+                QListWidget {
+                    background: transparent;
+                    border: none;
+                }
+                QListWidget::item {
+                    background: transparent;
+                    border: none;
+                }
+            """)
+
+            # 리스트 아이템을 PNG 이미지로 추가
+            for image_path in image_paths:
+                self.add_image_item(image_path)
+
+        def add_image_item(self, image_path):
+            """QListWidgetItem을 PNG 이미지로 대체"""
+            item = QListWidgetItem(self)  # 리스트 아이템 생성
+            item_widget = QWidget()  # 아이템을 담을 위젯 생성
+            layout = QVBoxLayout()
+
+            # QLabel을 사용하여 이미지 표시
+            label = QLabel()
+            pixmap = QPixmap(image_path)
+            label.setPixmap(pixmap)
+            label.setScaledContents(True)  # 크기 조정 가능하도록 설정
+
+            layout.addWidget(label)
+            item_widget.setLayout(layout)
+
+            item.setSizeHint(pixmap.size())  # 아이템 크기 설정
+            self.addItem(item)
+            self.setItemWidget(item, item_widget)  # 아이템을 이미지 위젯으로 대체
+
+            
+#==========================================================================================
+#====================loader ui class : LoadUI==============================================
 
 
 class LoadUI(QMainWindow):
@@ -86,6 +163,9 @@ class LoadUI(QMainWindow):
         self.effects = []
         self.load_ui()
         
+        self.setGeometry(100, 100, 1800, 1000)
+        self.resize(1000, 650)
+
         """My Task tab"""
         self.login_and_load_tasks()
 
