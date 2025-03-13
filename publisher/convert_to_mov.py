@@ -119,7 +119,7 @@ class FileConverter:
                'drawbox=x=0:y=ih*0.9:w=iw:h=ih*0.1:color=black@1.0:t=fill'
     
     @staticmethod
-    def convert_with_overlay_and_letterbox(input_file, output_file, shot_name, project_name, task_name, version, start_num=1, last_num=99):
+    def convert_with_overlay_and_letterbox(input_file, output_file, data):
         """
         FFmpeg를 사용하여 동영상을 변환하고, 레터박스 및 슬레이트 오버레이를 추가하는 함수.
 
@@ -146,11 +146,13 @@ class FileConverter:
         # 좌측 하단 -> frame numbering 여기 들어가 있는데 tc 부분으로 취합할 것
         # test4 -> version v003
         # 우측 하단 -> tc
-        
-        shot_name = "OPN_0010"
-        project_name = "5th_Academy"
-        version = "v003"
-        task_name = "COMP"
+
+        shot_name = data["shot_name"]
+        project_name = data["project_name"]
+        task_name = data["task_name"]
+        version = data["version"]
+        start_num = data["start_num"]
+        last_num = data["last_num"]
 
         ffmpeg_cmd = [
             "ffmpeg",
