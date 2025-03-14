@@ -216,13 +216,8 @@ class LoadUI(QMainWindow):
         self.ui.listWidget_works.itemDoubleClicked.connect(self.run_file)
 
         self.ui.listWidget_wtg.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_wtg.itemClicked.connect(self.show_task_works)
-
         self.ui.listWidget_ip.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_ip.itemClicked.connect(self.show_task_works)
-
         self.ui.listWidget_fin.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_fin.itemClicked.connect(self.show_task_works)
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
@@ -404,10 +399,10 @@ class LoadUI(QMainWindow):
 
         self.animations = []  # 애니메이션 참조 유지 리스트
         labels = [
-            ("left", self.label_left),
-            ("logo", self.label_logo),
-            ("viper", self.label_viper),
-            ("user", self.label_user)
+            ("left", self.ui.label_left),
+            ("logo", self.ui.label_logo),
+            ("viper", self.ui.label_viper),
+            ("user", self.ui.label_user)
         ]
 
         # 디버깅용: 현재 위치와 이동 거리 확인
@@ -671,9 +666,6 @@ class LoadUI(QMainWindow):
                 target_list = self.list_widgets[index]
                 target_list.addItem(list_item)
 
-                # 리스트 아이템 클릭 시 show_task_details 실행
-                target_list.itemClicked.connect(self.on_item_clicked)
-
             self.update_list_items(self.list_widgets[index])
             index += 1
 
@@ -734,7 +726,6 @@ class LoadUI(QMainWindow):
         해당 테스크의 퍼블리시 썸네일 폴더에서 가장 최근 생성된 이미지를 찾음
         """
         thumb_path = os.path.join(task_path, "thumb")
-        print(f"경로 중간점검: {thumb_path}")
         
         if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
             return "/nas/Viper/thumb.jpg"
@@ -744,7 +735,6 @@ class LoadUI(QMainWindow):
         
         # 해당 폴더 내 파일 목록 가져오기 (이미지 파일만 필터링)
         image_files = [f for f in os.listdir(thumb_path) if f.lower().endswith(valid_extensions)]
-        print(f"이미지 있?: {image_files}")
         
         if not image_files:
             return
