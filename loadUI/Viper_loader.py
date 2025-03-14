@@ -23,7 +23,7 @@ from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
 from final_test import FileLoaderGUI
 # 로더 UI
-import popup
+import UI_support
 from Viper_loader_lib import LibraryTab
 
  #============================================================================================
@@ -98,7 +98,7 @@ class LoginWindow(QDialog):
         email = self.lineEdit_id.text().strip()
 
         if not email:
-            popup.show_message("error", "오류", "이메일을 입력해주세요")
+            UI_support.show_message("error", "오류", "이메일을 입력해주세요")
             return
         
         user_data = UserAuthenticator.login(email)
@@ -108,7 +108,7 @@ class LoginWindow(QDialog):
             self.main_window = LoadUI(email)
             self.main_window.show()
         else:
-            popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
+            UI_support.show_message("error", "오류", "등록되지 않은 사용자입니다")
             return
 
 class ImageListWidget(QListWidget):
@@ -209,14 +209,14 @@ class LoadUI(QMainWindow):
             user_tasks = manager.get_tasks_by_user(user_id) 
             self.populate_table(user_tasks)
         else:
-            popup.show_message("error", "오류", "부여받은 Task가 없습니다")
+            UI_support.show_message("error", "오류", "부여받은 Task가 없습니다")
 
     def populate_table(self, tasks):
         """
         Task 데이터를 받아서 list_widgets에 QListWidgetItem을 추가
         """
         if not tasks:
-            popup.show_message("error", "오류", "Task를 찾을 수 없습니다.")
+            UI_support.show_message("error", "오류", "Task를 찾을 수 없습니다.")
             return
 
         index = 0
@@ -228,7 +228,6 @@ class LoadUI(QMainWindow):
             for task in filtered_tasks:
                 task_id = task["id"]
                 task_name = task["content"]
-                task_thumb = task["content"]
 
                 # 리스트 아이템 생성
                 list_item = QListWidgetItem()
@@ -269,12 +268,16 @@ class LoadUI(QMainWindow):
                     pixmap = QPixmap(thumbnail_path)
                 else:
                     pixmap = QPixmap(160, 90)  # 기본 썸네일 생성
-                label_thumb.setPixmap(pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                rounded_pixmap = UI_support.round_corners_pixmap(pixmap, radius=15)
+                label_thumb.setPixmap(rounded_pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 label_thumb.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_thumb)
 
+                # 테스크 이름 QLabel
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
+                label_task_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
+
                 layout.addWidget(label_task_name)
 
                 widget.setLayout(layout)
@@ -301,7 +304,7 @@ class LoadUI(QMainWindow):
         print(f"경로 중간점검: {thumb_path}")
         
         if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
-            return "/nas/Viper/thumb.png"
+            return "/nas/Viper/thumb.jpg"
         
         # 지원하는 이미지 확장자
         valid_extensions = (".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")
@@ -384,6 +387,7 @@ class LoadUI(QMainWindow):
 
             # 파일 이름 QLabel
             label_name = QLabel(file_name)
+            label_name.setStyleSheet("color: white;")
             # H_layout에 라벨 추가
             H_layout = QHBoxLayout()
             H_layout.addWidget(label_logo)
@@ -409,7 +413,7 @@ class LoadUI(QMainWindow):
         for selected_item in selected_items:
             work_data = selected_item.data(Qt.UserRole)
             if not work_data:
-                popup.show_message("error", "오류", "work 데이터를 찾을 수 없습니다.")
+                UI_support.show_message("error", "오류", "work 데이터를 찾을 수 없습니다.")
                 continue
 
             work_name = work_data["file_name"]
@@ -418,7 +422,7 @@ class LoadUI(QMainWindow):
             print(f"파일 경로: {file_path}")
 
             if not file_path:
-                popup.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
+                UI_support.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
                 continue
 
         # 경로를 절대 경로로 변환
@@ -431,7 +435,7 @@ class LoadUI(QMainWindow):
         elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
             FileLoaderGUI.launch_houdini(file_path)
         else:
-            popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+            UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
 
 if __name__ == "__main__":
