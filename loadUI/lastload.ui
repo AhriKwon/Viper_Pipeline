@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1240</width>
+    <width>1229</width>
     <height>730</height>
    </rect>
   </property>
@@ -37,15 +37,15 @@
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
-      <x>0</x>
-      <y>-10</y>
-      <width>1241</width>
-      <height>661</height>
+      <x>-35</x>
+      <y>-28</y>
+      <width>1291</width>
+      <height>761</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QLabel {
-    background-image: url(&quot;/nas/Viper/minseo/forui/lastback.png&quot;);
+    background-image: url(&quot;/nas/Viper/minseo/forui/0313 back.png&quot;);
     background-repeat: no-repeat;  /* 반복 방지 */
     background-position: center;  /* 중앙 정렬 */
     background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
@@ -59,14 +59,15 @@
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>270</x>
+      <x>0</x>
       <y>0</y>
-      <width>731</width>
-      <height>101</height>
+      <width>1241</width>
+      <height>671</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QLabel {
+
     
     background-repeat: no-repeat;  /* 반복 방지 */
     background-position: center;  /* 중앙 정렬 */
@@ -78,7 +79,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="label_left">
     <property name="geometry">
      <rect>
       <x>40</x>
@@ -100,7 +101,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_4">
+   <widget class="QLabel" name="label_logo">
     <property name="geometry">
      <rect>
       <x>20</x>
@@ -122,7 +123,7 @@
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_5">
+   <widget class="QLabel" name="label_viper">
     <property name="geometry">
      <rect>
       <x>70</x>
@@ -133,9 +134,8 @@
     </property>
     <property name="font">
      <font>
-      <family>Myriad Pro</family>
+      <family>Pretendard Light</family>
       <pointsize>-1</pointsize>
-      <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
@@ -187,13 +187,10 @@ QTabWidget::pane {
     background: transparent;
 }
 
-/* 📌 QTabBar 설정 */
-QTabBar {
-    background: transparent;
-    position: absolute;
-    top: 0px;  /* 탭 바를 최상단에 고정 */
-    left: 0px;
-    width: 100%;
+/* 📌 QTabBar 설정 (위쪽에 정렬) */
+QTabWidget::tab-bar {
+    alignment: center;
+    top: 0px;  /* 탭 바를 상단에 고정 */
 }
 
 /* 📌 탭 기본 스타일 */
@@ -203,11 +200,6 @@ QTabBar::tab {
     border: none;
     background: transparent;
     padding: 5px;
-}
-
-/* 📌 탭 바를 위쪽에 강제 정렬 */
-QTabWidget::tab-bar {
-    alignment: top;
 }
 
 /* ✅ tab_mytask 내부의 탭에만 아이콘 적용 */
@@ -246,7 +238,7 @@ QTabBar::tab:hover {
      <enum>QTabWidget::West</enum>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>0</number>
     </property>
     <widget class="QWidget" name="tab_mytask">
      <property name="styleSheet">
@@ -278,6 +270,12 @@ QTabBar::tab:hover {
         </property>
         <item>
          <widget class="QLabel" name="label_wtg">
+          <property name="font">
+           <font>
+            <family>Pretendard Light</family>
+            <pointsize>-1</pointsize>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">QLabel {
     background: url(&quot;/nas/Viper/minseo/forui/wtg.png&quot;);  /* 배경 이미지 설정 */
@@ -308,8 +306,8 @@ QTabBar::tab:hover {
           </property>
           <property name="minimumSize">
            <size>
-            <width>200</width>
-            <height>495</height>
+            <width>187</width>
+            <height>487</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -394,6 +392,12 @@ QListWidget {
         </property>
         <item>
          <widget class="QLabel" name="label_ip">
+          <property name="font">
+           <font>
+            <family>Pretendard Light</family>
+            <pointsize>-1</pointsize>
+           </font>
+          </property>
           <property name="styleSheet">
            <string notr="true">QLabel {
     background: url(&quot;/nas/Viper/minseo/forui/ing.png&quot;);  /* 배경 이미지 설정 */
@@ -418,8 +422,8 @@ QListWidget {
          <widget class="QListWidget" name="listWidget_ip">
           <property name="minimumSize">
            <size>
-            <width>200</width>
-            <height>495</height>
+            <width>187</width>
+            <height>487</height>
            </size>
           </property>
           <property name="maximumSize">
@@ -491,9 +495,8 @@ QListWidget {
          <widget class="QLabel" name="label_fin">
           <property name="font">
            <font>
-            <family>Nimbus Sans Narrow [urw]</family>
+            <family>Pretendard Light</family>
             <pointsize>-1</pointsize>
-            <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
@@ -597,19 +600,62 @@ QListWidget {
          </size>
         </property>
         <property name="styleSheet">
-         <string notr="true">QTabWidget::pane {
+         <string notr="true">/* QTabWidget 패널 제거 */
+QTabWidget::pane {
+    border: none;
+    background: transparent;
+}
+
+/* QTabBar 완전 투명화 */
+QTabBar {
     background: transparent;
     border: none;
 }
 
-QTabBar {
-    background: transparent;
-}
-
+/* 개별 탭도 투명하게 설정 */
 QTabBar::tab {
     background: transparent;
     border: none;
+    min-width: 60px;
+    min-height: 30px;
+    color: white;  /* 텍스트 유지 */
 }
+
+/* 선택된 탭도 투명하게 유지 */
+QTabBar::tab:selected {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+}
+
+/* 마우스 호버 시 효과 제거 */
+QTabBar::tab:hover {
+    background: transparent;
+}
+QTabBar::tab {
+    margin-left: 70px; /* 탭을 오른쪽으로 이동 */
+}
+/* QTabBar 크기 및 스타일 */
+QTabBar {
+    background: transparent;
+    min-height: 30px;  /* 최소 높이 */
+    max-height: 40px;  /* 최대 높이 */
+}
+
+/* 탭 스타일 */
+QTabBar::tab {
+    min-width: 200px;  /* 가로 크기 */
+    min-height: 30px;  /* 세로 크기 */
+    padding: 5px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 선택된 탭 */
+
 </string>
         </property>
         <property name="currentIndex">
@@ -620,7 +666,7 @@ QTabBar::tab {
           <enum>Qt::LeftToRight</enum>
          </property>
          <attribute name="title">
-          <string>Info</string>
+          <string/>
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
@@ -630,7 +676,7 @@ QTabBar::tab {
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <property name="leftMargin">
-           <number>47</number>
+           <number>77</number>
           </property>
           <property name="topMargin">
            <number>0</number>
@@ -639,11 +685,8 @@ QTabBar::tab {
            <number>20</number>
           </property>
           <property name="bottomMargin">
-           <number>41</number>
+           <number>58</number>
           </property>
-          <item>
-           <layout class="QGridLayout" name="gridLayout"/>
-          </item>
           <item>
            <widget class="QLabel" name="label_15">
             <property name="text">
@@ -660,13 +703,13 @@ QTabBar::tab {
              <number>5</number>
             </property>
             <property name="topMargin">
-             <number>10</number>
+             <number>2</number>
             </property>
             <property name="rightMargin">
-             <number>0</number>
+             <number>6</number>
             </property>
             <property name="bottomMargin">
-             <number>14</number>
+             <number>10</number>
             </property>
             <property name="horizontalSpacing">
              <number>23</number>
@@ -718,34 +761,6 @@ QTabBar::tab {
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_7">
-              <property name="minimumSize">
-               <size>
-                <width>0</width>
-                <height>35</height>
-               </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Myriad Pro Light</family>
-                <pointsize>-1</pointsize>
-               </font>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string>file type</string>
-              </property>
-             </widget>
-            </item>
             <item row="0" column="1">
              <widget class="QLabel" name="label_filename">
               <property name="minimumSize">
@@ -790,6 +805,34 @@ QTabBar::tab {
               </property>
              </widget>
             </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_8">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string>start date</string>
+              </property>
+             </widget>
+            </item>
             <item row="0" column="0">
              <widget class="QLabel" name="label_6">
               <property name="minimumSize">
@@ -800,7 +843,7 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Myriad Pro Light</family>
+                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -828,7 +871,7 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Myriad Pro Light</family>
+                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -846,8 +889,8 @@ QTabBar::tab {
               </property>
              </widget>
             </item>
-            <item row="2" column="0">
-             <widget class="QLabel" name="label_8">
+            <item row="1" column="0">
+             <widget class="QLabel" name="label_7">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -856,7 +899,7 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Myriad Pro Light</family>
+                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -870,7 +913,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>start date</string>
+               <string>file type</string>
               </property>
              </widget>
             </item>
@@ -897,23 +940,16 @@ QTabBar::tab {
             </property>
             <property name="styleSheet">
              <string notr="true">QListWidget {
-    background: url(&quot;/nas/Viper/minseo/forui/version&quot;) no-repeat center;
-    background-size: contain;
+    background: url(&quot;/nas/Viper/minseo/forui/forversion.png&quot;);
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: cover;
     border: none;
-    width: 185px;
-    height: 158px;
-}
-
-
-QListWidget::item {
-    background: transparent;
-    color: white;  /* 글자색을 흰색으로 설정 */
-}
-
-QListWidget::item:selected {
-    background: rgba(255, 255, 255, 0.2); /* 선택된 항목 배경 */
 }
 </string>
+            </property>
+            <property name="autoScrollMargin">
+             <number>18</number>
             </property>
            </widget>
           </item>
@@ -927,13 +963,47 @@ QListWidget::item:selected {
             </property>
             <property name="font">
              <font>
+              <family>Pretendard Light</family>
               <pointsize>-1</pointsize>
-              <weight>50</weight>
               <bold>false</bold>
              </font>
             </property>
             <property name="layoutDirection">
              <enum>Qt::LeftToRight</enum>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QPushButton {
+    width: 140px;  /* 버튼 너비 */
+    height: 30px;  /* 버튼 높이 */
+    min-width: 140px;  /* 최소 너비 */
+    min-height: 30px;  /* 최소 높이 */
+    max-width: 170px;  /* 최대 너비 */
+    max-height: 30px;  /* 최대 높이 */
+    padding: 10px;  /* 내부 여백 */
+    border-radius: 30px;  /* 버튼 모서리를 둥글게 */
+}
+
+QPushButton#pushButton_import {
+    margin: 0 auto;  /* 가로 가운데 정렬 */
+    display: block;
+    text-align: center;
+}
+QPushButton {
+    background-color: #FF9B53;
+    border-radius: 25px;
+    font-size: 18px;
+    color: white;
+    padding: 10px;
+}
+/* 버튼을 눌렀을 때 (Pressed 상태) */
+QPushButton#pushButton_import:pressed {
+    background-color: #E68942;  /* 더 어두운 오렌지 색 */
+}
+
+/* 버튼 위에 마우스를 올렸을 때 (Hover 상태) */
+QPushButton#pushButton_import:hover {
+    background-color: #FFA866;  /* 밝은 오렌지 색 */
+}</string>
             </property>
             <property name="text">
              <string>Open</string>
@@ -963,8 +1033,7 @@ QListWidget::item:selected {
         </property>
         <widget class="QWidget" name="tab_asset">
          <property name="styleSheet">
-          <string notr="true">
-</string>
+          <string notr="true"/>
          </property>
          <attribute name="title">
           <string>asset</string>
@@ -1355,14 +1424,140 @@ QPushButton#pushButton_reference:hover {
      </layout>
     </widget>
    </widget>
+   <widget class="QLabel" name="label_ani1">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>0</y>
+      <width>741</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/big1.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_ani3">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>0</y>
+      <width>369</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/big3.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_ani2">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>0</y>
+      <width>378</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/big2.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_ani4">
+    <property name="geometry">
+     <rect>
+      <x>510</x>
+      <y>20</y>
+      <width>170</width>
+      <height>70</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/vicon.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_central">
+    <property name="geometry">
+     <rect>
+      <x>480</x>
+      <y>80</y>
+      <width>208</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/com.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_user">
+    <property name="geometry">
+     <rect>
+      <x>1139</x>
+      <y>40</y>
+      <width>30</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/user.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1240</width>
-     <height>25</height>
+     <width>1229</width>
+     <height>27</height>
     </rect>
    </property>
   </widget>
