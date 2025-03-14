@@ -1,9 +1,9 @@
 import os
+import sys
 import subprocess
 import platform
 import glob
-import maya.cmds as cmds
-from PIL import Image, ImageDraw, ImageFont
+# from PIL import Image, ImageDraw, ImageFont
 
 class FileConverter:
     """
@@ -129,24 +129,7 @@ class FileConverter:
         start_num: 시작 프레임 번호
         last_num: 마지막 프레임 번호
         """
-        # 기본 FFmpeg 명령어 구성
-        # ffmpeg_cmd = [
-        #     "ffmpeg",
-        #     "-i", input_file,  # 입력 파일 경로
-        #     "-c:v", "libx264",  # 비디오 코덱 설정
-        #     "-pix_fmt", "yuv420p",  # 픽셀 포맷 설정
-        #     "-filter_complex",  # 여러 필터를 결합하기 위해 filter_complex 사용
-        #     f"{FileConverter.padding_command()},{FileConverter.slate_command(text1, text2, text3, text4, start_num, last_num)}",  # 레터박스 및 슬레이트 필터 결합
-        #     output_file  # 출력 파일 경로
-        # ]
-
-        # test 문자값 -> shot_name 받아오기 OPN_0010
-        # test1 문자값 -> project_name 받아오기 5th_Academy
-        # test2 -> 알아서 날짜 나오고 있음
-        # 좌측 하단 -> frame numbering 여기 들어가 있는데 tc 부분으로 취합할 것
-        # test4 -> version v003
-        # 우측 하단 -> tc
-
+        # 입력으로 받은 데이터를 사용하여 슬레이트 정보를 생성함.
         shot_name = data["shot_name"]
         project_name = data["project_name"]
         task_name = data["task_name"]
@@ -184,13 +167,3 @@ class FileConverter:
             print("FFmpeg 실행 오류!")
             print(e.stdout)
             print(e.stderr)  # 오류 메시지 출력
-
-    # @staticmethod
-    # def generate_new_filename(original_file): # 같은 확장자 명이 있다면 덮어쓰지 않고, 새로 파일 넘버 생성해주는 함수
-    #     base, ext = os.path.splitext(original_file)
-    #     timestamp = datetime.now().strftime("_%Y%m%d%H%M%S")
-    #     return f"{base}{timestamp}{ext}"
-
-    #     # 사용 예
-    #     new_file = FileUtils.generate_new_filename('/nas/show/Viper/assets/Character/Hero/MDL/pub/maya/data/Hero_MDL_shaded.mov')
-    #     print(new_file)  # 새로운 파일 이름 출력

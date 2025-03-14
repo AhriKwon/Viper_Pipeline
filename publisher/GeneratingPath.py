@@ -44,8 +44,8 @@ class FilePath:
             "nuke": {
                 "work_scene": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/work/nuke/scenes/{shot_or_name}_{task}_v{version:03d}.nk",
                 "pub_scene": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/nuke/scenes/{shot_or_name}_{task}_v{version:03d}.nk",
-                "mov_comp": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/nuke/data/{shot_or_name}_{task}_v{version:03d}.mov",
-                "mov_product": f"/nas/show/{project}/product/{timestamp}/seq/{shot_or_name}_{task}_v{version:03d}.mov"
+                "mov_comp": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/nuke/data/{shot_or_name}_{task}",
+                "mov_product": f"/nas/show/{project}/product/{timestamp}/seq/{shot_or_name}_{task}"
             }
         }
         

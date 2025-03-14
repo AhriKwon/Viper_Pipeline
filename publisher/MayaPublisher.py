@@ -5,7 +5,6 @@ from pathlib import Path
 import maya.cmds as cmds
 from GeneratingPath import FilePath
 from convert_to_mov import FileConverter
-sys.path.append("nas/Viper/hyerin/Publisher") # Linux os
 
 class MayaPublisher():
     """
@@ -13,7 +12,7 @@ class MayaPublisher():
     씬 저장, Alembic 내보내기, Playblast 생성, 그리고 FFmpeg을 통한 mov 컨버팅 포함(객체 파일로 수행) 
     """
     def __init__(self, shot_data): 
-        
+        # 기본 데이터 설정
         default_data = {
         "project": "Viper",
         "entity_type": "assets",
@@ -60,7 +59,7 @@ class MayaPublisher():
                 shot_data["project"], shot_data["entity_type"], 
                 self.seq, self.shot, self.task_type, self.version
                 )
-
+        # 각 퍼블리쉬 관련 경로 설정
         self.scene_path = publish_paths["maya"]["pub_scene"]
         self.plb_path = publish_paths["maya"]["mov_plb"]
         self.prod_path = publish_paths["maya"]["mov_product"]
@@ -195,7 +194,7 @@ class MayaPublisher():
 
     def publish_lighting(self):
         """
-        라이팅 퍼블리시 자동화: 렌더 세팅 + 배치 렌더 실행
+        라이팅 퍼블리쉬 자동화 ㅣ render presets + batch render execution
         """
         output_dir = f"/nas/show/{self.project}/seq/{self.seq}/{self.shot}/{self.task_type}/pub/maya/render/v{self.version:03d}/"
         self.apply_render_settings()
@@ -203,14 +202,14 @@ class MayaPublisher():
 
     def get_renderable_camera(self):
         """
-        씬 내부에서 렌더링 가능한 카메라를 찾는다.
-        기본 persp 카메라는 제외하고, 사용자 지정 카메라를 반환.
+        씬 내부에서 렌더링 가능한 카메라를 찾아 반환
+        기본 persp 카메라는 제외하고, 사용자 지정 카메라를 반환
         """
         cameras = cmds.ls(type="camera")  # 씬의 모든 카메라 가져오기
         render_cameras = [cam for cam in cameras if not cmds.camera(cam, query=True, startupCamera=True)]
 
         if not render_cameras:
-            raise ValueError("Error: No renderable camera found in the scene.")
+            raise ValueError("Error: No renderable camera found in the scene. 카메라를 지정하세요.")
 
         return render_cameras[0]  # 첫 번째 렌더 카메라 반환
 
@@ -230,7 +229,7 @@ class MayaPublisher():
             "end_frame": 1100     # 기본값 (샷그리드에서 업데이트 예정)
         }
 
-        cmds.setAttr("defaultRenderGlobals.imageFormat", 51)  # EXR (image format)
+        cmds.setAttr("defaultRenderGlobals.imageFormat", 51)  # 51은 -> EXR 렌더 포맷 지시  (image format)
         cmds.setAttr("defaultRenderGlobals.animation", 1)  # Animation 활성화
         cmds.setAttr("defaultRenderGlobals.putFrameBeforeExt", 1)  # name.#.ext 설정
 
@@ -260,7 +259,7 @@ class MayaPublisher():
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        # 렌더 엔진 확인 (Arnold 기준)
+        # 렌더 엔진 확인 (Arnold)
         current_renderer = cmds.getAttr("defaultRenderGlobals.currentRenderer")
         if current_renderer not in ["arnold", "mayaSoftware", "redshift"]:
             raise ValueError(f"Unsupported renderer: {current_renderer}")
@@ -268,7 +267,7 @@ class MayaPublisher():
         cmds.setAttr("defaultArnoldRenderOptions.skipLicenseCheck", 1)
         cmds.setAttr("defaultArnoldRenderOptions.ignoreLights", 0)
         
-        # 배치 렌더 실행 명령
+        # 배치 렌더 실행 명령 (Arnold)
         cmds.arnoldRender(batch=True)
 
         print(f"Batch render started. Output: {output_dir}")
