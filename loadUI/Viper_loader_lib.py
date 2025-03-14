@@ -29,7 +29,7 @@ class LibraryTab:
             "thumb": "/nas/show/Viper/lib/thumbs/"
         }
 
-        self.BOOKMARK_FILE = "/nas/Viper/bookmarks.json"
+        self.BOOKMARK_FILE = "/bookmarks.json"
         self.bookmarked_items = []  # 북마크된 항목 저장
         self.bookmarked_items = self.load_bookmarks()
         self.tab_bookmark = self.ui.tabWidget_lib.widget(4)
@@ -122,10 +122,13 @@ class LibraryTab:
 
         # 썸네일 폴더 경로
         thumb_folder = self.folder_paths["thumb"]
+        file_name = file.rsplit('.')[0]
 
         # 같은 이름의 썸네일 파일 찾기 (.jpg, .png)
-        thumbnail_candidates = glob.glob(os.path.join(thumb_folder, f"{file}.*"))
-        thumbnail_path = "/nas/show/Viper/lib/thumbs/thumb.png"  # 기본 썸네일
+        thumbnail_candidates = glob.glob(os.path.join(thumb_folder, f"{file_name}.*"))
+
+        # 기본 썸네일 경로
+        thumbnail_path="/nas/show/Viper/lib/thumbs/thumb.png"
 
         for candidate in thumbnail_candidates:
             if candidate.lower().endswith((".jpg", ".png")):

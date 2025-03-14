@@ -14,6 +14,16 @@ class ShotGridManager:
         특정 프로젝트 데이터 조회
         """
         return self.db.get_project_by_name(project_name)
+    
+    def get_projects(self):
+        """
+        특정 유저가 참여하고 있는 프로젝트 목록을 조회
+        """
+        projects = []
+        data = self.db.get_database()
+        for project in data:
+            projects.append(project["project_name"])
+        return projects
 
     def get_project_assets(self, project_name):
         """
@@ -124,6 +134,36 @@ class ShotGridManager:
         publishes = task["publishes"]
 
         return publishes
+    
+    def get_task_publish_path(self, project_name, task_id):
+        """
+        테스크 ID를 기반으로 퍼블리시된 파일이 저장되는 경로를 반환
+        """
+        task = self.get_task_by_id(task_id)
+        
+        if not task:
+            return None
+        
+        # 퍼블리시 경로 설정
+        project = project_name
+        task_name = task["content"].rsplit('_',1)[1]
+        asset_name = task["content"].rsplit('_',1)[0]
+
+        assets = self.get_project_assets(project_name)
+
+        for asset in assets:
+            if asset["code"] == asset_name:
+                asset_type = asset.get("sg_asset_type", "unknown")
+
+        # 애셋 테스크인지 샷 테스크인지 확인
+        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"] :
+            sequence = task["content"].rsplit('_')[0]
+            shot = task["content"].rsplit('_',1)[0]
+            publish_path = f"/nas/show/{project}/seq/{sequence}/{shot}/{task_name}/pub"
+        else:
+            publish_path = f"/nas/show/{project}/assets/{asset_type}/{asset_name}/{task_name}/pub"
+
+        return publish_path
 
     def close(self):
         """

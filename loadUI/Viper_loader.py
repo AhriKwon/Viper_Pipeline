@@ -132,7 +132,9 @@ class ImageListWidget(QListWidget):
                 self.add_image_item(image_path)
 
         def add_image_item(self, image_path):
-            """QListWidgetItem을 PNG 이미지로 대체"""
+            """
+            QListWidgetItem을 PNG 이미지로 대체
+            """
             item = QListWidgetItem(self)  # 리스트 아이템 생성
             item_widget = QWidget()  # 아이템을 담을 위젯 생성
             layout = QVBoxLayout()
@@ -159,6 +161,7 @@ class LoadUI(QMainWindow):
     def __init__(self, username):
         super().__init__()
         self.username = username
+        self.projects = manager.get_projects()
         self.animations = []
         self.effects = []
         self.load_ui()
@@ -251,23 +254,25 @@ class LoadUI(QMainWindow):
 
             if list_item:
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
-                task_name, task_id = task_data.get("name", "id", "Unknown Task")
+                task_name = task_data.get("name", "Unknown Task")
+                task_id = task_data.get("id", "Unknown Task")
+                task_path = manager.get_task_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
+                thumbnail_path = self.get_latest_thumbnail(task_path)  # 최신 썸네일 가져오기
 
                 # file_box 생성
                 widget = QWidget()
                 layout = QVBoxLayout()
 
-                # 썸네일 QLabel (기본값 제공) 수정 필요!
+                # 썸네일 QLabel
                 label_thumb = QLabel()
-                thumbnail_path = "/nas/show/Viper/lib/thumbs/thumb.png"
-                if thumbnail_path and os.path.exists(thumbnail_path):
+                if os.path.exists(thumbnail_path):
                     pixmap = QPixmap(thumbnail_path)
                 else:
-                    pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
-                label_thumb.setPixmap(pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                    pixmap = QPixmap(160, 90)  # 기본 썸네일 생성
+                label_thumb.setPixmap(pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 label_thumb.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_thumb)
-                
+
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_task_name)
@@ -287,6 +292,32 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             self.show_task_details(task_id)
             self.show_task_works(task_id)
+
+    def get_latest_thumbnail(self, task_path):
+        """
+        해당 테스크의 퍼블리시 썸네일 폴더에서 가장 최근 생성된 이미지를 찾음
+        """
+        thumb_path = os.path.join(task_path, "thumb")
+        print(f"경로 중간점검: {thumb_path}")
+        
+        if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
+            return "/nas/Viper/thumb.png"
+        
+        # 지원하는 이미지 확장자
+        valid_extensions = (".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")
+        
+        # 해당 폴더 내 파일 목록 가져오기 (이미지 파일만 필터링)
+        image_files = [f for f in os.listdir(thumb_path) if f.lower().endswith(valid_extensions)]
+        print(f"이미지 있?: {image_files}")
+        
+        if not image_files:
+            return
+        
+        # 가장 최근 생성된 파일 찾기 (생성 시간 기준 정렬)
+        image_files.sort(key=lambda f: os.path.getctime(os.path.join(thumb_path, f)), reverse=True)
+        latest_thumbnail = os.path.join(thumb_path, image_files[0])
+
+        return latest_thumbnail
 
     def get_filetype(self, file_name):
         if file_name == None:
@@ -335,7 +366,6 @@ class LoadUI(QMainWindow):
         # works 데이터 추가
         for work in works:
             file_name = work["file_name"]  # 파일 이름이 없을 경우 기본값 설정
-            file_path = work["path"]
             file_type = self.get_filetype(file_name)
             
             # 파일 형식에 맞게 로고 QLabel을 설정

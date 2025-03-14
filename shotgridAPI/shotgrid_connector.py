@@ -78,7 +78,7 @@ class ShotGridAPI:
         sequences = ShotGridAPI.sg.find(
             "Sequence",
             [["project", "is", {"type": "Project", "id": project_id}]],
-            ["id", "code", "description"]
+            ["id", "code", "sg_asset_type", "description"]
         )
 
         for sequence in sequences:
@@ -94,7 +94,7 @@ class ShotGridAPI:
         shots = ShotGridAPI.sg.find(
             "Shot",
             [["sg_sequence", "is", {"type": "Sequence", "id": sequence_id}]],
-            ["id", "code", "description"]
+            ["id", "code", "sg_asset_type", "description"]
         )
 
         for shot in shots:
@@ -127,8 +127,8 @@ class ShotGridAPI:
         name, task_name = task['content'].rsplit('_', 1)
 
         search_patterns = [
-            f"/nas/show/*/assets/*/{name}/{task_name}/work/*/*/*.*",
-            f"/nas/show/*/seq/*/{name}/{task_name}/work/*/*/*.*"
+            f"/nas/show/*/assets/*/{name}/{task_name}/work/*/scenes/*.*",
+            f"/nas/show/*/seq/*/{name}/{task_name}/work/*/scenes/*.*"
         ]
 
         work_files = []
@@ -166,7 +166,6 @@ class ShotGridAPI:
             for publish in publishes
         ]
     
-    
     @staticmethod
     def update_task_status(task_id, new_status):
         """
@@ -184,12 +183,13 @@ class ShotGridAPI:
         file_name = os.path.basename(file_path)
         data = {
             "code": file_name,
-            "image": thumbnail_path,
             "description": description,
             "task": {"type": "Task", "id": task_id},
             "path": {"local_path": file_path}
         }
-        return ShotGridAPI.sg.create("PublishedFile", data)
+        ShotGridAPI.sg.create("PublishedFile", data)
+        ShotGridAPI.sg.update("Task", task_id, {"image": thumbnail_path})
+    
 
     @staticmethod
     def update_entity(entity_type, entity_id, description, thumbnail_path):
@@ -210,7 +210,7 @@ class ShotGridAPI:
         """
         특정 Task의 썸네일을 최신 퍼블리시된 파일의 썸네일로 업데이트
         """
-        publish_files = ShotGridAPI.get_publishes_for_task(task_id)
+        publish_files = ShotGridAPI.get_publishes(task_id)
 
         if not publish_files:
             print(f"⚠ Task {task_id}에 연결된 퍼블리시 파일이 없습니다.")
