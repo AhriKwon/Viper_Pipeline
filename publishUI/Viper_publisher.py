@@ -1,12 +1,4 @@
 try:
-    from PySide6.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout
-    from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget
-    from PySide6.QtWidgets import QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
-    from PySide6.QtUiTools import QUiLoader
-    from PySide6.QtCore import QFile
-    from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
-    from PySide6.QtCore import Qt
-except:
     from PySide2.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout
     from PySide2.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget
     from PySide2.QtWidgets import QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
@@ -14,6 +6,14 @@ except:
     from PySide2.QtCore import QFile
     from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
     from PySide2.QtCore import Qt
+except:
+    from PySide6.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout
+    from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget
+    from PySide6.QtWidgets import QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
+    from PySide6.QtUiTools import QUiLoader
+    from PySide6.QtCore import QFile
+    from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
+    from PySide6.QtCore import Qt
 
 import sys, os, time
 
@@ -77,9 +77,6 @@ class PublishUI(QMainWindow):
         #             print("폰트 로드 성공했지만 적용할 수 없습니다.")
 
 
-
-
-
         # publish 버튼을 누르면 퍼블리쉬되도록 연동
         self.publish_button = self.ui.findChild(QPushButton, "publish_button")
         # if self.publish_button:
@@ -89,7 +86,6 @@ class PublishUI(QMainWindow):
         self.lineEdit_memo = self.ui.findChild(QLineEdit, "lineEdit_memo")
         self.label_name = self.ui.findChild(QLabel, "label_filename")
         self.label_logo = self.ui.findChild(QLabel, "label_logo")
-
 
         # 파일별 설정 별도 저장하기 
         self.file_checkbox_states = {}
@@ -122,13 +118,8 @@ class PublishUI(QMainWindow):
 
     def set_checkbox(self):
 
-        # findchild : qtdesigner내의 해당 위젯 찾기
-        self.groupBox_checkbox = self.ui.findChild(QGroupBox, "groupBox_checkbox")
-
-        groupBoxLayout = self.groupBox_checkbox.layout()
-        if groupBoxLayout is None:
-            groupBoxLayout = QVBoxLayout()
-            self.groupBox_checkbox.setLayout(groupBoxLayout)
+        groupBoxLayout = QVBoxLayout()
+        self.ui.groupBox_checkbox.setLayout(groupBoxLayout)
 
         # 체크박스 옵션 설정 (마야파일일때만 실행)
         options = ["shader", "wireframe on shader", "textured", "wireframe on textured"]
