@@ -9,7 +9,6 @@ from PySide6.QtCore import (
     QFile, Qt, QPropertyAnimation, QRect, QTimer, QMimeData, QUrl,
     QByteArray, QDataStream, QIODevice, QTimer, QPoint,QPropertyAnimation,QEasingCurve, qInstallMessageHandler
     
-
     )
 from PySide6.QtGui import QRegion
 from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
@@ -213,9 +212,8 @@ class LoadUI(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
 
-                
-        """ AnimatedListView 초기화 (populate_table 호출 전에 생성) """
-       
+        self.tabWidget_info = self.ui.tabWidget_info      
+        
         self.initialize_labels()
         """My Task tab"""
         self.login_and_load_tasks()
@@ -228,13 +226,28 @@ class LoadUI(QMainWindow):
         """이벤트"""
         self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
 
+
+        self.ui.listWidget_wtg.itemClicked.connect(self.on_item_clicked)
+        self.ui.listWidget_wtg.itemClicked.connect(self.show_task_works)
+
+        self.ui.listWidget_ip.itemClicked.connect(self.on_item_clicked)
+        self.ui.listWidget_ip.itemClicked.connect(self.show_task_works)
+
+        self.ui.listWidget_fin.itemClicked.connect(self.on_item_clicked)
+        self.ui.listWidget_fin.itemClicked.connect(self.show_task_works)
+
+
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
-
+       
         # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
         self.blur_in_animation()
 
-       
+        self.create_bouncing_dots()
+
+        
+
+   
         
         
 
@@ -249,16 +262,19 @@ class LoadUI(QMainWindow):
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui)
-        self.ui.show()
+        # self.ui.show()
         
 
         # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
         list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
 
+        self.ui.tabWidget_info.setVisible(False)  
+
 
         # 행이 될 3개의 listwidget (색, 형태 조정)
 
+    
     def initialize_labels(self):
         """ 애니메이션 실행 전에 모든 라벨을 초기 위치로 설정 """
         print(" 모든 라벨 초기화")
@@ -365,6 +381,7 @@ class LoadUI(QMainWindow):
         move_animation.start()
         fade_animation.start()
         self.start_expand_animation()
+        self.start_label_left_animation()
      
 
 
@@ -437,7 +454,49 @@ class LoadUI(QMainWindow):
         # 애니메이션 실행 후 UI 강제 업데이트 (안 보이는 문제 해결)
         self.update()
 
-    
+    def create_bouncing_dots(self):
+        """ 🎬 label_central 아래에 원이 튀어오르는 애니메이션 생성 """
+        print("🔹 점프 애니메이션 원 생성 시작!")
+
+        self.dots = []  # 원 리스트
+        self.dot_animations = []  # 애니메이션 리스트
+
+        dot_count = 5  # 원 개수
+        dot_size = 3  # 원 크기
+        spacing = 20  # 원 간격
+
+        # 🔹 기준이 되는 중앙 라벨 가져오기
+        label_central = self.ui.label_central
+        central_x = label_central.x()
+        central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
+
+        for i in range(dot_count):
+            dot = QLabel(self)
+            dot.setFixedSize(dot_size, dot_size)
+            dot.move(central_x + i * spacing, central_y)
+            dot.setStyleSheet("background-color: gray; border-radius: 7px;")
+            dot.show()
+            self.dots.append(dot)
+
+            # 애니메이션 설정
+            animation = QPropertyAnimation(dot, b"pos")
+            animation.setDuration(1600)
+            animation.setStartValue(QPoint(dot.x(), central_y))  # 원래 위치
+            animation.setEndValue(QPoint(dot.x(), central_y - 10))  # 위로 점프
+            animation.setEasingCurve(QEasingCurve.OutQuad)  # 부드럽게 점프
+
+            # 애니메이션이 끝나면 다시 원래 위치로 돌아옴
+            animation.setLoopCount(-1)  # 🔹 무한 반복
+            self.dot_animations.append(animation)
+
+        self.start_bouncing_animation()
+
+    def start_bouncing_animation(self):
+        """ 점프 애니메이션 실행 (순차적으로 시작) """
+        delay = 300  # 개별 점의 딜레이 시간
+
+        for index, animation in enumerate(self.dot_animations):
+            QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
 
         
     def blur_in_animation(self):
@@ -458,8 +517,87 @@ class LoadUI(QMainWindow):
         # 부드러운 가속도 설정
         self.animation.finished.connect(self.animate_labels)
         self.animation.setEasingCurve(QEasingCurve.InOutQuad)  # 자연스럽게 변화
+
+
+        self.animation.finished.connect(self.remove_login_message)
+
+
         self.animation.start()
 
+        
+
+        self.show_login_message()  # ✅ 로그인 메시지 애니메이션 시작
+
+    def show_login_message(self):
+        """✅ 로그인 메시지를 중앙에 표시하고 글자 간격이 벌어지는 애니메이션 실행"""
+        print("🎬 로그인 메시지 애니메이션 시작!")
+
+        text = "12345456로 로그인되셨습니다"
+        self.letter_labels = []  # 개별 글자 라벨 저장
+        self.letter_animations = []  # 애니메이션 리스트
+
+        # 🔹 중앙 정렬 기준
+        window_width = self.width()
+        window_height = self.height()
+        start_x = window_width // 2
+        start_y = window_height // 2 - 20  # 🔹 중앙 위치
+       
+        letter_spacing = 20  # 글자 간격 (최종 간격)
+        total_text_width = len(text) * letter_spacing  # 전체 텍스트의 너비 계산
+        
+        # 개별 글자 QLabel 생성
+        for i, char in enumerate(text):
+            letter_label = QLabel(char, self)
+            letter_label.setStyleSheet("font-size: 10px; color: white;")
+            letter_label.setGeometry(start_x, start_y, 20, 30)  # 초기 위치 (모든 글자가 한 점에 모여있음)
+            letter_label.show()
+            self.letter_labels.append(letter_label)
+
+            # 🔹 글자가 점점 퍼지는 애니메이션
+            final_x = start_x - ((len(text) * letter_spacing) // 2) + (i * letter_spacing)  # 중앙 정렬된 최종 위치
+            animation = QPropertyAnimation(letter_label, b"pos")
+            animation.setDuration(3000)  # 1초 동안 진행
+            animation.setStartValue(QPoint(start_x, start_y))
+            animation.setEndValue(QPoint(final_x, start_y))
+            animation.setEasingCurve(QEasingCurve.OutCubic)
+
+            self.letter_animations.append(animation)
+
+        # ✅ 모든 애니메이션 시작
+        for anim in self.letter_animations:
+            anim.start()
+
+        QTimer.singleShot(7300, self.remove_login_message)
+
+    def fade_out_login_message(self):
+        """✅ 로그인 메시지를 서서히 사라지게 만듦"""
+        print("🎬 로그인 메시지 페이드아웃 시작!")
+
+        self.fade_animations = []  # 페이드아웃 애니메이션 리스트
+
+        for label in self.letter_labels:
+            fade_animation = QPropertyAnimation(label, b"windowOpacity")
+            fade_animation.setDuration(1000)  # 1초 동안 서서히 사라짐
+            fade_animation.setStartValue(1.0)  # 시작은 불투명
+            fade_animation.setEndValue(0.0)  # 끝은 완전 투명
+            fade_animation.setEasingCurve(QEasingCurve.OutCubic)
+
+            self.fade_animations.append(fade_animation)
+            fade_animation.start()
+
+        # ✅ 애니메이션이 끝난 후 QLabel 삭제
+        QTimer.singleShot(1000, self.remove_login_message)
+
+    def remove_login_message(self):
+        """✅ 로그인 메시지 완전히 삭제"""
+        print("🗑️ 로그인 메시지 제거")
+        for label in self.letter_labels:
+            label.deleteLater()
+        self.letter_labels.clear()
+
+   
+
+     
 #=============================로그인, task 목록을 가져오는 함수====================================
 
     def login_and_load_tasks(self):
@@ -505,8 +643,8 @@ class LoadUI(QMainWindow):
                 target_list.addItem(list_item)
 
                 # 리스트 아이템 클릭 시 show_task_details 실행
-                target_list.itemClicked.connect(self.on_item_clicked)
-                target_list.itemClicked.connect(self.show_task_works)
+                # target_list.itemClicked.connect(self.on_item_clicked)
+                # target_list.itemClicked.connect(self.show_task_works)
                 
 
             self.update_list_items(self.list_widgets[index])
@@ -579,6 +717,10 @@ class LoadUI(QMainWindow):
         self.ui.label_type.setText(file_type)  
 
         self.ui.tabWidget_info.show()
+        QTimer.singleShot(10, self.animate_info_labels)
+        print ("show task details")
+
+       
 
     def show_task_works(self, task_id, event=None):
         """
@@ -601,6 +743,107 @@ class LoadUI(QMainWindow):
 
             self.ui.listWidget_works.addItem(item)
 
+    # def animate_info_labels(self):
+    #     """📌 Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+    #     print("🚀 Task 정보 라벨 애니메이션 시작!")
+
+    #     # ✅ 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
+    #     label_pairs = [
+    #         (self.ui.label_6, self.ui.label_filename),
+    #         (self.ui.label_7, self.ui.label_type),
+    #         (self.ui.label_8, self.ui.label_startdate),
+    #         (self.ui.label_9, self.ui.label_duedate)
+    #     ]
+
+    #     # ✅ 원래 위치 저장 (화면에 보이는 상태)
+    #     self.original_positions = {
+    #         label: QPoint(label.x(), label.y()) for pair in label_pairs for label in pair
+    #     }
+
+    #     # ✅ 시작 위치 (화면 왼쪽 바깥으로 이동)
+    #     screen_offset = -200  # 충분히 왼쪽으로 이동시켜서 보이지 않도록 설정
+    #     self.start_positions = {
+    #         label: QPoint(screen_offset, label.y()) for pair in label_pairs for label in pair
+    #     }
+
+    #     # ✅ 애니메이션 실행 전에 라벨을 화면 왼쪽 바깥으로 이동 후 숨김
+    #     for label_set in label_pairs:
+    #         for label in label_set:
+    #             print (label)
+    #             label.move(self.start_positions[label])  # 처음엔 화면 밖으로 이동
+    #             label.setVisible(True)  # ✅ 처음부터 보여야 애니메이션 가능
+
+    #     # ✅ UI 업데이트 후 100ms 뒤에 애니메이션 실행
+    #     QTimer.singleShot(100, self._start_info_label_animation)
+
+    def animate_info_labels(self):
+        """📌 Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+        print("🚀 Task 정보 라벨 애니메이션 시작!")
+
+        # ✅ 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
+        label_pairs = [
+            ("label_6", "label_filename"),
+            ("label_7", "label_type"),
+            ("label_8", "label_startdate"),
+            ("label_9", "label_duedate")
+        ]
+
+        # ✅ 라벨 객체 저장
+        self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
+
+        print ("****" * 5000)
+
+        # ✅ 원래 위치 저장
+        self.original_positions = {
+            label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
+        }
+
+        print ("ㅗㅗㅗㅗ" * 5000)
+
+        # ✅ 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
+        screen_offset = -200  
+        self.start_positions = {
+            label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
+        }
+
+        print ("ㅠㅠㅠㅠㅠ" * 5000)
+
+        # ✅ 애니메이션 실행 전에 위치 강제 설정
+        for pair in self.labels:
+            
+            for label in pair:
+                print (pair, label)
+                label.move(self.start_positions[label])  
+                label.setVisible(True)  
+
+        # ✅ UI 업데이트 후 100ms 뒤에 애니메이션 실행
+        QTimer.singleShot(100, self._start_info_label_animation)
+
+
+    def _start_info_label_animation(self):
+        """📌 Task 정보 라벨 등장 애니메이션 실행"""
+        print("🎬 Task 정보 라벨 등장 애니메이션 실행!")
+
+        self.animations = []
+        delay = 0
+
+        for pair in self.labels:
+            for label in pair:
+                animation = QPropertyAnimation(label, b"pos", self)
+                animation.setDuration(1500)  
+                print (self.start_positions[label])
+                animation.setStartValue(self.start_positions[label])  
+                animation.setEndValue(self.original_positions[label])  
+                animation.setEasingCurve(QEasingCurve.OutBack)  
+
+                QTimer.singleShot(delay, animation.start)  # ✅ 순차적 실행
+                self.animations.append(animation)
+
+            delay += 200  # ✅ 딜레이 추가 (순차적 등장)
+
+       
+    
+    
     def run_file(self):
         """
         설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
@@ -644,9 +887,12 @@ class LoadUI(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    login_window = LoginWindow()
-    if login_window.exec():
-        sys.exit(app.exec())
+    # login_window = LoginWindow()
+    login_window = LoadUI("owlgrowl0v0@gmail.com")
+    login_window.show()
+    # if login_window.exec():
+        # sys.exit(app.exec())
+    app.exec()
 
 
 

@@ -1532,7 +1532,7 @@ QPushButton#pushButton_reference:hover {
    <widget class="QLabel" name="label_user">
     <property name="geometry">
      <rect>
-      <x>1140</x>
+      <x>1139</x>
       <y>40</y>
       <width>30</width>
       <height>30</height>

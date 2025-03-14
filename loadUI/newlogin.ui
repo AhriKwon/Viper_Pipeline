@@ -69,6 +69,12 @@
      <height>41</height>
     </rect>
    </property>
+   <property name="font">
+    <font>
+     <family>Pretendard Light</family>
+     <pointsize>-1</pointsize>
+    </font>
+   </property>
    <property name="styleSheet">
     <string notr="true">QPushButton {
     background-color: #ffffff;  /* 배경색: 흰색 */
@@ -98,6 +104,12 @@ QPushButton:hover {
      <width>141</width>
      <height>41</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>Pretendard Light</family>
+     <pointsize>-1</pointsize>
+    </font>
    </property>
    <property name="styleSheet">
     <string notr="true">QPushButton {
@@ -195,6 +207,12 @@ QLineEdit:focus {
      <width>321</width>
      <height>19</height>
     </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>/home/rapa/Viper/loadUI/pont/public/static/Pre-thin.otf</family>
+     <pointsize>-1</pointsize>
+    </font>
    </property>
    <property name="styleSheet">
     <string notr="true">QLabel {
