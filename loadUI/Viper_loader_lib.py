@@ -8,6 +8,8 @@ from PySide6.QtCore import(
 from PySide6.QtGui import QPixmap, QDrag
 import os, sys, json, glob
 
+import UI_support
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
@@ -29,7 +31,7 @@ class LibraryTab:
             "thumb": "/nas/show/Viper/lib/thumbs/"
         }
 
-        self.BOOKMARK_FILE = "/bookmarks.json"
+        self.BOOKMARK_FILE = "/home/rapa/bookmarks.json"
         self.bookmarked_items = []  # 북마크된 항목 저장
         self.bookmarked_items = self.load_bookmarks()
         self.tab_bookmark = self.ui.tabWidget_lib.widget(4)
@@ -56,6 +58,10 @@ class LibraryTab:
         # 테이블 위젯의 헤더 숨기기
         self.table_widget.horizontalHeader().setVisible(False)  # 가로 헤더 숨기기
         self.table_widget.verticalHeader().setVisible(False)  # 세로 헤더 숨기기
+
+        self.table_widget.setStyleSheet("""QTableWidget { background: transparent; border: none; }
+                                   QTableWidget::item { background: transparent; }""")
+
 
         # tabWidget_lib 내부에 레이아웃이 있는지 확인 후 추가
         if self.ui.tabWidget_lib.layout() is None:
@@ -128,7 +134,7 @@ class LibraryTab:
         thumbnail_candidates = glob.glob(os.path.join(thumb_folder, f"{file_name}.*"))
 
         # 기본 썸네일 경로
-        thumbnail_path="/nas/show/Viper/lib/thumbs/thumb.png"
+        thumbnail_path="/nas/Viper/thumb.jpg"
 
         for candidate in thumbnail_candidates:
             if candidate.lower().endswith((".jpg", ".png")):
@@ -178,16 +184,22 @@ class LibraryTab:
         else:
             pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
 
-        label_thumbnail.setPixmap(pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        scaled_pixmap = pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        rounded_pixmap = UI_support.round_corners_pixmap(scaled_pixmap, radius=30)
+
+        label_thumbnail.setPixmap(rounded_pixmap)
         label_thumbnail.setAlignment(Qt.AlignCenter)
 
         # 폴더 이름 QLabel
         label_name = QLabel(file_name)
         label_name.setAlignment(Qt.AlignCenter)
+        label_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
+
 
         # 북마크 체크박스
         bookmark_checkbox = QCheckBox()
         bookmark_checkbox.setStyleSheet("QCheckBox { margin-left: 10px; }")
+        bookmark_checkbox.setMaximumSize(25, 25)
 
         # 기존 북마크 여부 반영
         bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
