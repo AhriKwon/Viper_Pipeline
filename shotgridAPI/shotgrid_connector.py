@@ -8,9 +8,9 @@ class ShotGridAPI:
     샷그리드 API 연결 및 프로젝트 데이터 조회, 업데이트
     """
 
-    SG_URL = "https://hi.shotgrid.autodesk.com"
+    SG_URL = "https://5thacademy.shotgrid.autodesk.com"
     SCRIPT_NAME = "Viper_key"
-    API_KEY = "qmnpuxldvlr(exx6wnrtziwWy"
+    API_KEY = "bxdqpmdbwQnu0ooivsiilii&u"
 
     sg = shotgun_api3.Shotgun(SG_URL, SCRIPT_NAME, API_KEY)
 

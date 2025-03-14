@@ -132,7 +132,7 @@ class LibraryTab:
                 thumbnail_path = candidate  # 존재하는 썸네일을 사용
                 break  # 가장 첫 번째로 발견된 썸네일을 사용
 
-    # 테이블 셀 위젯 생성
+        # 테이블 셀 위젯 생성
         cell_widget = self.make_table_cell(file, file_path, thumbnail_path)
 
         # 테이블에 위젯 추가
@@ -173,9 +173,9 @@ class LibraryTab:
         if thumbnail_path and os.path.exists(thumbnail_path):
             pixmap = QPixmap(thumbnail_path)
         else:
-            pixmap = QPixmap(200, 150)  # 기본 썸네일 생성
+            pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
 
-        label_thumbnail.setPixmap(pixmap.scaled(80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+        label_thumbnail.setPixmap(pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         label_thumbnail.setAlignment(Qt.AlignCenter)
 
         # 폴더 이름 QLabel

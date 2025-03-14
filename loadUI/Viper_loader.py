@@ -251,16 +251,27 @@ class LoadUI(QMainWindow):
 
             if list_item:
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
-                task_name = task_data.get("name", "Unknown Task")
+                task_name, task_id = task_data.get("name", "id", "Unknown Task")
 
                 # file_box 생성
                 widget = QWidget()
                 layout = QVBoxLayout()
 
+                # 썸네일 QLabel (기본값 제공) 수정 필요!
+                label_thumb = QLabel()
+                thumbnail_path = "/nas/show/Viper/lib/thumbs/thumb.png"
+                if thumbnail_path and os.path.exists(thumbnail_path):
+                    pixmap = QPixmap(thumbnail_path)
+                else:
+                    pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
+                label_thumb.setPixmap(pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                label_thumb.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label_thumb)
+                
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_task_name)
-                
+
                 widget.setLayout(layout)
 
                 # 기존 list_item의 크기 조정 및 file_box 추가
