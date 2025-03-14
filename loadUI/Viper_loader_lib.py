@@ -6,7 +6,7 @@ from PySide6.QtCore import(
     Qt, QMimeData, QUrl
 )
 from PySide6.QtGui import QPixmap, QDrag
-import os, sys
+import os, sys, json, glob
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from shotgrid_manager import ShotGridManager
@@ -29,11 +29,14 @@ class LibraryTab:
             "thumb": "/nas/show/Viper/lib/thumbs/"
         }
 
+        self.BOOKMARK_FILE = "/bookmarks.json"
         self.bookmarked_items = []  # 북마크된 항목 저장
+        self.bookmarked_items = self.load_bookmarks()
+        self.tab_bookmark = self.ui.tabWidget_lib.widget(4)
 
         self.load_files(1)
 
-        self.ui.pushButton_import.clicked.connect(self.import_file)
+        # self.ui.pushButton_import.clicked.connect(self.import_file)
 
     def setup_table(self):
         """
@@ -69,7 +72,17 @@ class LibraryTab:
         """
         탭 변경 시 폴더 내용 업데이트
         """
-        self.ui.tabWidget_lib.currentChanged.connect(self.load_files)
+        self.ui.tabWidget_lib.currentChanged.connect(self.on_tab_changed)
+    
+    def on_tab_changed(self, index):
+        """
+        탭 변경 시, 북마크 탭이라면 북마크된 파일만 표시
+        """
+        if index == 4:  # 북마크 탭이 선택되었을 때
+            self.load_bookmarked_files()
+        else:
+            self.load_files(index)
+
 
     def load_files(self, index):
         """
@@ -107,9 +120,22 @@ class LibraryTab:
 
         file_path = os.path.join(folder_path, file)
 
-        # 썸네일 기본 경로 설정
-        thumbnail_path = "/nas/show/Viper/lib/thumbs/thumb.png"
+        # 썸네일 폴더 경로
+        thumb_folder = self.folder_paths["thumb"]
+        file_name = file.rsplit('.')[0]
 
+        # 같은 이름의 썸네일 파일 찾기 (.jpg, .png)
+        thumbnail_candidates = glob.glob(os.path.join(thumb_folder, f"{file_name}.*"))
+
+        # 기본 썸네일 경로
+        thumbnail_path="/nas/show/Viper/lib/thumbs/thumb.png"
+
+        for candidate in thumbnail_candidates:
+            if candidate.lower().endswith((".jpg", ".png")):
+                thumbnail_path = candidate  # 존재하는 썸네일을 사용
+                break  # 가장 첫 번째로 발견된 썸네일을 사용
+
+        # 테이블 셀 위젯 생성
         cell_widget = self.make_table_cell(file, file_path, thumbnail_path)
 
         # 테이블에 위젯 추가
@@ -117,11 +143,30 @@ class LibraryTab:
         self.table_widget.setColumnWidth(col, 200)  # 컬럼 너비 설정
         self.table_widget.setRowHeight(row, 150)  # 행 높이 설정
 
+    def load_bookmarked_files(self):
+        """
+        북마크된 파일들을 불러와 테이블에 표시
+        """
+        self.table_widget.setRowCount(0)
+        self.table_widget.setColumnCount(3)  # 3개의 컬럼 설정
+
+        row = 0
+        col = 0
+
+        for file_path, is_bookmarked in self.bookmarked_items.items():
+            if is_bookmarked:  # 북마크된 파일만 표시
+                file_name = os.path.basename(file_path)
+                self.add_table_item(file_name, os.path.dirname(file_path), row, col)
+
+                col += 1
+                if col >= 3:
+                    col = 0
+                    row += 1
+
     def make_table_cell(self, file_name, file_path, thumbnail_path):
         """
         테이블 위젯 셀에 넣을 위젯 제작(썸네일, 폴더 이름, 북마크 체크박스 포함)
         """
-        # 셀에 들어갈 위젯 생성
         cell_widget = QWidget()
         layout = QVBoxLayout()
         H_layout = QHBoxLayout()
@@ -131,8 +176,9 @@ class LibraryTab:
         if thumbnail_path and os.path.exists(thumbnail_path):
             pixmap = QPixmap(thumbnail_path)
         else:
-            pixmap = QPixmap(200, 150)  # 기본 썸네일 생성
-         
+            pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
+
+        label_thumbnail.setPixmap(pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         label_thumbnail.setAlignment(Qt.AlignCenter)
 
         # 폴더 이름 QLabel
@@ -141,15 +187,20 @@ class LibraryTab:
 
         # 북마크 체크박스
         bookmark_checkbox = QCheckBox()
-        bookmark_checkbox.setStyleSheet("QCheckBox { margin-left: 10px; }")  # 체크박스 스타일 조정
-        bookmark_checkbox.stateChanged.connect(lambda state, f=file_name: self.update_bookmark(state, f))
+        bookmark_checkbox.setStyleSheet("QCheckBox { margin-left: 10px; }")
+
+        # 기존 북마크 여부 반영
+        bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
+
+        # 체크박스 클릭 시 업데이트 함수 실행
+        bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
 
         # 레이아웃에 추가
         layout.addWidget(label_thumbnail)
         H_layout.addWidget(label_name)
         H_layout.addWidget(bookmark_checkbox)
         layout.addLayout(H_layout)
-        layout.setAlignment(Qt.AlignCenter)  # 모든 요소 중앙 정렬
+        layout.setAlignment(Qt.AlignCenter)
         cell_widget.setLayout(layout)
 
         # 셀에 파일 경로 저장
@@ -157,30 +208,54 @@ class LibraryTab:
 
         return cell_widget
 
-    def update_bookmark(self, state, folder_name):
+
+    def save_bookmarks(self):
         """
-        북마크 상태 업데이트
+        북마크 정보를 JSON 파일에 저장
+        """
+        with open(self.BOOKMARK_FILE, "w") as file:
+            json.dump(self.bookmarked_items, file, indent=4)
+
+    def load_bookmarks(self):
+        """
+        JSON 파일에서 북마크 리스트 불러오기
+        """
+        if not os.path.exists(self.BOOKMARK_FILE):
+            return {}
+
+        with open(self.BOOKMARK_FILE, "r") as file:
+            return json.load(file)
+
+    def update_bookmark(self, state, file_path):
+        """
+        북마크 상태 업데이트 및 저장
         """
         if state == Qt.Checked:
-            if folder_name not in self.bookmarked_items:
-                self.bookmarked_items.append(folder_name)
+            if file_path not in self.bookmarked_items:
+                self.bookmarked_items.append(file_path)
         else:
-            if folder_name in self.bookmarked_items:
-                self.bookmarked_items.remove(folder_name)
+            if file_path in self.bookmarked_items:
+                self.bookmarked_items.remove(file_path)
 
-        self.update_bookmark_tab()
+        # 북마크 목록 저장
+        self.save_bookmarks(self.bookmarked_items)
 
-    def update_bookmark_tab(self):
+    def update_bookmark(self, state, file_path):
         """
-        북마크된 폴더를 `tab_bookmark`에 업데이트
+        북마크 상태 업데이트 및 저장
         """
-        self.ui.tab_bookmark.setRowCount(0)  # 기존 항목 초기화
-        for folder_name in self.bookmarked_items:
-            row_position = self.ui.tab_bookmark.rowCount()
-            self.ui.tab_bookmark.insertRow(row_position)
-            item = QTableWidgetItem(folder_name)
-            item.setTextAlignment(Qt.AlignCenter)
-            self.ui.tab_bookmark.setItem(row_position, 0, item)
+        if state == Qt.Checked:
+            self.bookmarked_items[file_path] = True  # 북마크 추가
+        else:
+            self.bookmarked_items[file_path] = False  # 북마크 해제
+
+        # 북마크 목록 저장
+        self.save_bookmarks()
+
+        # 북마크 탭이 활성화된 경우 즉시 갱신
+        if self.ui.tabWidget_lib.currentIndex() == 4:
+            self.load_bookmarked_files()
+
 
     
 """
@@ -189,19 +264,19 @@ class LibraryTab:
 class DraggableTableWidget(QTableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setDragEnabled(True)  # 드래그 활성화
-        self.setFocusPolicy(Qt.ClickFocus)  # 클릭으로 포커스 받을 수 있도록 설정
-        self.start_pos = None  # 마우스 클릭 시작 위치 저장
-        self.selected_items = []  # 선택된 아이템 경로 저장
+        self.setDragEnabled(True) # 드래그 활성화
+        self.setFocusPolicy(Qt.ClickFocus) # 클릭으로 포커스 받을 수 있도록 설정
+        self.start_pos = None # 마우스 클릭 시작 위치 저장
+        self.selected_items = [] # 선택된 아이템 경로 저장
 
     def mousePressEvent(self, event):
         """
         마우스 클릭 시 선택된 셀의 파일 경로 가져오기
         """
-        super().mousePressEvent(event)  # 기본 선택 로직 실행
+        super().mousePressEvent(event) # 기본 선택 로직 실행
 
         if event.button() == Qt.LeftButton:
-            self.start_pos = event.pos()  # 클릭한 위치 저장 (드래그 판별용)
+            self.start_pos = event.pos() # 클릭한 위치 저장 (드래그 판별용)
             selected_cells = self.selectedIndexes()
 
             if not selected_cells:

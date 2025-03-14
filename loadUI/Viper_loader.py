@@ -37,7 +37,7 @@ class LoginWindow(QDialog):
     
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/login.ui"
+        ui_file_path = f"{current_directory}/newlogin.ui"
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
@@ -47,13 +47,51 @@ class LoginWindow(QDialog):
 
         # 로그인 창 크기 조정 
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(600, 700)
+        self.resize(734, 491)
+        # 창 프레임 제거
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.NoDropShadowWindowHint)
+
+        # 창 배경을 검정색으로 설정하여 투명도 문제 해결
+        self.setStyleSheet("background-color: black; border: none;")
         
-        
+        self.label_background = self.ui.findChild(QLabel, "label_background")
+        self.label_id = self.ui.findChild(QLabel, "label_id")
         self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
         self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
-       
+        self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help")
+
+        image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
+        self.label_background.setPixmap(QPixmap(image_path))
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        image_path = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인
+        self.label_id.setPixmap(QPixmap(image_path))
+        self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        #로그인 버튼
         self.pushButton_login.clicked.connect(self.attempt_login)
+
+    def resizeEvent(self, event):
+   
+        self.label_background.setGeometry(0, 0, self.width(), self.height())
+        current_directory = os.path.dirname(__file__)
+
+        # 원본 이미지를 직접 가져와서 크기 조정 (고화질 유지)
+        pixmap = QPixmap(f"{current_directory}/forui/Group 3994.png")
+
+        # QLabel 크기에 맞게 고품질 리사이징 적용
+        self.label_background.setPixmap(
+            pixmap.scaled(
+                self.label_background.size(),  
+                Qt.KeepAspectRatioByExpanding,  # 원본 비율 유지하면서 확장
+                Qt.SmoothTransformation  # 고품질 스케일링 적용
+            )
+        )
+
+        super().resizeEvent(event)
+    
 
     # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
     def attempt_login(self):
@@ -73,19 +111,64 @@ class LoginWindow(QDialog):
             popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
             return
 
+class ImageListWidget(QListWidget):
+        def __init__(self, parent=None, image_paths=[]):
+            super().__init__(parent)
 
- #==========================================================================================
- #====================loader ui class : LoadUI==============================================
+            # 리스트 배경을 투명하게 설정
+            self.setStyleSheet("""
+                QListWidget {
+                    background: transparent;
+                    border: none;
+                }
+                QListWidget::item {
+                    background: transparent;
+                    border: none;
+                }
+            """)
+
+            # 리스트 아이템을 PNG 이미지로 추가
+            for image_path in image_paths:
+                self.add_image_item(image_path)
+
+        def add_image_item(self, image_path):
+            """
+            QListWidgetItem을 PNG 이미지로 대체
+            """
+            item = QListWidgetItem(self)  # 리스트 아이템 생성
+            item_widget = QWidget()  # 아이템을 담을 위젯 생성
+            layout = QVBoxLayout()
+
+            # QLabel을 사용하여 이미지 표시
+            label = QLabel()
+            pixmap = QPixmap(image_path)
+            label.setPixmap(pixmap)
+            label.setScaledContents(True)  # 크기 조정 가능하도록 설정
+
+            layout.addWidget(label)
+            item_widget.setLayout(layout)
+
+            item.setSizeHint(pixmap.size())  # 아이템 크기 설정
+            self.addItem(item)
+            self.setItemWidget(item, item_widget)  # 아이템을 이미지 위젯으로 대체
+
+            
+#==========================================================================================
+#====================loader ui class : LoadUI==============================================
 
 
 class LoadUI(QMainWindow):
     def __init__(self, username):
         super().__init__()
         self.username = username
+        self.projects = manager.get_projects()
         self.animations = []
         self.effects = []
         self.load_ui()
         
+        self.setGeometry(100, 100, 1800, 1000)
+        self.resize(1000, 650)
+
         """My Task tab"""
         self.login_and_load_tasks()
 
@@ -105,7 +188,7 @@ class LoadUI(QMainWindow):
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/load.ui"
+        ui_file_path = f"{current_directory}/lastload.ui"
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()
@@ -113,17 +196,7 @@ class LoadUI(QMainWindow):
         self.setCentralWidget(self.ui)
         self.ui.show()
 
-        # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
-        list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
-        row_colors = ["#012E40", "#03A696", "#024149", "#F28705"]
-
-        # 행이 될 3개의 listwidget (색, 형태 조정)
-        for i, list_widget in enumerate(self.list_widgets):
-            list_widget.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
-        
-        for i, list_label in enumerate(list_labels):
-            list_label.setStyleSheet(f"background-color: {row_colors[i]}; border-radius: 15px; margin-right: 20px;")
 
 
 #=============================로그인, task 목록을 가져오는 함수====================================
@@ -182,17 +255,29 @@ class LoadUI(QMainWindow):
             if list_item:
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
                 task_name = task_data.get("name", "Unknown Task")
+                task_id = task_data.get("id", "Unknown Task")
+                task_path = manager.get_task_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
+                thumbnail_path = self.get_latest_thumbnail(task_path)  # 최신 썸네일 가져오기
 
                 # file_box 생성
                 widget = QWidget()
                 layout = QVBoxLayout()
 
+                # 썸네일 QLabel
+                label_thumb = QLabel()
+                if os.path.exists(thumbnail_path):
+                    pixmap = QPixmap(thumbnail_path)
+                else:
+                    pixmap = QPixmap(160, 90)  # 기본 썸네일 생성
+                label_thumb.setPixmap(pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                label_thumb.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label_thumb)
+
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
                 layout.addWidget(label_task_name)
-                
+
                 widget.setLayout(layout)
-                widget.setContentsMargins(20, 0, 0, 0)
 
                 # 기존 list_item의 크기 조정 및 file_box 추가
                 list_item.setSizeHint(widget.sizeHint())
@@ -207,6 +292,32 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             self.show_task_details(task_id)
             self.show_task_works(task_id)
+
+    def get_latest_thumbnail(self, task_path):
+        """
+        해당 테스크의 퍼블리시 썸네일 폴더에서 가장 최근 생성된 이미지를 찾음
+        """
+        thumb_path = os.path.join(task_path, "thumb")
+        print(f"경로 중간점검: {thumb_path}")
+        
+        if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
+            return "/nas/Viper/thumb.png"
+        
+        # 지원하는 이미지 확장자
+        valid_extensions = (".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")
+        
+        # 해당 폴더 내 파일 목록 가져오기 (이미지 파일만 필터링)
+        image_files = [f for f in os.listdir(thumb_path) if f.lower().endswith(valid_extensions)]
+        print(f"이미지 있?: {image_files}")
+        
+        if not image_files:
+            return
+        
+        # 가장 최근 생성된 파일 찾기 (생성 시간 기준 정렬)
+        image_files.sort(key=lambda f: os.path.getctime(os.path.join(thumb_path, f)), reverse=True)
+        latest_thumbnail = os.path.join(thumb_path, image_files[0])
+
+        return latest_thumbnail
 
     def get_filetype(self, file_name):
         if file_name == None:
@@ -255,7 +366,6 @@ class LoadUI(QMainWindow):
         # works 데이터 추가
         for work in works:
             file_name = work["file_name"]  # 파일 이름이 없을 경우 기본값 설정
-            file_path = work["path"]
             file_type = self.get_filetype(file_name)
             
             # 파일 형식에 맞게 로고 QLabel을 설정
