@@ -437,7 +437,6 @@ class LoadUI(QMainWindow):
         else:
             UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
-
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     login_window = LoginWindow()
