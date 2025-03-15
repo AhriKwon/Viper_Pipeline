@@ -5,7 +5,7 @@ try:
         QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
     )
     from PySide2.QtUiTools import QUiLoader
-    from PySide2.QtCore import Qt, QFile
+    from PySide2.QtCore import Qt, QFile, QTimer
     from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
 except:
     from PySide6.QtWidgets import (
@@ -14,7 +14,7 @@ except:
         QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
     )
     from PySide6.QtUiTools import QUiLoader
-    from PySide6.QtCore import Qt, QFile
+    from PySide6.QtCore import Qt, QFile, QTimer
     from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
 
 import sys, os, time, subprocess
@@ -119,11 +119,23 @@ class PublishUI(QMainWindow):
         """
         스크린샷 촬영 및 썸네일 업데이트
         """
-        save_path = self.get_thumbnail_save_path()
-        save_path = "/home/rapa/"
-        command = f"gnome-screenshot -a -f {save_path}"
-        subprocess.run(command, shell=True)
+        save_path = "/nas/show/Viper/test.png"
+        
+        # gnome-screenshot 실행을 비동기적으로 실행
+        process = subprocess.Popen(["gnome-screenshot", "-a", "-f", save_path], 
+                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
+        stdout, stderr = process.communicate()
+        print(stdout.decode())  # 표준 출력
+        print(stderr.decode())  # 표준 에러
+
+        # 스크린샷이 찍힐 시간을 고려하여 딜레이 추가
+        QTimer.singleShot(1000, lambda: self.update_thumbnail(save_path))
+
+    def update_thumbnail(self, save_path):
+        """
+        캡처된 썸네일을 UI에 업데이트
+        """
         if os.path.exists(save_path):
             pixmap = QPixmap(save_path).scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.ui.label_thumbnail.setPixmap(pixmap)
