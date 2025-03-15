@@ -45,3 +45,20 @@ def round_corners_pixmap(pixmap, radius=10):
     painter.end()
 
     return rounded
+
+#================================UI를 윈도우 가운데에서 시작=====================================
+
+from PySide6.QtWidgets import QApplication, QMainWindow
+from PySide6.QtGui import QScreen
+
+def center_on_screen(ui):
+        """
+        현재 사용하는 화면의 중앙에 윈도우를 배치
+        """
+        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
+        screen_geometry = screen.availableGeometry()  # 사용 가능한 화면 크기
+
+        window_geometry = ui.frameGeometry()  # 현재 창의 크기
+        window_geometry.moveCenter(screen_geometry.center())  # 화면의 중앙으로 이동
+
+        ui.move(window_geometry.topLeft())  # 이동된 위치로 창을 배치
