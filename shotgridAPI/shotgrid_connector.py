@@ -185,12 +185,26 @@ class ShotGridAPI:
             "code": file_name,
             "description": description,
             "task": {"type": "Task", "id": task_id},
-            "path": {"local_path": file_path}
+            "path": {"local_path": file_path},
+            "created_by": {"type": "HumanUser", "id": 121},
         }
         ShotGridAPI.sg.create("PublishedFile", data)
         ShotGridAPI.sg.update("Task", task_id, {"image": thumbnail_path})
     
+    @staticmethod
+    def create_version(task_id, description):
+        """
+        새로운 버전 파일을 Task에 등록
+        """
+        version_data = {
+            "code": file_name,
+            "description": description,
+            "task": {"type": "Task", "id": task_id},
+            "created_by": {"type": "HumanUser", "id": 121},  
+        }
 
+        return ShotGridAPI.sg.create("Version", version_data)
+    
     @staticmethod
     def update_entity(entity_type, entity_id, description, thumbnail_path):
         """

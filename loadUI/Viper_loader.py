@@ -38,6 +38,7 @@ class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.load_ui()
+        UI_support.center_on_screen(self)
     
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -200,10 +201,13 @@ class LoadUI(QMainWindow):
         self.animations = []
         self.effects = []
         self.load_ui()
+        
         self.setGeometry(100, 100, 1240, 800)
         self.resize(1240, 720)
         self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
+        
+        UI_support.center_on_screen(self)
 
         """My Task tab"""
         self.login_and_load_tasks()

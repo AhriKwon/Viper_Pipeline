@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>632</width>
-    <height>700</height>
+    <width>630</width>
+    <height>690</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>632</width>
-    <height>700</height>
+    <width>630</width>
+    <height>690</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>632</width>
-    <height>700</height>
+    <width>630</width>
+    <height>690</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,9 +29,9 @@
    <widget class="QLabel" name="label_pubback">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>-10</x>
       <y>0</y>
-      <width>641</width>
+      <width>651</width>
       <height>641</height>
      </rect>
     </property>
@@ -46,26 +46,6 @@
     </property>
     <property name="text">
      <string/>
-    </property>
-   </widget>
-   <widget class="QTableWidget" name="tableWidget">
-    <property name="geometry">
-     <rect>
-      <x>370</x>
-      <y>100</y>
-      <width>261</width>
-      <height>361</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QTableWidget" name="tableWidget_filelist">
-    <property name="geometry">
-     <rect>
-      <x>40</x>
-      <y>170</y>
-      <width>291</width>
-      <height>291</height>
-     </rect>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_publish">
@@ -103,42 +83,6 @@ QPushButton:pressed {
      <string>Publish</string>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox_checkbox">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>360</y>
-      <width>241</width>
-      <height>91</height>
-     </rect>
-    </property>
-    <property name="title">
-     <string/>
-    </property>
-   </widget>
-   <widget class="QLineEdit" name="lineEdit_memo">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>250</y>
-      <width>241</width>
-      <height>111</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_thumbnail">
-    <property name="geometry">
-     <rect>
-      <x>380</x>
-      <y>120</y>
-      <width>241</width>
-      <height>121</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string/>
-    </property>
-   </widget>
    <widget class="QLabel" name="label">
     <property name="geometry">
      <rect>
@@ -170,13 +114,92 @@ QPushButton:pressed {
      <string>Publish to ShotGrid</string>
     </property>
    </widget>
+   <widget class="QLabel" name="label_thumbnail">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>90</y>
+      <width>239</width>
+      <height>150</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>150</height>
+     </size>
+    </property>
+    <property name="mouseTracking">
+     <bool>true</bool>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_memo">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>250</y>
+      <width>239</width>
+      <height>150</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>150</height>
+     </size>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: #242426;</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_checkbox">
+    <property name="geometry">
+     <rect>
+      <x>350</x>
+      <y>410</y>
+      <width>239</width>
+      <height>100</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>0</width>
+      <height>100</height>
+     </size>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_publish_info">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>170</y>
+      <width>291</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background: #242426;</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="margin">
+     <number>20</number>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>632</width>
+     <width>630</width>
      <height>25</height>
     </rect>
    </property>
