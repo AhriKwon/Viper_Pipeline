@@ -12,6 +12,10 @@ class NukeLoader:
         """Nuke 실행 후 파일 열기 (환경 파일 로드 포함)"""
         nuke_executable = NukeLoader.find_nuke_path()
         if nuke_executable:
+            env = os.environ.copy()
+            env["FOUNDRY_LICENSE_FILE"] = "/usr/local/foundry/RLM/nuke.lic"
+            env["RLM_LICENSE"] = "/usr/local/foundry/RLM"
+            
             try:
                 # Bash를 사용하여 환경 파일을 로드한 후 Nuke 실행
                 nuke_command = f"source /home/rapa/env/nuke.env && {nuke_executable} {file_path}"
