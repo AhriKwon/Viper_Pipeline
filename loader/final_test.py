@@ -290,23 +290,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def import_nuke(self, file_path):
         """사용자가 직접 Nuke 파일(.nk)을 선택하여 Import하는 기능"""
         self.send_nuke_command(f"nuke.nodePaste(r'{file_path}')")
-
-    
-    def find_nuke_path():
-        """Nuke 실행 파일 경로 찾기"""
-        possible_paths = [
-            "/usr/local/Nuke15.1v5/Nuke15.1",
-            "/opt/Nuke15.1v5/Nuke15.1",
-            "/usr/bin/Nuke15.1v5",
-            "/usr/local/bin/Nuke15.1",
-        ]
-
-        for path in possible_paths:
-            if os.path.exists(path) and os.access(path, os.X_OK):
-                return path
-
-        return None
-    
+        
         
 
     def is_nuke_running(self):
@@ -374,9 +358,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             if file_path.endswith((".nk", ".mov", ".abc", ".obj")):
                 self.import_nuke(file_path)
                 return
-                 
-                
-            
+                  
         
         # Houdini 실행 중인지 확인 후 import
         if self.is_houdini_running():

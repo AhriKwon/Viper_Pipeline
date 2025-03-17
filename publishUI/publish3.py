@@ -1,12 +1,12 @@
-from PySide6.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout
+from PySide6.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,QGridLayout
 from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget
 from PySide6.QtWidgets import QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import QFile
 from shotgun_api3 import Shotgun
 from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
-from PySide6.QtCore import Qt
-import sys, os, time
+from PySide6.QtCore import Qt, QTimer
+import sys, os, time, math
 
 
 
@@ -20,9 +20,15 @@ print (viper_path)
 
 
 # # 샷그리드 연동
-sys.path.append(os.path.abspath(os.path.join(viper_path, 'shotgridAPI')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
-from shotgrid_connector import ShotGridConnector
+from shotgrid_manager import ShotGridManager
+manager = ShotGridManager()
+# 로더
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
+from MayaLoader import MayaLoader
+from NukeLoader import NukeLoader
+
 
 # 마야 publisher 연동
 # sys.path.append(os.path.abspath(os.path.join(viper_path, 'Publisher')))
@@ -45,30 +51,18 @@ class PublishUI(QMainWindow):
         self.connect_signals() # 파일 정보 열람
         self.set_checkbox() # 체크박스 실행 (마야파일일때)
         self.populate_file_list()  # 파일 목록을 tableWidget_filelist에 추가
+         # ✅ UI 로드 후 실행되도록 추가
+        self.hide_scrollbars()
 
 
         # publish2.ui 사이즈 조절
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(850, 750)
+        self.resize(667, 692)
 
+        self.setWindowFlags(Qt.FramelessWindowHint)  # 🔹 타이틀바 제거
+        self.setAttribute(Qt.WA_TranslucentBackground)  # 🔹 배경 투명 설정
+        self.dragPos = None  # 창 이동을 위한 변수
 
-        # #폰트 적용 
-        # font_path = os.path.join(publish_path, "MYRIADPRO-SEMIBOLD.OTF")  # 확장자 추가
-
-        # if os.path.exists(font_path):  # 파일 존재 여부 확인
-        #     font_id = QFontDatabase.addApplicationFont(font_path)
-
-        #     if font_id != -1:
-        #         font_families = QFontDatabase.applicationFontFamilies(font_id)
-        #         if font_families:
-        #             custom_font = QFont(font_families[0], 12)
-
-        #             # 🔹 스타일시트 적용
-        #             self.ui.setStyleSheet(f"* {{ font-family: '{font_families[0]}'; font-size: 12pt; }}")
-
-        #             print(f"폰트 스타일시트 적용 성공: {font_families[0]}")
-        #         else:
-        #             print("폰트 로드 성공했지만 적용할 수 없습니다.")
 
 
 
@@ -91,9 +85,27 @@ class PublishUI(QMainWindow):
         self.memo_states = {}
         self.current_file = None
 
+        
 
  #-------------------------<TEAM: publish버튼을 누르면 퍼블리셔와 연동되도록 하는 함수> ------------------------------------
+    def mousePressEvent(self, event):
+            """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+            if event.button() == Qt.LeftButton:
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
 
+    def mouseMoveEvent(self, event):
+            """ 마우스를 드래그하면 창 이동 """
+            if event.buttons() == Qt.LeftButton and self.dragPos:
+                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
+
+    def mouseReleaseEvent(self, event):
+            """ 마우스를 떼면 위치 초기화 """
+            self.dragPos = None
+
+    
     def publish_selected_file(self):
 
         selected_items = self.tableWidget_filelist.selectedItems()
@@ -110,9 +122,21 @@ class PublishUI(QMainWindow):
             return
 
         publisher.publish() 
-
+    
     #========================================================================================================
     #-------------------------  0. 설정: 파일별로 존재하는 체크박스와 메모  ------------------------------------
+    def setup_label_3(self):
+        """ ✅ label_3 클릭 시 사라지도록 설정 """
+        self.label_3 = self.ui.findChild(QLabel, "label_3")
+
+        if self.label_3:
+            # ✅ 클릭 이벤트 연결
+            self.label_3.mousePressEvent = self.hide_label_3
+
+    def hide_label_3(self, event):
+        """ ✅ 클릭하면 QLabel 숨기기 """
+        if self.label_3:
+            self.label_3.hide()  # ✅ QLabel 자체를 숨김
 
     def set_checkbox(self):
 
@@ -145,6 +169,61 @@ class PublishUI(QMainWindow):
             if text:
                 self.lineEdit_memo.addItem(text)  # 리스트에 추가
                 self.lineEdit_memo.clear()  # 입력창 초기화
+
+    def set_checkbox(self):
+        """ ✅ 마야 파일일 때만 체크박스를 표시 (2열 배치 & 스타일 적용) """
+        self.groupBox_checkbox = self.ui.findChild(QGroupBox, "groupBox_checkbox")
+
+        # 기존 레이아웃이 없으면 새로 생성
+        groupBoxLayout = self.groupBox_checkbox.layout()
+        if groupBoxLayout is None:
+            groupBoxLayout = QGridLayout()
+            self.groupBox_checkbox.setLayout(groupBoxLayout)
+        else:
+            # 기존 위젯 제거 (중복 생성 방지)
+            while groupBoxLayout.count():
+                item = groupBoxLayout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+
+        # 체크박스 옵션 (마야 파일일 때만 표시)
+        options = ["shader", "wireframe on shader", "textured", "wireframe on textured"]
+        self.checkboxes = []
+
+        # ✅ 2열로 배치하도록 수정
+        for index, option in enumerate(options):
+            checkbox = QCheckBox(option)
+            checkbox.stateChanged.connect(self.save_checkbox_state)
+            checkbox.setStyleSheet("""
+                QCheckBox {
+                    spacing: 5px;
+                    color: white;
+                    font-size: 10px;
+                }
+                QCheckBox::indicator {
+                    width: 17px;
+                    height: 17px;
+                    border-radius: 3px;
+                    background: transparent;
+                    
+                    border: 2px solid #376FF2;
+                }
+                QCheckBox::indicator:checked {
+                    background: #376FF2;
+                    border: 2px solid #376FF2;
+                    image: url(/nas/Viper/minseo/check_icon.png); /* ✅ 체크 모양 아이콘 */
+                }
+            """)
+
+            # 행(row)와 열(column) 배치
+            row = index // 2  # 2열이므로 행 계산
+            col = index % 2   # 0 또는 1로 열 결정
+            groupBoxLayout.addWidget(checkbox, row, col)
+
+            self.checkboxes.append(checkbox)
+
+        # ✅ 기본적으로 체크박스를 숨김 (마야 파일 선택 시 보이게)
+        self.groupBox_checkbox.setVisible(False)
 
     #================================================================================================
     #-----------------------------------1-1.파일리스트 설정  ----------------------------------------------
@@ -235,6 +314,21 @@ class PublishUI(QMainWindow):
         elif file_name.endswith(".hip"):
             return ICON_PATHS["houdini"]
         return None
+    
+    def hide_scrollbars(self):
+        """ ✅ 스크롤바를 투명화하여 보이지 않도록 설정 (기능 유지) """
+        self.tableWidget_filelist.setStyleSheet("""
+            QTableWidget {
+                background-color: transparent;
+            }
+            QScrollBar:vertical, QScrollBar:horizontal {
+                background: transparent;
+                width: 0px;
+                height: 0px;
+            }
+        """)
+
+   
 
     #========================================================================================================
     #-------------------------2-1 유저가 클릭한 파일만 정보 표시되도록 하기 ------------------------------------
@@ -311,7 +405,7 @@ class PublishUI(QMainWindow):
 
     def load_ui(self):
 
-        ui_file_path = os.path.join( publish_path ,"publish2.ui")
+        ui_file_path = os.path.join( publish_path ,"newpub.ui")
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()

@@ -1,5 +1,15 @@
 import os
+from typing import TypedDict
 from shotgrid_db import ShotgridDB
+from shotgrid_connector import ShotGridAPI
+sg_db = ShotgridDB()
+sg_api = ShotGridAPI()
+
+class PublishedFileData(TypedDict):
+    file_name: str
+    file_path: str
+    description: str
+    thumbnail: str
 
 class ShotGridManager:
     """
@@ -14,6 +24,16 @@ class ShotGridManager:
         특정 프로젝트 데이터 조회
         """
         return self.db.get_project_by_name(project_name)
+    
+    def get_projects(self):
+        """
+        특정 유저가 참여하고 있는 프로젝트 목록을 조회
+        """
+        projects = []
+        data = self.db.get_database()
+        for project in data:
+            projects.append(project["project_name"])
+        return projects
 
     def get_project_assets(self, project_name):
         """
@@ -124,6 +144,89 @@ class ShotGridManager:
         publishes = task["publishes"]
 
         return publishes
+    
+    def get_publish_path(self, project_name, task_id):
+        """
+        테스크 ID를 기반으로 퍼블리시된 파일이 저장되는 경로를 반환
+        """
+        task = self.get_task_by_id(task_id)
+        
+        if not task:
+            return None
+        
+        # 퍼블리시 경로 설정
+        project = project_name
+        task_name = task["content"].rsplit('_',1)[1]
+        asset_name = task["content"].rsplit('_',1)[0]
+
+        assets = self.get_project_assets(project_name)
+
+        for asset in assets:
+            if asset["code"] == asset_name:
+                asset_type = asset.get("sg_asset_type", "unknown")
+
+        # 애셋 테스크인지 샷 테스크인지 확인
+        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"] :
+            sequence = task["content"].rsplit('_')[0]
+            shot = task["content"].rsplit('_',1)[0]
+            publish_path = f"/nas/show/{project}/seq/{sequence}/{shot}/{task_name}/pub"
+        else:
+            publish_path = f"/nas/show/{project}/assets/{asset_type}/{asset_name}/{task_name}/pub"
+
+        return publish_path
+    
+    def get_thumbnail_save_path(self):
+        """
+        썸네일 저장 경로 생성
+        """
+        project, entity_type, entity_name, task_name = sg_api.get_publish_metadata()
+        base_path = f"/nas/show/{project}/{'assets' if entity_type == 'Asset' else 'seq'}/{entity_name}/{task_name}/pub/thumb"
+        return os.path.join(base_path, f"{task_name}.png")
+    
+    def get_task_id_from_file(self, file_path):
+        """
+        DB를 통해 파일 경로에서 Task ID를 추출하여 반환
+        """
+        return sg_db.get_task_id_from_file(file_path)
+
+    def publish(self, task_id: int, version_path: str, data: PublishedFileData):
+        """
+        파일 퍼블리시 후 데이터베이스 및 ShotGrid에 반영
+        """
+        try:
+            print(f"🔍 퍼블리시 데이터 확인: {data}")
+
+            if not isinstance(data, dict):
+                raise TypeError(f"데이터 타입 오류: data는 dict여야 합니다. 현재 타입: {type(data)}")
+            
+            # 데이터베이스에 저장
+            sg_db.add_published_file(task_id, data)
+        
+            # ShotGrid에 퍼블리시된 파일 등록
+            published_file = sg_api.create_published_file(task_id, data)
+            if not published_file:
+                print(f"⚠️ ShotGrid 퍼블리시 실패: {data['file_path']}")
+                return None
+
+            # ShotGrid에 버전 파일 등록
+            version = sg_api.create_version(task_id, version_path, data["thumbnail"], data["description"])
+            if not version:
+                print(f"⚠️ ShotGrid 버전 생성 실패: {data['file_path']}")
+                return None
+        
+            # 퍼블리시된 썸네일을 태스크 썸네일로 업데이트
+            sg_api.update_entity("Task", task_id, None, data["thumbnail"])
+
+            print(f"퍼블리시 완료: {published_file['code']} (ID: {published_file['id']})")
+            return published_file
+        
+        except TypeError as e:
+            print(f"🚨 데이터 타입 오류: {e}")
+            return None
+        
+        except Exception as e:
+            print(f"🚨 퍼블리시 중 오류 발생: {e}")
+            return None
 
     def close(self):
         """

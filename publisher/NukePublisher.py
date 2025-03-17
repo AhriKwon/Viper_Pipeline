@@ -1,5 +1,4 @@
 import os
-import sys
 import nuke
 import importlib
 import subprocess
@@ -7,6 +6,7 @@ from GeneratingPath import FilePath
 from convert_to_mov import FileConverter
 
 class NukePublisher:
+
 
     def __init__(self, shot_data):
         """ NukePublisher 초기화 함수.
@@ -23,6 +23,7 @@ class NukePublisher:
             "start_num": 1,
             "last_num": 99
         }
+
         
         # 전달된 shot_data를 기본값에 병합
         default_data.update(shot_data)  # 전달된 shot_data를 덮어씁니다.
@@ -35,17 +36,16 @@ class NukePublisher:
         self.shot = self.shot_data["shot"]
         self.version = self.shot_data.get("version", 1)
 
-        # 퍼블리쉬 데이터 설정 (프로젝트명, 샷명, 작업명, 버전 등)
         self.publish_data = {
-            "project_name" : self.project,
-            "shot_name" : self.shot,
-            "task_name" : self.task_type, 
-            "version" : self.version,
-            "start_num" : 1,
-            "last_num" : 99
-            }
+            "project_name": self.project,
+            "shot_name": self.shot,
+            "task_name": self.task_type,
+            "version": self.version,
+            "start_num": 1,
+            "last_num": 99
+        }
 
-        # 경로 생성 함수(객체파일) 호출하여 퍼블리쉬 경로 설정
+        # 퍼블리싱 경로 생성
         publish_paths = FilePath.generate_paths(
             self.project, "seq", 
             self.seq, self.shot, self.task_type, self.version
@@ -77,7 +77,7 @@ class NukePublisher:
 
             print(f"Final MOV 생성 완료: {out_path}")
 
-        # 원본 Playblast 파일 삭제
+        # 임시 MOV 파일 삭제
         if os.path.exists(temp_in_path):
             os.remove(temp_in_path)
 
