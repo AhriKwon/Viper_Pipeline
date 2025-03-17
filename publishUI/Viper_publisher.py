@@ -1,13 +1,4 @@
 try:
-    from PySide2.QtWidgets import (
-        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,
-        QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
-        QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
-    )
-    from PySide2.QtUiTools import QUiLoader
-    from PySide2.QtCore import Qt, QFile, QTimer, QRect
-    from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
-except:
     from PySide6.QtWidgets import (
         QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,
         QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
@@ -16,6 +7,15 @@ except:
     from PySide6.QtUiTools import QUiLoader
     from PySide6.QtCore import Qt, QFile, QTimer, QRect
     from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
+except:
+    from PySide2.QtWidgets import (
+        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,
+        QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
+        QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
+    )
+    from PySide2.QtUiTools import QUiLoader
+    from PySide2.QtCore import Qt, QFile, QTimer, QRect
+    from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
 
 import sys, os, time, subprocess
 from typing import TypedDict
@@ -32,15 +32,23 @@ manager = ShotGridManager()
 sys.path.append(os.path.abspath(os.path.join(viper_path, 'loadUI')))
 import UI_support
 
+
+class PublishedFileData(TypedDict):
+    file_name: str
+    file_path: str
+    description: str
+    thumbnail: str
+
+
 class ScreenCapture(QWidget):
     """
     드래그를 통한 영역 지정으로 스크린샷을 실행
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent_ui):
         super().__init__()
-        self.parent_ui = parent  # 부모 UI 저장
         self.start_pos = None
         self.end_pos = None
+        self.parent_ui = parent_ui  # PublishUI 인스턴스를 저장
 
         QApplication.setOverrideCursor(Qt.CrossCursor) # 커서 오버라이드
         self.setWindowFlag(Qt.FramelessWindowHint) # 제목표시줄 삭제
@@ -103,40 +111,81 @@ class ScreenCapture(QWidget):
             screen = QApplication.primaryScreen()
             screenshot = screen.grabWindow(0, x, y, w, h)
 
+            file_path = self.parent_ui.file_path
+            print(file_path)
+            save_path = manager.generate_thumbnail_path(file_path)
+            print(save_path)
 
-            save_dir = "/nas/show/Viper"
+            if not save_path:
+                print("⚠️ 스크린샷 저장 경로를 생성할 수 없습니다.")
+                return
+
+            save_dir = os.path.dirname(save_path)
+            print(f"📂 저장 디렉토리: {save_dir}")
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
 
-            save_path = os.path.join(save_dir, "capture_001.png")
-            print ("save to : ", save_path)
+            print(f"💾 저장 경로: {save_path}")
             screenshot.save(save_path, "png", quality=100)
 
-            # 썸네일 업데이트
+            # UI가 존재하면 업데이트
             if self.parent_ui:
+                print("🔄 UI 업데이트 실행")
                 self.parent_ui.update_thumbnail(save_path)
+                self.parent_ui.show()  # UI 다시 표시
 
-class PublishedFileData(TypedDict):
-    file_name: str
-    file_path: str
-    description: str
-    thumbnail: str
+            # 이벤트 루프 강제 갱신 (UI가 즉시 반영되도록)
+            QApplication.processEvents()
+
+            # 캡처 창 닫기
+            self.close()
+
 
 class PublishUI(QMainWindow):
     def __init__(self):
         super().__init__()
 
         self.load_ui()
+        UI_support.center_on_screen(self)
         self.set_checkbox()
         self.setup_thumbnail_capture()
         self.setup_publish_info()
 
         # publish2.ui 사이즈 조절
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(850, 750)
+        self.resize(667, 692)
 
-        # # publish 버튼을 누르면 퍼블리쉬되도록 연동
-        # self.ui.pushButton_publish.clicked.connect(self.run_publish)
+        self.setWindowFlag(Qt.FramelessWindowHint)  # 🔹 타이틀바 제거
+        self.setAttribute(Qt.WA_TranslucentBackground)  # 🔹 배경 투명 설정
+        self.dragPos = None  # 창 이동을 위한 변수
+
+        self.file_path = self.get_current_file_path()
+
+        # publish 버튼을 누르면 퍼블리쉬되도록 연동
+        self.ui.pushButton_publish.clicked.connect(self.run_publish)
+
+    def mousePressEvent(self, event):
+        """
+        마우스를 클릭했을 때 창의 현재 위치 저장
+        """
+        if event.button() == Qt.LeftButton:
+            self.dragPos = event.globalPos()
+            event.accept()
+
+    def mouseMoveEvent(self, event):
+        """
+        마우스를 드래그하면 창 이동
+        """
+        if event.buttons() == Qt.LeftButton and self.dragPos:
+            self.move(self.pos() + event.globalPos() - self.dragPos)
+            self.dragPos = event.globalPos()
+            event.accept()
+
+    def mouseReleaseEvent(self, event):
+        """
+        마우스를 떼면 위치 초기화
+        """
+        self.dragPos = None
 
     def start_capture_mode(self):
        self.hide()
@@ -156,12 +205,11 @@ class PublishUI(QMainWindow):
 
         if self.ui:
             self.setCentralWidget(self.ui)
-            self.show()
+            self.ui.show()
             print("UI 로드 성공: UI가 정상적으로 표시됩니다.")
         else:
             print("⚠️ UI 로드 실패: QUiLoader가 UI 파일을 로드하지 못했습니다.")
-        # publish 버튼을 누르면 퍼블리쉬되도록 연동
-        self.ui.pushButton_publish.clicked.connect(self.run_publish)
+        
 
     def set_checkbox(self):
         """
@@ -176,6 +224,26 @@ class PublishUI(QMainWindow):
 
         for i, option in enumerate(options):
             checkbox = QCheckBox(option)
+            checkbox.setStyleSheet("""
+                QCheckBox {
+                    spacing: 5px;
+                    color: white;g
+                    font-size: 10px;
+                }
+                QCheckBox::indicator {
+                    width: 17px;
+                    height: 17px;
+                    border-radius: 3px;
+                    background: transparent;
+                    
+                    border: 2px solid #376FF2;
+                }
+                QCheckBox::indicator:checked {
+                    background: #376FF2;
+                    border: 2px solid #376FF2;
+                    image: url(/nas/Viper/minseo/check_icon.png); /* 체크 모양 아이콘 */
+                }
+            """)
             self.checkboxes.append(checkbox)
             groupBoxLayout.addWidget(checkbox, i // 2, i % 2)
 
@@ -189,17 +257,50 @@ class PublishUI(QMainWindow):
 
     def setup_publish_info(self):
         """
-        퍼블리시할 파일 정보를 표시하는 위젯 추가
+        현재 열려 있는 파일의 퍼블리시 정보를 자동으로 표시
         """
-        self.ui.label_publish_info.setText("퍼블리시 정보 없음")
-        self.ui.label_publish_info.setStyleSheet("font-size: 12px; color: white;")
-        
-    def update_publish_info(self, file_name, file_size, tesk_name):
+        file_path = self.get_current_file_path()
+        if file_path:
+            file_info = self.extract_file_info(file_path)
+            if file_info:
+                self.update_publish_info(
+                    file_info["file_name"], file_info["file_size"], file_info["task_name"]
+                )
+        else:
+            self.ui.label_publish_info.setText("퍼블리시 정보 없음")
+            self.ui.label_publish_info.setStyleSheet("font-size: 12px; color: white;")
+
+    def update_publish_info(self, file_name, file_size, task_name):
         """
         선택된 파일의 정보를 업데이트
         """
-        info_text = f"파일: {file_name}\n크기: {file_size:.2f} MB\n테스크: {tesk_name}"
+        info_text = f"파일: {file_name}\n크기: {file_size:.2f} MB\n태스크: {task_name}"
         self.ui.label_publish_info.setText(info_text)
+
+    def extract_file_info(self, file_path):
+        """
+        파일 경로를 분석하여 파일 정보 반환
+        """
+        if not os.path.exists(file_path):
+            return None
+
+        file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB 단위 변환
+        file_name = os.path.basename(file_path)
+
+        # Task ID를 가져오고 관련 정보를 샷그리드에서 조회
+        task_id = manager.get_task_id_from_file(file_path)
+        task_name = "알 수 없음"
+        
+        if task_id:
+            task_info = manager.get_task_by_id(task_id)
+            if task_info:
+                task_name = task_info["content"]  # 태스크 이름 가져오기
+
+        return {
+            "file_name": file_name,
+            "file_size": file_size,
+            "task_name": task_name,
+        }
     
     def setup_thumbnail_capture(self):
         """
@@ -207,7 +308,6 @@ class PublishUI(QMainWindow):
         """
         self.ui.label_thumbnail.setText("썸네일 없음")
         self.ui.label_thumbnail.setAlignment(Qt.AlignCenter)
-        self.ui.label_thumbnail.setStyleSheet("border: 1px solid gray; background: #222; color: white;")
         
         # QLabel이 마우스 이벤트를 받을 수 있도록 설정
         self.ui.label_thumbnail.setAttribute(Qt.WA_Hover)
@@ -247,7 +347,7 @@ class PublishUI(QMainWindow):
         file_path = self.get_current_file_path()  # 실행 중인 파일 경로 가져오기
 
         if not file_path:
-            UI_support.popup.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
+            UI_support.show_message.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
             return
         
         # file_data 자동 생성
@@ -280,22 +380,24 @@ class PublishUI(QMainWindow):
             publish_result = nuke_pub.publish()
 
         else:
-            UI_support.popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+            UI_support.show_message.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
             return
 
         # 퍼블리시 성공 여부 확인
         if publish_result:
             self.update_database_and_shotgrid(version_path, publish_result)
         else:
-            UI_support.popup.show_message("error", "오류", "퍼블리시 실패")
+            UI_support.show_message.show_message("error", "오류", "퍼블리시 실패")
         
     def get_current_file_path(self):
         """
         Maya 또는 Nuke에서 현재 열려있는 파일 경로를 가져옴
         """
         if self.is_maya():
+            import maya.cmds as cmds  # Maya 환경에서만 import
             return cmds.file(q=True, sn=True)  # Maya 현재 파일 경로
         elif self.is_nuke():
+            import nuke  # Nuke 환경에서만 import
             return nuke.root().name()  # Nuke 현재 파일 경로
         else:
             return None
@@ -321,13 +423,13 @@ class PublishUI(QMainWindow):
         # 파일에서 Task ID 가져오기
         task_id = manager.get_task_id_from_file(file_path)
         if not task_id:
-            UI_support.popup.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
+            UI_support.show_message.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return None
         
         # 샷그리드에서 Task 정보 가져오기
         task_info = manager.get_task_by_id(task_id)
         if not task_info:
-            UI_support.popup.show_message("error", "오류", "Task 정보를 가져올 수 없습니다.")
+            UI_support.show_message.show_message("error", "오류", "Task 정보를 가져올 수 없습니다.")
             return None
 
         # 프로젝트 정보 가져오기
@@ -394,7 +496,7 @@ class PublishUI(QMainWindow):
         task_id = manager.get_task_id_from_file(data["path"])
 
         if not task_id:
-            UI_support.popup.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
+            UI_support.show_message.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return
         
         manager.publish(task_id, version_path, data)
@@ -407,6 +509,9 @@ class PublishUI(QMainWindow):
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    w = PublishUI()
-    w.ui.show()
-    sys.exit(app.exec())
+    try:
+        ex = PublishUI()
+        ex.show()
+        sys.exit(app.exec())  
+    except Exception as e:
+        print(f"오류 발생: {e}")

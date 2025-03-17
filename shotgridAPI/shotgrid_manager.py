@@ -150,38 +150,60 @@ class ShotGridManager:
         테스크 ID를 기반으로 퍼블리시된 파일이 저장되는 경로를 반환
         """
         task = self.get_task_by_id(task_id)
-        
         if not task:
             return None
-        
-        # 퍼블리시 경로 설정
+
         project = project_name
         task_name = task["content"].rsplit('_',1)[1]
-        asset_name = task["content"].rsplit('_',1)[0]
+        entity_name = task["content"].rsplit('_',1)[0]
 
         assets = self.get_project_assets(project_name)
+        asset_type = "unknown"
 
         for asset in assets:
-            if asset["code"] == asset_name:
+            if asset["code"] == entity_name:
                 asset_type = asset.get("sg_asset_type", "unknown")
+                break
 
-        # 애셋 테스크인지 샷 테스크인지 확인
-        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"] :
-            sequence = task["content"].rsplit('_')[0]
-            shot = task["content"].rsplit('_',1)[0]
+        # 샷 또는 애셋 경로 구분
+        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"]:
+            sequence = entity_name.split("_")[0]
+            shot = entity_name
             publish_path = f"/nas/show/{project}/seq/{sequence}/{shot}/{task_name}/pub"
         else:
-            publish_path = f"/nas/show/{project}/assets/{asset_type}/{asset_name}/{task_name}/pub"
+            publish_path = f"/nas/show/{project}/assets/{asset_type}/{entity_name}/{task_name}/pub"
 
         return publish_path
     
-    def get_thumbnail_save_path(self):
+    def generate_thumbnail_path(self, file_path):
         """
-        썸네일 저장 경로 생성
+        현재 열린 파일 경로를 기반으로 썸네일 저장 경로를 생성
         """
-        project, entity_type, entity_name, task_name = sg_api.get_publish_metadata()
-        base_path = f"/nas/show/{project}/{'assets' if entity_type == 'Asset' else 'seq'}/{entity_name}/{task_name}/pub/thumb"
-        return os.path.join(base_path, f"{task_name}.png")
+        if not file_path or not os.path.exists(file_path):
+            print("⚠️ 파일 경로를 찾을 수 없습니다.")
+            return None
+
+        # 프로젝트 이름 가져오기
+        path_parts = file_path.split('/')
+        project_name = path_parts[3]  # 예: Viper
+
+        # 파일명에서 Task ID 추출
+        task_id = self.get_task_id_from_file(file_path)
+        if not task_id:
+            print("⚠️ Task ID를 찾을 수 없습니다.")
+            return None
+
+        # 퍼블리시 경로 가져오기
+        publish_path = self.get_publish_path(project_name, task_id)
+        if not publish_path:
+            print("⚠️ 퍼블리시 경로를 찾을 수 없습니다.")
+            return None
+
+        # 파일명에서 버전 정보 제거 후 png 확장자로 저장
+        file_name = os.path.basename(file_path).rsplit(".", 1)[0]  # 확장자 제거
+        save_path = os.path.join(publish_path, "thumb", f"{file_name}.png")
+
+        return save_path
     
     def get_task_id_from_file(self, file_path):
         """
