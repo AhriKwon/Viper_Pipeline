@@ -1,9 +1,9 @@
 try:
-    from PySide6.QtWidgets import QMessageBox, QApplication, QMainWindow
+    from PySide6.QtWidgets import QMessageBox, QApplication, QMainWindow, QWidget
     from PySide6.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
     from PySide6.QtCore import Qt
 except:
-    from PySide2.QtWidgets import QMessageBox, QApplication, QMainWindow
+    from PySide2.QtWidgets import QMessageBox, QApplication, QMainWindow, QWidget
     from PySide2.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
     from PySide2.QtCore import Qt
 
@@ -54,14 +54,16 @@ def round_corners_pixmap(pixmap, radius=10):
 #================================UI를 윈도우 가운데에서 시작=====================================
 
 
-def center_on_screen(ui):
-        """
-        현재 사용하는 화면의 중앙에 윈도우를 배치
-        """
-        screen = QApplication.primaryScreen()  # 현재 사용 중인 화면 가져오기
-        screen_geometry = screen.availableGeometry()  # 사용 가능한 화면 크기
+def center_on_screen(widget: QWidget):
+    """
+    현재 실행 중인 UI를 화면 중앙으로 이동
+    """
+    screen = QApplication.primaryScreen().geometry()
+    widget_geometry = widget.frameGeometry()
 
-        window_geometry = ui.frameGeometry()  # 현재 창의 크기
-        window_geometry.moveCenter(screen_geometry.center())  # 화면의 중앙으로 이동
+    # 중앙 위치 계산
+    x = (screen.width() - widget_geometry.width()) // 2
+    y = (screen.height() - widget_geometry.height()) // 2
 
-        ui.move(window_geometry.topLeft())  # 이동된 위치로 창을 배치
+    # UI를 중앙으로 이동
+    widget.move(x, y)

@@ -6,20 +6,20 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>630</width>
-    <height>690</height>
+    <width>667</width>
+    <height>692</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>630</width>
-    <height>690</height>
+    <width>667</width>
+    <height>692</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>630</width>
-    <height>690</height>
+    <width>667</width>
+    <height>692</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -29,15 +29,15 @@
    <widget class="QLabel" name="label_pubback">
     <property name="geometry">
      <rect>
-      <x>-10</x>
-      <y>0</y>
-      <width>651</width>
-      <height>641</height>
+      <x>-4</x>
+      <y>-10</y>
+      <width>667</width>
+      <height>661</height>
      </rect>
     </property>
     <property name="styleSheet">
      <string notr="true">QLabel {
-    background-image: url(&quot;/nas/Viper/minseo/forui/pubback2.png&quot;);
+    background-image: url(&quot;/nas/Viper/minseo/forui/backgroundpub.png&quot;);
     background-repeat: no-repeat;  /* 반복 방지 */
     background-position: center;  /* 중앙 정렬 */
     background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
@@ -48,29 +48,52 @@
      <string/>
     </property>
    </widget>
+   <widget class="QTableWidget" name="tableWidget">
+    <property name="geometry">
+     <rect>
+      <x>360</x>
+      <y>80</y>
+      <width>281</width>
+      <height>421</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QTableWidget {
+    background: transparent; /* 🔹 배경을 완전히 투명하게 설정 */
+    border: none; /* 🔹 테두리 없애기 */
+    gridline-color: rgba(0, 0, 0, 50); /* 🔹 그리드 라인 투명하게 */
+}
+
+QHeaderView::section {
+    background: transparent; /* 🔹 헤더 배경도 투명 */
+    border: none;
+}
+</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="pushButton_publish">
     <property name="geometry">
      <rect>
-      <x>70</x>
+      <x>370</x>
       <y>530</y>
-      <width>501</width>
-      <height>91</height>
+      <width>291</width>
+      <height>40</height>
      </rect>
     </property>
     <property name="font">
      <font>
-      <family>Myriad Pro</family>
+      <family>Pretendard Light</family>
       <pointsize>-1</pointsize>
      </font>
     </property>
     <property name="styleSheet">
      <string notr="true">QPushButton {
     border: none;
-    background: url(&quot;/nas/Viper/minseo/forui/pubbutton.png&quot;) no-repeat center;
+    background: url(&quot;/nas/Viper/minseo/forui/publish.png&quot;) no-repeat center;
     background-size: contain;
 	border-radius: 10px;
 	color: white;
-	font-size: 19px;
+	font-size: 15px;
 }
 
 QPushButton:pressed {
@@ -81,6 +104,61 @@ QPushButton:pressed {
     </property>
     <property name="text">
      <string>Publish</string>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_checkbox">
+    <property name="geometry">
+     <rect>
+      <x>390</x>
+      <y>440</y>
+      <width>251</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLineEdit" name="lineEdit_memo">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>310</y>
+      <width>223</width>
+      <height>120</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">border-radius: 10px;  /* 둥근 정도 */
+padding: 5px;  /* 내부 여백 */
+
+color: black;  /* 글자 색상 */</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_thumbnail">
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>160</y>
+      <width>221</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/thumb.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+    
+    /* ✅ 텍스트 색상 및 정렬 추가 */
+    color: #696969;
+    font-size: 14px;
+    text-align: center;  /* 중앙 정렬 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label">
@@ -94,7 +172,7 @@ QPushButton:pressed {
     </property>
     <property name="font">
      <font>
-      <family>Myriad Pro</family>
+      <family>Pretendard ExtraLight</family>
       <pointsize>-1</pointsize>
      </font>
     </property>
@@ -105,7 +183,7 @@ QPushButton:pressed {
     background-position: center;  /* 중앙 정렬 */
     background-size: contain;  /* 크기를 자동 조정 */
     color: white;  /* 글자 색상 (흰색) */
-    font-size: 8px;  /* 글자 크기 */
+    font-size: 7px;  /* 글자 크기 */
   
     text-align: center;  /* 텍스트 중앙 정렬 */
 }</string>
@@ -114,83 +192,170 @@ QPushButton:pressed {
      <string>Publish to ShotGrid</string>
     </property>
    </widget>
-   <widget class="QLabel" name="label_thumbnail">
+   <widget class="QLabel" name="label_filename">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>90</y>
-      <width>239</width>
-      <height>150</height>
+      <x>60</x>
+      <y>200</y>
+      <width>271</width>
+      <height>51</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>150</height>
-     </size>
+    <property name="font">
+     <font>
+      <pointsize>-1</pointsize>
+     </font>
     </property>
-    <property name="mouseTracking">
-     <bool>true</bool>
+    <property name="styleSheet">
+     <string notr="true">QLineEdit {
+    background: rgba(0, 0, 0, 0); /* 배경 투명 */
+    border: none;
+    color: white;  /* 기본 텍스트 색상 */
+    font-size: 30px; /* 기본 글자 크기 */
+}
+
+QLabel {
+
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* 크기를 자동 조정 */
+    color: #A9A9A9;  /* 글자 색상 (흰색) */
+    font-size: 18px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
     </property>
     <property name="text">
      <string/>
     </property>
    </widget>
-   <widget class="QLineEdit" name="lineEdit_memo">
+   <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>250</y>
-      <width>239</width>
-      <height>150</height>
+      <x>37</x>
+      <y>260</y>
+      <width>311</width>
+      <height>20</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>150</height>
-     </size>
+    <property name="font">
+     <font>
+      <family>Pretendard ExtraLight</family>
+      <pointsize>-1</pointsize>
+     </font>
     </property>
     <property name="styleSheet">
-     <string notr="true">background: #242426;</string>
+     <string notr="true">QLabel {
+
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* 크기를 자동 조정 */
+    color: #A9A9A9;  /* 글자 색상 (흰색) */
+    font-size: 9px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+    </property>
+    <property name="text">
+     <string>Please select the file you want to publish and select the method
+</string>
     </property>
    </widget>
-   <widget class="QGroupBox" name="groupBox_checkbox">
+   <widget class="QLabel" name="label_user">
     <property name="geometry">
      <rect>
-      <x>350</x>
-      <y>410</y>
-      <width>239</width>
-      <height>100</height>
+      <x>600</x>
+      <y>30</y>
+      <width>30</width>
+      <height>30</height>
      </rect>
     </property>
-    <property name="minimumSize">
-     <size>
-      <width>0</width>
-      <height>100</height>
-     </size>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/user.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
     </property>
-    <property name="title">
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_cir1">
+    <property name="geometry">
+     <rect>
+      <x>-94</x>
+      <y>350</y>
+      <width>153</width>
+      <height>153</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/cir 1.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_cir2">
+    <property name="geometry">
+     <rect>
+      <x>-113</x>
+      <y>330</y>
+      <width>185</width>
+      <height>185</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/cir2.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_cir3">
+    <property name="geometry">
+     <rect>
+      <x>-140</x>
+      <y>300</y>
+      <width>242</width>
+      <height>242</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QLabel {
+    background-image: url(&quot;/nas/Viper/minseo/forui/cir3.png&quot;);
+    background-repeat: no-repeat;  /* 반복 방지 */
+    background-position: center;  /* 중앙 정렬 */
+    background-size: contain;  /* QLabel 크기에 맞게 비율 유지 */
+}</string>
+    </property>
+    <property name="text">
      <string/>
     </property>
    </widget>
    <widget class="QLabel" name="label_publish_info">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>170</y>
-      <width>291</width>
+      <x>130</x>
+      <y>280</y>
+      <width>241</width>
       <height>231</height>
      </rect>
     </property>
-    <property name="styleSheet">
-     <string notr="true">background: #242426;</string>
-    </property>
     <property name="text">
-     <string/>
-    </property>
-    <property name="margin">
-     <number>20</number>
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>
@@ -199,7 +364,7 @@ QPushButton:pressed {
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>630</width>
+     <width>667</width>
      <height>25</height>
     </rect>
    </property>
