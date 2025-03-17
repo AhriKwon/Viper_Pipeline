@@ -1,3 +1,5 @@
+import re, os
+
 from pymongo import MongoClient, UpdateOne
 from typing import TypedDict
 from datetime import datetime
@@ -125,8 +127,7 @@ class ShotgridDB:
                 "file_name": data["file_name"],
                 "path": data["file_path"],
                 "description": data["description"],
-                "thumbnail": data["thumbnail"],
-                "created_at": datetime
+                "thumbnail": data["thumbnail"]
             }}},
             array_filters=[{"task.id": task_id}]
         )
@@ -142,8 +143,7 @@ class ShotgridDB:
                 "file_name": data["file_name"],
                 "path": data["file_path"],
                 "description": data["description"],
-                "thumbnail": data["thumbnail"],
-                "created_at": datetime
+                "thumbnail": data["thumbnail"]
             }}},
             array_filters=[{"task.id": task_id}]
         )
@@ -179,6 +179,43 @@ class ShotgridDB:
         """
         self.client.drop_database(self.db_name)  # 데이터베이스 전체 삭제
         print("데이터베이스가 초기화되었습니다.")
+    
+    def get_task_id_from_file(self, file_path):
+        """
+        파일 경로에서 Task ID를 추출하여 반환
+        """
+        file_name = os.path.basename(file_path)
+
+        # 파일명 패턴 매칭 (예: Hero_mdl_v003.ma)
+        match = re.match(r"(.+?)_(.+?)_v\d+\..+", file_name)
+        
+        if not match:
+            print("⚠️ Task ID를 추출할 수 없습니다.")
+            return None
+
+        asset_name, task_type = match.groups()
+
+        # DB에서 해당 Task 조회
+        task = self.db.get_task_by_name(asset_name, task_type)
+
+        if not task:
+            print(f"⚠️ 오류: {asset_name} - {task_type}에 해당하는 Task를 찾을 수 없습니다.")
+            return None
+
+        return task["id"]
+    
+    def get_task_by_name(self, asset_name, task_type):
+        """
+        데이터베이스에서 특정 Asset과 Task Type에 해당하는 Task 조회
+        """
+        query = {
+            "asset_name": asset_name,
+            "task_type": task_type
+        }
+
+        task = self.db.find_one("tasks", query)
+
+        return task
 
     def close(self):
         """

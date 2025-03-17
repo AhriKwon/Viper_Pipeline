@@ -32,10 +32,9 @@ sys.path.append(os.path.abspath(os.path.join(viper_path, 'loadUI')))
 import UI_support
 
 # 마야 publisher 연동
-# sys.path.append(os.path.abspath(os.path.join(viper_path, 'Publisher')))
-# from MayaPublisher import MayaPublisher
-# from Generating import FilePath
-# from publisher.convert_to_mov import FileConverter
+sys.path.append(os.path.abspath(os.path.join(viper_path, 'Publisher')))
+from MayaPublisher import MayaPublisher
+from NukePublisher import NukePublisher
 
 ICON_PATHS = {
     "maya": "/nas/Viper/minseo/icon/maya.png",
@@ -143,32 +142,77 @@ class PublishUI(QMainWindow):
         else:
             print("썸네일 캡처 실패")
 
-    """
-    수정 필요~!
-    """
-    def get_thumbnail_save_path(self):
-        """
-        썸네일 저장 경로 생성
-        """
-        project, entity_type, entity_name, task_name = self.get_publish_metadata()
-        base_path = f"/nas/show/{project}/{'assets' if entity_type == 'Asset' else 'seq'}/{entity_name}/{task_name}/pub/thumb"
-        return os.path.join(base_path, f"{task_name}.png")
 
-    def get_publish_metadata(self):
+     #===========================================================================================
+     #--------------------------------------- 퍼블리시 실행 ------------------------------------------
+
+    def run_publish(self):
         """
-        프로젝트, 엔티티 타입, 엔티티 이름, 태스크 이름 가져오기 (샷그리드 연동 필요)
+        현재 실행 중인 파일을 분석하고, Maya 또는 Nuke 퍼블리시 실행
         """
-        return "Viper", "Asset", "Hero", "RIG"
+        file_path = self.get_current_file_path()  # 실행 중인 파일 경로 가져오기
+
+        if not file_path:
+            UI_support.popup.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
+            return
+
+        # 파일 확장자로 툴 판별
+        if file_path.endswith((".ma", ".mb")):
+            publish_result = MayaPublisher.publish(file_path)
+
+        elif file_path.endswith(".nk"):
+            publish_result = NukePublisher.publish(file_path)
+
+        else:
+            UI_support.popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+            return
+
+        # 퍼블리시 성공 여부 확인
+        if publish_result:
+            self.update_database_and_shotgrid(file_path, publish_result)
+        else:
+            UI_support.popup.show_message("error", "오류", "퍼블리시 실패")
+        
+    def get_current_file_path(self):
+        """
+        Maya 또는 Nuke에서 현재 열려있는 파일 경로를 가져옴
+        """
+        if self.is_maya():
+            return cmds.file(q=True, sn=True)  # Maya 현재 파일 경로
+        elif self.is_nuke():
+            return nuke.root().name()  # Nuke 현재 파일 경로
+        else:
+            return None
     
-    def get_selected_task_id(self):
+    def is_maya(self):
+        try:
+            import maya.cmds as cmds
+            return True
+        except ImportError:
+            return False
+
+    def is_nuke(self):
+        try:
+            import nuke
+            return True
+        except ImportError:
+            return False
+    
+    def update_database_and_shotgrid(self, version_path, publish_result):
         """
-        현재 선택된 태스크의 ID 반환 (샷그리드 연동 필요)
+        퍼블리시 성공 후 DB와 ShotGrid 업데이트
         """
-        return 6105
+        task_id = manager.get_task_id_from_file(publish_result["path"])
+
+        if not task_id:
+            UI_support.popup.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
+            return
+        
+        manager.publish(task_id, version_path, publish_result)
 
 
      #===========================================================================================
-     #----------------------------------------3-1. 로드 ------------------------------------------
+     #------------------------------------------ 로드 --------------------------------------------
 
     def load_ui(self):
 
