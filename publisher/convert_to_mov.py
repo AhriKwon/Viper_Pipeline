@@ -125,7 +125,7 @@ class FileConverter:
 
         input_file: 입력 비디오 파일 경로
         output_file: 출력 비디오 파일 경로
-        data: 슬레이트 정보 (shot_name, project_name, task_name, version, start_num, last_num)
+햣        data: 슬레이트 정보 (shot_name, project_name, task_name, version, start_num, last_num)
         """
         # 입력으로 받은 데이터를 사용하여 슬레이트 정보를 생성함.
         shot_name = data["shot_name"]
