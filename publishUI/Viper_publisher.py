@@ -17,7 +17,12 @@ except:
     from PySide6.QtCore import Qt, QFile, QTimer
     from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
 
+<<<<<<< HEAD
 import sys, os, time, subprocess, re
+=======
+import sys, os, time, subprocess
+from typing import TypedDict
+>>>>>>> b655724dad0294c57906c021de5962808dfd1513
 
 publish_path = os.path.dirname(__file__)
 viper_path = os.path.join(publish_path, '..')
@@ -115,6 +120,14 @@ class ScreenCapture(QWidget):
             if self.parent_ui:
                 self.parent_ui.update_thumbnail(save_path)
 
+<<<<<<< HEAD
+=======
+class PublishedFileData(TypedDict):
+    file_name: str
+    file_path: str
+    description: str
+    thumbnail: str
+>>>>>>> b655724dad0294c57906c021de5962808dfd1513
 
 class PublishUI(QMainWindow):
     def __init__(self):
@@ -125,6 +138,7 @@ class PublishUI(QMainWindow):
         self.setup_thumbnail_capture()
         self.setup_publish_info()
 
+<<<<<<< HEAD
         # publish2.ui 사이즈 조절
         self.setGeometry(100, 100, 1200, 800)
         self.resize(850, 750)
@@ -154,6 +168,10 @@ class PublishUI(QMainWindow):
             print("UI 로드 성공: UI가 정상적으로 표시됩니다.")
         else:
             print("⚠️ UI 로드 실패: QUiLoader가 UI 파일을 로드하지 못했습니다.")
+=======
+        # publish 버튼을 누르면 퍼블리쉬되도록 연동
+        self.ui.pushButton_publish.clicked.connect(self.run_publish)
+>>>>>>> b655724dad0294c57906c021de5962808dfd1513
 
     def set_checkbox(self):
         """
@@ -306,6 +324,7 @@ class PublishUI(QMainWindow):
         except ImportError:
             return False
     
+<<<<<<< HEAD
     def generate_file_data(self, file_path):
         """
         주어진 파일 경로(file_path)를 기반으로 퍼블리시 데이터를 자동으로 생성.
@@ -380,16 +399,19 @@ class PublishUI(QMainWindow):
         return 1  # 기본 버전 값
 
     def update_database_and_shotgrid(self, version_path, publish_result):
+=======
+    def update_database_and_shotgrid(self, version_path, data: PublishedFileData):
+>>>>>>> b655724dad0294c57906c021de5962808dfd1513
         """
         퍼블리시 성공 후 DB와 ShotGrid 업데이트
         """
-        task_id = manager.get_task_id_from_file(publish_result["path"])
+        task_id = manager.get_task_id_from_file(data["path"])
 
         if not task_id:
             UI_support.popup.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return
         
-        manager.publish(task_id, version_path, publish_result)
+        manager.publish(task_id, version_path, data)
 
 
     #===========================================================================================

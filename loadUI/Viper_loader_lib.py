@@ -66,7 +66,7 @@ class LibraryTab:
         # tabWidget_lib 내부에 레이아웃이 있는지 확인 후 추가
         if self.ui.tabWidget_lib.layout() is None:
             layout = QVBoxLayout()
-            layout.setContentsMargins(5, 30, 5, 5)  # 왼쪽, 위쪽, 오른쪽, 아래쪽 여백 설정
+            layout.setContentsMargins(5, 100, 5, 5)  # 왼쪽, 위쪽, 오른쪽, 아래쪽 여백 설정
         
         # 테이블 위젯 추가
         layout.addWidget(self.table_widget)
