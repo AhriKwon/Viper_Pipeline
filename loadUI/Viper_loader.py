@@ -217,6 +217,7 @@ class LoadUI(QMainWindow):
         self.animations = []
         self.effects = []
         self.load_ui()
+        self.animation_executed = False  # ✅ 애니메이션 상태 변수 초기화
         
         self.setGeometry(100, 100, 1240, 800)
         self.resize(1240, 720)
@@ -274,6 +275,7 @@ class LoadUI(QMainWindow):
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
 
         self.ui.tabWidget_info.setVisible(False)
+
     
     
 
@@ -296,6 +298,75 @@ class LoadUI(QMainWindow):
 
     #====================================애니메이션 함수들=======================================
     #================================(loginui가 성공할 시에)=================================
+
+    def show_task_details(self, task_id, event=None):
+        """
+        클릭한 테스크 정보를 info탭에 띄워주는 함수
+        """
+        task = manager.get_task_by_id(task_id)
+        works = manager.get_works_for_task(task_id)
+        if works:
+            file_name = works[-1]['path']
+        else:
+            file_name = None
+
+        self.ui.label_filename2.setText(task['content'])
+        self.ui.label_filename.setText(task['content'])
+        self.ui.label_startdate.setText(task["start_date"])
+        self.ui.label_duedate.setText(task["due_date"])
+
+        file_type = self.get_filetype(file_name)
+        self.ui.label_type.setText(file_type)  
+
+        self.ui.tabWidget_info.show()
+
+        # 애니메이션 실행
+        self.animate_list_widgets(left=True)
+
+    def animate_list_widgets(self):
+        """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
+        if self.animation_executed:
+            print("⚠️ 이미 애니메이션이 실행됨, 다시 실행 안 함!")
+            return  # ✅ 한 번 실행된 후에는 다시 실행되지 않음
+
+        print("✅ 리스트 위젯과 라벨 이동 애니메이션 시작!")
+        self.animation_executed = True  # ✅ 실행 상태 변경
+
+        self.animations = []  # 애니메이션 리스트
+
+        # 리스트 위젯과 해당하는 라벨 매칭
+        widgets = [
+            (self.ui.listWidget_wtg, self.ui.label_wtg),
+            (self.ui.listWidget_ip, self.ui.label_ip),
+            (self.ui.listWidget_fin, self.ui.label_fin)
+        ]
+
+        for list_widget, label in widgets:
+            # 기존 위치 저장
+            start_x = list_widget.x()
+            end_x = start_x - 50  # 원래 위치에서 50px 왼쪽으로 이동
+
+            # 리스트 위젯 애니메이션
+            list_animation = QPropertyAnimation(list_widget, b"pos")
+            list_animation.setDuration(800)  # 0.5초 동안 이동
+            list_animation.setStartValue(QPoint(start_x, list_widget.y()))
+            list_animation.setEndValue(QPoint(end_x, list_widget.y()))
+            list_animation.setEasingCurve(QEasingCurve.OutQuad)
+
+            # 라벨 애니메이션 (리스트 위젯과 동일하게 이동)
+            label_animation = QPropertyAnimation(label, b"pos")
+            label_animation.setDuration(500)
+            label_animation.setStartValue(QPoint(start_x, label.y()))
+            label_animation.setEndValue(QPoint(end_x, label.y()))
+            label_animation.setEasingCurve(QEasingCurve.OutQuad)
+
+            # 애니메이션 실행
+            list_animation.start()
+            label_animation.start()
+
+            # GC 방지: 리스트에 저장
+            self.animations.append(list_animation)
+            self.animations.append(label_animation)
 
 
     def initialize_labels(self):
@@ -368,7 +439,7 @@ class LoadUI(QMainWindow):
             label.move(start_pos)  #  시작 위치로 이동 (처음에는 안 보임)
             label.setVisible(False)  # 초기에는 완전히 숨김 (중간에 깜빡이는 문제 해결)
             if label == self.ui.label_ani1:
-                print("🚀 label_ani1과 label_left 애니메이션 동시 실행")
+                print("label_ani1과 label_left 애니메이션 동시 실행")
                 self.start_label_left_animation() 
 
             # QTimer를 활용해 순차적으로 실행되도록 설정
@@ -478,7 +549,7 @@ class LoadUI(QMainWindow):
 
     def create_bouncing_dots(self):
         """ label_central 아래에 원이 튀어오르는 애니메이션 생성 """
-        print("🔹 점프 애니메이션 원 생성 시작!")
+        print("점프 애니메이션 원 생성 시작!")
 
         self.dots = []  # 원 리스트
         self.dot_animations = []  # 애니메이션 리스트
@@ -487,7 +558,7 @@ class LoadUI(QMainWindow):
         dot_size = 3  # 원 크기
         spacing = 20  # 원 간격
 
-        # 🔹 기준이 되는 중앙 라벨 가져오기
+        # 기준이 되는 중앙 라벨 가져오기
         label_central = self.ui.label_central
         central_x = label_central.x()
         central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
@@ -617,6 +688,7 @@ class LoadUI(QMainWindow):
 
 #=============================로그인 후, task 목록을 가져오는 함수====================================
 #=============================파일 오픈 및 My task 탭 여러 내부 기능====================================
+
     def login_and_load_tasks(self):
         user_data = UserAuthenticator.login(self.username)
 
@@ -647,7 +719,7 @@ class LoadUI(QMainWindow):
                 if hasattr(self, 'list_animated_view'):
                     self.list_animated_view.add_task(task_name, task_id)
                 else:
-                    print("⚠️ list_animated_view가 아직 초기화되지 않음!")
+                    print("list_animated_view가 아직 초기화되지 않음!")
                
 
                 # 리스트 아이템 생성
@@ -713,6 +785,7 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             self.show_task_details(task_id)
             self.show_task_works(task_id)
+            self.animate_list_widgets()
 
     def get_latest_thumbnail(self, task_path):
         """
@@ -721,7 +794,7 @@ class LoadUI(QMainWindow):
         thumb_path = os.path.join(task_path, "thumb")
         
         if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
-            return "/nas/Viper/thumb.jpg"
+            return "/nas/Viper/789.png"
         
         # 지원하는 이미지 확장자
         valid_extensions = (".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")
@@ -760,7 +833,7 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-
+        self.ui.label_filename2.setText(task['content'])
         self.ui.label_filename.setText(task['content'])
         self.ui.label_startdate.setText(task["start_date"])
         self.ui.label_duedate.setText(task["due_date"])
@@ -828,6 +901,7 @@ class LoadUI(QMainWindow):
 
         # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
         label_pairs = [
+           
             ("label_6", "label_filename"),
             ("label_7", "label_type"),
             ("label_8", "label_startdate"),
@@ -876,10 +950,10 @@ class LoadUI(QMainWindow):
                 animation.setEndValue(self.original_positions[label])  
                 animation.setEasingCurve(QEasingCurve.OutBack)  
 
-                QTimer.singleShot(delay, animation.start)  # ✅ 순차적 실행
+                QTimer.singleShot(delay, animation.start)  # 순차적 실행
                 self.animations.append(animation)
 
-            delay += 200  # ✅ 딜레이 추가 (순차적 등장)
+            delay += 200  # 딜레이 추가 (순차적 등장)
 
     def run_file(self):
         """
