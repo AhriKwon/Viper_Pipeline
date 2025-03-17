@@ -1,7 +1,14 @@
 import shotgun_api3
 import os
 import glob
+from typing import TypedDict
 from datetime import datetime
+
+class PublishedFileData(TypedDict):
+    file_name: str
+    file_path: str
+    description: str
+    thumbnail: str
 
 class ShotGridAPI:
     """
@@ -167,6 +174,23 @@ class ShotGridAPI:
         ]
     
     @staticmethod
+    def get_publish_metadata(task_id):
+        """
+        프로젝트, 엔티티 타입, 엔티티 이름, 태스크 이름을 샷그리드에서 가져오기
+        """
+        task = ShotGridAPI.sg.get_entity("Task", task_id, ["project", "entity", "content"])
+        
+        if not task or "entity" not in task:
+            raise ValueError(f"Task ID {task_id}에 대한 정보를 찾을 수 없습니다.")
+
+        project_name = task["project"]["name"]
+        entity_type = task["entity"]["type"]  # "Asset" 또는 "Shot"
+        entity_name = task["entity"]["name"]
+        task_name = task["content"]  # 태스크 이름
+
+        return project_name, entity_type, entity_name, task_name
+    
+    @staticmethod
     def update_task_status(task_id, new_status):
         """
         Task 상태를 업데이트 (예: PND → IP)
@@ -174,36 +198,72 @@ class ShotGridAPI:
         ShotGridAPI.sg.update(
             "Task", task_id, {"sg_status_list": new_status}
         )
-
-    @staticmethod
-    def create_pub_file(task_id, file_path, thumbnail_path, description):
-        """
-        새로운 퍼블리시 파일을 Task에 등록
-        """
-        file_name = os.path.basename(file_path)
-        data = {
-            "code": file_name,
-            "description": description,
-            "task": {"type": "Task", "id": task_id},
-            "path": {"local_path": file_path},
-            "created_by": {"type": "HumanUser", "id": 121},
-        }
-        ShotGridAPI.sg.create("PublishedFile", data)
-        ShotGridAPI.sg.update("Task", task_id, {"image": thumbnail_path})
     
     @staticmethod
-    def create_version(task_id, description):
+    def create_version(task_id, file_path, thumbnail_path, description):
         """
-        새로운 버전 파일을 Task에 등록
+        새로운 버전 생성
         """
+        file_name = os.path.basename(file_path)
         version_data = {
-            "code": file_name,
-            "description": description,
-            "task": {"type": "Task", "id": task_id},
-            "created_by": {"type": "HumanUser", "id": 121},  
+            "code": file_name,  # 버전 이름 (파일명으로 설정)
+            "description": description,  # 설명 추가
+            "task": {"type": "Task", "id": task_id},  # 연결된 Task
         }
 
-        return ShotGridAPI.sg.create("Version", version_data)
+        # ShotGrid에 Version 생성
+        version = ShotGridAPI.sg.create("Version", version_data)
+
+        # 파일을 ShotGrid에 업로드 (Uploaded Movie 필드)
+        if version:
+            ShotGridAPI.sg.upload("Version", version["id"], file_path, field_name="sg_uploaded_movie")
+        # 썸네일 업로드
+        if os.path.exists(thumbnail_path):
+            ShotGridAPI.sg.upload_thumbnail("Version", version["id"], thumbnail_path)
+
+        return version
+
+    @staticmethod
+    def create_published_file(task_id, data:PublishedFileData):
+        """
+        퍼블리시된 파일을 ShotGrid에 등록
+        """
+        try:
+            file_name = os.path.basename(data["file_path"])
+
+            task_data = ShotGridAPI.sg.find_one("Task", [["id", "is", task_id]], ["project"])
+            if not task_data or "project" not in task_data:
+                print(f"오류: Task {task_id}에 해당하는 프로젝트를 찾을 수 없습니다.")
+                return None
+            
+            project_id = task_data["project"]["id"]
+
+            publish_data = {
+                "code": file_name,
+                "description": data["description"],
+                "project": {"type": "Project", "id": project_id},
+                "task": {"type": "Task", "id": task_id},
+                "path": {"local_path": data["file_path"]},
+            }
+
+            publish = ShotGridAPI.sg.create("PublishedFile", publish_data)
+
+            if not publish:
+                print(f"⚠️ 퍼블리시 파일 생성 실패: {file_name}")
+                return None
+
+            print(f"ShotGrid PublishedFile 생성 완료: {file_name} (ID: {publish['id']})")
+
+            # 썸네일 파일이 존재하면 업로드
+            if os.path.exists(data["thumbnail"]):
+                ShotGridAPI.sg.upload_thumbnail("PublishedFile", publish["id"], data["thumbnail"])
+                print(f"썸네일 업로드 완료: {data['thumbnail']}")
+
+            return publish
+        
+        except Exception as e:
+            print(f"오류 발생: {e}")
+            return None
     
     @staticmethod
     def update_entity(entity_type, entity_id, description, thumbnail_path):
@@ -218,28 +278,6 @@ class ShotGridAPI:
             ShotGridAPI.sg.upload_thumbnail(
                 entity_type, entity_id, thumbnail_path
                 )
-
-    @staticmethod
-    def update_task_thumbnail(task_id):
-        """
-        특정 Task의 썸네일을 최신 퍼블리시된 파일의 썸네일로 업데이트
-        """
-        publish_files = ShotGridAPI.get_publishes(task_id)
-
-        if not publish_files:
-            print(f"⚠ Task {task_id}에 연결된 퍼블리시 파일이 없습니다.")
-            return False
-        
-        latest_publish = publish_files[0]
-        latest_thumbnail = latest_publish.get("thumbnail")
-
-        if not latest_thumbnail:
-            print(f"⚠ 최신 퍼블리시 파일(ID {latest_publish['id']})에 썸네일이 없습니다.")
-            return False
-        
-        ShotGridAPI.sg.update("Task", task_id, {"image": latest_thumbnail})
-        print(f"Task {task_id}의 썸네일이 최신 퍼블리시 썸네일로 업데이트되었습니다!")
-        return True
 
     @staticmethod
     def delete_published_file(publish_id):
