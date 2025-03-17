@@ -249,7 +249,79 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         empty_maya_file = "/home/rapa/Viper/loader_test_createfile/test_v001.ma"
         shutil.copy(empty_maya_file, file_path)        
         print(f"Maya 파일 생성 완료: {file_path}")
-        
+
+        maya_project_folder = os.path.dirname(os.path.dirname(file_path))
+        self.create_workspace_mel(maya_project_folder)
+
+    
+    def create_workspace_mel(self, project_path):
+        """
+        Maya 프로젝트 폴더 내 workspace.mel 파일을 자동 생성
+        """
+        workspace_mel_path = os.path.join(project_path, "workspace.mel")
+
+        if not os.path.exists(workspace_mel_path):
+            workspace_mel_content = """//Maya 2023 Project Definition
+
+    workspace -fr "fluidCache" "cache/nCache/fluid";
+    workspace -fr "DXF_FBX" "data";
+    workspace -fr "images" "images";
+    workspace -fr "offlineEdit" "scenes/edits";
+    workspace -fr "furShadowMap" "renderData/fur/furShadowMap";
+    workspace -fr "SVG" "data";
+    workspace -fr "scripts" "scripts";
+    workspace -fr "DAE_FBX" "data";
+    workspace -fr "shaders" "renderData/shaders";
+    workspace -fr "furFiles" "renderData/fur/furFiles";
+    workspace -fr "OBJ" "data";
+    workspace -fr "FBX export" "data";
+    workspace -fr "furEqualMap" "renderData/fur/furEqualMap";
+    workspace -fr "DAE_FBX export" "data";
+    workspace -fr "DXF_FBX export" "data";
+    workspace -fr "movie" "movies";
+    workspace -fr "ASS Export" "data";
+    workspace -fr "move" "data";
+    workspace -fr "mayaAscii" "scenes";
+    workspace -fr "autoSave" "autosave";
+    workspace -fr "sound" "sound";
+    workspace -fr "mayaBinary" "scenes";
+    workspace -fr "timeEditor" "Time Editor";
+    workspace -fr "Arnold-USD" "data";
+    workspace -fr "iprImages" "renderData/iprImages";
+    workspace -fr "FBX" "data";
+    workspace -fr "renderData" "renderData";
+    workspace -fr "fileCache" "cache/nCache";
+    workspace -fr "eps" "data";
+    workspace -fr "3dPaintTextures" "sourceimages/3dPaintTextures";
+    workspace -fr "mel" "scripts";
+    workspace -fr "translatorData" "data";
+    workspace -fr "particles" "cache/particles";
+    workspace -fr "scene" "scenes";
+    workspace -fr "USD Export" "data";
+    workspace -fr "mayaLT" "";
+    workspace -fr "sourceImages" "sourceimages";
+    workspace -fr "clips" "clips";
+    workspace -fr "furImages" "renderData/fur/furImages";
+    workspace -fr "depth" "renderData/depth";
+    workspace -fr "sceneAssembly" "sceneAssembly";
+    workspace -fr "teClipExports" "Time Editor/Clip Exports";
+    workspace -fr "ASS" "data";
+    workspace -fr "audio" "sound";
+    workspace -fr "USD Import" "data";
+    workspace -fr "Alembic" "data";
+    workspace -fr "illustrator" "data";
+    workspace -fr "diskCache" "data";
+    workspace -fr "templates" "assets";
+    workspace -fr "OBJexport" "data";
+    workspace -fr "furAttrMap" "renderData/fur/furAttrMap";
+    """
+
+            with open(workspace_mel_path, "w") as workspace_file:
+                workspace_file.write(workspace_mel_content)
+
+
+
+            
 
     def create_houdini_file(self, file_path):
         """
