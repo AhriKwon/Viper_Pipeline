@@ -18,6 +18,7 @@ except:
     from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
 
 import sys, os, time, subprocess
+from typing import TypedDict
 
 publish_path = os.path.dirname(__file__)
 viper_path = os.path.join(publish_path, '..')
@@ -36,10 +37,11 @@ sys.path.append(os.path.abspath(os.path.join(viper_path, 'Publisher')))
 from MayaPublisher import MayaPublisher
 from NukePublisher import NukePublisher
 
-ICON_PATHS = {
-    "maya": "/nas/Viper/minseo/icon/maya.png",
-    "nuke": "/nas/Viper/minseo/icon/nuke.png",
-}
+class PublishedFileData(TypedDict):
+    file_name: str
+    file_path: str
+    description: str
+    thumbnail: str
 
 class PublishUI(QMainWindow):
     def __init__(self):
@@ -52,10 +54,7 @@ class PublishUI(QMainWindow):
         self.setup_publish_info()
 
         # publish 버튼을 누르면 퍼블리쉬되도록 연동
-        self.publish_button = self.ui.findChild(QPushButton, "publish_button")
-        # if self.publish_button:
-        #     self.publish_button.clicked.connect(self.publish_selected_file)
-
+        self.ui.pushButton_publish.clicked.connect(self.run_publish)
 
     def set_checkbox(self):
         """
@@ -169,7 +168,7 @@ class PublishUI(QMainWindow):
 
         # 퍼블리시 성공 여부 확인
         if publish_result:
-            self.update_database_and_shotgrid(file_path, publish_result)
+            self.update_database_and_shotgrid(version_path, publish_result)
         else:
             UI_support.popup.show_message("error", "오류", "퍼블리시 실패")
         
@@ -198,17 +197,17 @@ class PublishUI(QMainWindow):
         except ImportError:
             return False
     
-    def update_database_and_shotgrid(self, version_path, publish_result):
+    def update_database_and_shotgrid(self, version_path, data: PublishedFileData):
         """
         퍼블리시 성공 후 DB와 ShotGrid 업데이트
         """
-        task_id = manager.get_task_id_from_file(publish_result["path"])
+        task_id = manager.get_task_id_from_file(data["path"])
 
         if not task_id:
             UI_support.popup.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return
         
-        manager.publish(task_id, version_path, publish_result)
+        manager.publish(task_id, version_path, data)
 
 
      #===========================================================================================
