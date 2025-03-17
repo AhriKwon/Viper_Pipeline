@@ -5,13 +5,14 @@ import re
 import shutil
 from PySide6 import QtWidgets, QtCore
 
-# ShotGrid API 파일 가져오기
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
-from shotgrid_manager import ShotGridManager
 from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
 from HoudiniLoader import HoudiniLoader
 from FileDialog import FileDialog
+
+# ShotGrid API 파일 가져오기
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+from shotgrid_manager import ShotGridManager
 
 
 class FileLoader:
@@ -44,13 +45,8 @@ class FileLoader:
             file_path_input.setText(file_path)
 
     @staticmethod
-    def run_file(file_path_input):
+    def run_file(file_path):
         """설정된 파일 경로를 읽고 Maya 또는 Nuke에서 실행"""
-        file_path = file_path_input.text().strip()
-
-        if not file_path or not os.path.exists(file_path):
-            QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
-            return
 
         file_path = os.path.abspath(file_path)
 
@@ -72,10 +68,9 @@ class FileLoader:
             FileLoader.run_file(file_path_input)
 
     @staticmethod
-    def import_file(file_path_input):
+    def import_file(file_path):
         """Maya, Nuke, Houdini에서 파일 Import"""
 
-        file_path = file_path_input.text().strip()
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
             return
@@ -102,9 +97,8 @@ class FileLoader:
         QtWidgets.QMessageBox.warning(None, "오류", "파일을 불러올 프로그램이 실행되지 않았습니다.")
 
     @staticmethod
-    def create_reference_file(file_path_input):
+    def create_reference_file(file_path):
         """Maya에서 Reference 추가"""
-        file_path = file_path_input.text().strip()
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
             return

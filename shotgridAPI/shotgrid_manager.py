@@ -150,28 +150,30 @@ class ShotGridManager:
         테스크 ID를 기반으로 퍼블리시된 파일이 저장되는 경로를 반환
         """
         task = self.get_task_by_id(task_id)
+        
         if not task:
             return None
-
+        
+        # 퍼블리시 경로 설정
         project = project_name
-        task_name = task["content"].rsplit('_',1)[1]
-        entity_name = task["content"].rsplit('_',1)[0]
+        task_name = task["content"].rsplit('_', 1)[1]
+        asset_name = task["content"].rsplit('_', 1)[0]
 
         assets = self.get_project_assets(project_name)
-        asset_type = "unknown"
 
+        asset_type = "unknown"  # 기본값 설정
         for asset in assets:
-            if asset["code"] == entity_name:
+            if asset["code"] == asset_name:
                 asset_type = asset.get("sg_asset_type", "unknown")
-                break
+                break  # 찾으면 바로 루프 탈출
 
-        # 샷 또는 애셋 경로 구분
+        # 애셋 테스크인지 샷 테스크인지 확인
         if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"]:
-            sequence = entity_name.split("_")[0]
-            shot = entity_name
+            sequence = task["content"].split('_')[0]
+            shot = task["content"].rsplit('_', 1)[0]
             publish_path = f"/nas/show/{project}/seq/{sequence}/{shot}/{task_name}/pub"
         else:
-            publish_path = f"/nas/show/{project}/assets/{asset_type}/{entity_name}/{task_name}/pub"
+            publish_path = f"/nas/show/{project}/assets/{asset_type}/{asset_name}/{task_name}/pub"
 
         return publish_path
     
