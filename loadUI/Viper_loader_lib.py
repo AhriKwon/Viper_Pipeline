@@ -1,9 +1,9 @@
 from PySide6.QtWidgets import (
     QTableWidget, QWidget, QVBoxLayout, QLabel, QCheckBox,
-    QTableWidgetItem,QHeaderView, QSizePolicy, QHBoxLayout, QApplication
+    QTableWidgetItem,QHeaderView, QSizePolicy, QHBoxLayout, QApplication,QTabWidget
     )
 from PySide6.QtCore import(
-    Qt, QMimeData, QUrl
+    Qt, QMimeData, QUrl,QTimer,QPoint,QPropertyAnimation,QEasingCurve
 )
 from PySide6.QtGui import QPixmap, QDrag
 import os, sys, json, glob
@@ -35,10 +35,117 @@ class LibraryTab:
         self.bookmarked_items = []  # 북마크된 항목 저장
         self.bookmarked_items = self.load_bookmarks()
         self.tab_bookmark = self.ui.tabWidget_lib.widget(4)
+        # self.label_filename_2 = self.ui.findChild(QLabel, "label_filename_2")
+        # self.label_startdate_2 = self.ui.findChild(QLabel, "label_startdate_2")
+        # self.label_filtype_2 = self.ui.findChild(QLabel, "label_filtype_2 ")
+        # self.label_duedate_2 = self.ui.findChild(QLabel, "label_duedate_2 ")
+        # self.tabWidget_info2 = self.ui.findChild(QTabWidget, "tabWidget_info2 ")
+        
+
+
 
         self.load_files(1)
 
         # self.ui.pushButton_import.clicked.connect(self.import_file)
+
+    def show_task_details(self, task_id, event=None):
+        """
+        클릭한 테스크 정보를 info탭에 띄워주는 함수
+        """
+        task = manager.get_task_by_id(task_id)
+        works = manager.get_works_for_task(task_id)
+        if works:
+            file_name = works[-1]['path']
+        else:
+            file_name = None
+        self.ui.label_filename_2.setText(task['content'])
+        self.ui.label_filename_2.setText(task['content'])
+        self.ui.label_startdate_2.setText(task["start_date"])
+        self.ui.label_duedate_2.setText(task["due_date"])
+
+        file_type = self.get_filetype(file_name)
+        self.ui.label_type_2.setText(file_type)  
+
+        self.ui.tabWidget_info2.show()
+        QTimer.singleShot(10, self.animate_info_labels)
+        print ("show task details")
+    def get_filetype(self, file_name):
+        if file_name == None:
+            return "work file 없음"
+        elif file_name.endswith((".ma", ".mb")):
+            return "Maya"
+        elif file_name.endswith((".nk", ".nknc")):
+            return "Nuke"
+        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
+            return "Houdini"
+        else:
+            return "알 수 없는 파일 형식"
+
+
+   
+    def animate_info_labels(self):
+        """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+        print("Task 정보 라벨 애니메이션 시작!")
+
+        # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
+        label_pairs = [
+           
+            ("label_6", "label_filename"),
+            ("label_7", "label_type"),
+            ("label_8", "label_startdate"),
+            ("label_9", "label_duedate")
+        ]
+
+        # 라벨 객체 저장
+        self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
+
+        # 원래 위치 저장
+        self.original_positions = {
+            label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
+        }
+
+        # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
+        screen_offset = -200  
+        self.start_positions = {
+            label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
+        }
+
+        # 애니메이션 실행 전에 위치 강제 설정
+        for pair in self.labels:
+            
+            for label in pair:
+                print (pair, label)
+                label.move(self.start_positions[label])  
+                label.setVisible(True)  
+
+        # UI 업데이트 후 100ms 뒤에 애니메이션 실행
+        QTimer.singleShot(100, self._start_info_label_animation)
+
+
+    def _start_info_label_animation(self):
+        """Task 정보 라벨 등장 애니메이션 실행"""
+        print("Task 정보 라벨 등장 애니메이션 실행!")
+
+        self.animations = []
+        delay = 0
+
+        for pair in self.labels:
+            for label in pair:
+                animation = QPropertyAnimation(label, b"pos", self)
+                animation.setDuration(1500)  
+                print (self.start_positions[label])
+                animation.setStartValue(self.start_positions[label])  
+                animation.setEndValue(self.original_positions[label])  
+                animation.setEasingCurve(QEasingCurve.OutBack)  
+
+                QTimer.singleShot(delay, animation.start)  # 순차적 실행
+                self.animations.append(animation)
+
+            delay += 200  # 딜레이 추가 (순차적 등장)
+
+
+#////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#/////////////////////////////////////////////////////////////////////////
 
     def setup_table(self):
         """
@@ -66,7 +173,7 @@ class LibraryTab:
         # tabWidget_lib 내부에 레이아웃이 있는지 확인 후 추가
         if self.ui.tabWidget_lib.layout() is None:
             layout = QVBoxLayout()
-            layout.setContentsMargins(5, 100, 5, 5)  # 왼쪽, 위쪽, 오른쪽, 아래쪽 여백 설정
+            layout.setContentsMargins(5, 120, 5, 5)  # 왼쪽, 위쪽, 오른쪽, 아래쪽 여백 설정
         
         # 테이블 위젯 추가
         layout.addWidget(self.table_widget)
@@ -189,23 +296,89 @@ class LibraryTab:
 
         label_thumbnail.setPixmap(rounded_pixmap)
         label_thumbnail.setAlignment(Qt.AlignCenter)
+        label_thumbnail.setFixedSize(320, 180)  # ✅ 썸네일 크기 고정 (밀리지 않도록)
 
-        # 폴더 이름 QLabel
+        # # 폴더 이름 QLabel
+        # label_name = QLabel(file_name)
+        # label_name.setAlignment(Qt.AlignCenter)
+        # label_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
+        # ✅ 북마크 체크박스 (이미지로 설정)
+                # ✅ 북마크 체크박스 (이미지로 설정)
+        bookmark_checkbox = QCheckBox(label_thumbnail)  # ✅ 체크박스를 label_thumbnail의 자식으로 설정
+        bookmark_checkbox.setStyleSheet("""
+            QCheckBox::indicator {
+                width: 24px;
+                height: 24px;
+                image: url('/nas/Viper/minseo/forui/bookmark1.png');
+            }
+            QCheckBox::indicator:checked {
+                image: url('/nas/Viper/minseo/forui/bookmark2.png');
+            }
+            QCheckBox {
+                border: none;
+                background: transparent;
+            }
+        """)
+        bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
+        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # ✅ 썸네일의 오른쪽 상단에 배치
+        bookmark_checkbox.show()
+
+        # ✅ 체크박스 클릭 시 기존 북마크 기능 유지
+        bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
+
+        # ✅ 체크박스를 label_thumbnail 내부에 고정 (썸네일 밀림 방지)
+        bookmark_checkbox.setParent(label_thumbnail)
+
+        
+
+
+       
+        # ✅ 파일 이름 추가
         label_name = QLabel(file_name)
         label_name.setAlignment(Qt.AlignCenter)
-        label_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
+        label_name.setStyleSheet("color: white;")
 
+        # ✅ 최종 레이아웃 설정
+        layout.addWidget(label_thumbnail)  # ✅ 체크박스는 label_thumbnail 위에 겹쳐 있음
+        layout.addWidget(label_name)
+        layout.setAlignment(Qt.AlignCenter)
+        cell_widget.setLayout(layout)
 
+        
+        # ✅ 썸네일의 오른쪽 상단에 체크박스 배치
+        thumbnail_layout = QHBoxLayout()
+        thumbnail_layout.addWidget(bookmark_checkbox, alignment=Qt.AlignRight)
+        thumbnail_layout.addWidget(label_thumbnail)
+        
+        # ✅ 파일 이름 추가
+        label_name = QLabel(file_name)
+        label_name.setAlignment(Qt.AlignCenter)
+        label_name.setStyleSheet("color: white;")
+
+        # ✅ 최종 레이아웃 설정
+        layout.addLayout(thumbnail_layout)
+        layout.addWidget(label_name)
+        layout.setAlignment(Qt.AlignCenter)
+        cell_widget.setLayout(layout)
+
+       
         # 북마크 체크박스
         bookmark_checkbox = QCheckBox()
         bookmark_checkbox.setStyleSheet("QCheckBox { margin-left: 10px; }")
         bookmark_checkbox.setMaximumSize(25, 25)
+        bookmark_checkbox.setAttribute(Qt.WA_TranslucentBackground)  # ✅ 체크박스 완전 투명화
+        bookmark_checkbox.setStyleSheet("background: rgba(0,0,0,0); border: none;")  # ✅ 체크박스 투명 처리
+
+        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # ✅ 썸네일의 오른쪽 상단에 배치
+        bookmark_checkbox.show()
 
         # 기존 북마크 여부 반영
         bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
 
         # 체크박스 클릭 시 업데이트 함수 실행
         bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
+         
+        bookmark_checkbox.setParent(label_thumbnail)
 
         # 레이아웃에 추가
         layout.addWidget(label_thumbnail)
