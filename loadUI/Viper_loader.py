@@ -23,9 +23,9 @@ from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
 # 로더
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
-from MayaLoader import MayaLoader
-from NukeLoader import NukeLoader
-from final_test import FileLoaderGUI
+from FileLoader import FileLoader
+loader = FileLoader()
+
 # 로더 UI
 import UI_support
 from Viper_loader_lib import LibraryTab
@@ -327,10 +327,10 @@ class LoadUI(QMainWindow):
         """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
         if self.animation_executed:
             print("⚠️ 이미 애니메이션이 실행됨, 다시 실행 안 함!")
-            return  # ✅ 한 번 실행된 후에는 다시 실행되지 않음
+            return  # 한 번 실행된 후에는 다시 실행되지 않음
 
-        print("✅ 리스트 위젯과 라벨 이동 애니메이션 시작!")
-        self.animation_executed = True  # ✅ 실행 상태 변경
+        print("리스트 위젯과 라벨 이동 애니메이션 시작!")
+        self.animation_executed = True  # 실행 상태 변경
 
         self.animations = []  # 애니메이션 리스트
 
@@ -955,7 +955,7 @@ class LoadUI(QMainWindow):
 
             delay += 200  # 딜레이 추가 (순차적 등장)
 
-    def run_file(self):
+    def open_file(self):
         """
         설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
         """
@@ -977,17 +977,7 @@ class LoadUI(QMainWindow):
                 UI_support.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
                 continue
 
-        # 경로를 절대 경로로 변환
-        file_path = os.path.abspath(file_path)
-
-        if file_path.endswith((".ma", ".mb")):
-            MayaLoader.launch_maya(file_path)
-        elif file_path.endswith((".nk", ".nknc")):
-            NukeLoader.launch_nuke(file_path)
-        elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
-            FileLoaderGUI.launch_houdini(file_path)
-        else:
-            UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+        loader.run_file(file_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
