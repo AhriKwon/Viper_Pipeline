@@ -205,10 +205,21 @@ class ShotGridAPI:
         새로운 버전 생성
         """
         file_name = os.path.basename(file_path)
+
+        task_data = ShotGridAPI.sg.find_one("Task", [["id", "is", task_id]], ["project", "entity"])
+        if not task_data:
+            print(f"⚠️ Task {task_id}를 찾을 수 없습니다.")
+            return None
+        
+        project_id = task_data["project"]["id"]
+        link_entity = task_data.get("entity")  # 연결된 Asset, Shot 등
+
         version_data = {
+            "project": {"type": "Project", "id": project_id},
             "code": file_name,  # 버전 이름 (파일명으로 설정)
             "description": description,  # 설명 추가
-            "task": {"type": "Task", "id": task_id},  # 연결된 Task
+            "sg_task": {"type": "Task", "id": task_id},  # 연결된 Task
+            "entity": {"type": link_entity["type"], "id": link_entity["id"]}
         }
 
         # ShotGrid에 Version 생성
@@ -224,26 +235,28 @@ class ShotGridAPI:
         return version
 
     @staticmethod
-    def create_published_file(task_id, data:PublishedFileData):
+    def create_published_file(task_id, version, data:PublishedFileData):
         """
         퍼블리시된 파일을 ShotGrid에 등록
         """
         try:
             file_name = os.path.basename(data["file_path"])
 
-            task_data = ShotGridAPI.sg.find_one("Task", [["id", "is", task_id]], ["project"])
+            task_data = ShotGridAPI.sg.find_one("Task", [["id", "is", task_id]], ["project", "entity"])
             if not task_data or "project" not in task_data:
                 print(f"오류: Task {task_id}에 해당하는 프로젝트를 찾을 수 없습니다.")
                 return None
             
             project_id = task_data["project"]["id"]
+            link_entity = task_data.get("entity")  # 연결된 Asset, Shot 등
 
             publish_data = {
                 "code": file_name,
                 "description": data["description"],
                 "project": {"type": "Project", "id": project_id},
                 "task": {"type": "Task", "id": task_id},
-                "path": {"local_path": data["file_path"]},
+                "entity": {"type": link_entity["type"], "id": link_entity["id"]},
+                "path": {"local_path": data["file_path"]}
             }
 
             publish = ShotGridAPI.sg.create("PublishedFile", publish_data)
@@ -258,6 +271,10 @@ class ShotGridAPI:
             if os.path.exists(data["thumbnail"]):
                 ShotGridAPI.sg.upload_thumbnail("PublishedFile", publish["id"], data["thumbnail"])
                 print(f"썸네일 업로드 완료: {data['thumbnail']}")
+            
+            if version:
+                ShotGridAPI.sg.update("PublishedFile", publish["id"], {"version": {"type": "Version", "id": version["id"]}})
+                print(f"퍼블리시 파일과 Version 연결 완료: {version['id']}")
 
             return publish
         

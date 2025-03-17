@@ -194,24 +194,24 @@ class ShotGridManager:
         파일 퍼블리시 후 데이터베이스 및 ShotGrid에 반영
         """
         try:
-            print(f"🔍 퍼블리시 데이터 확인: {data}")
+            print(f"퍼블리시 데이터 확인: {data}")
 
             if not isinstance(data, dict):
                 raise TypeError(f"데이터 타입 오류: data는 dict여야 합니다. 현재 타입: {type(data)}")
             
             # 데이터베이스에 저장
             sg_db.add_published_file(task_id, data)
-        
-            # ShotGrid에 퍼블리시된 파일 등록
-            published_file = sg_api.create_published_file(task_id, data)
-            if not published_file:
-                print(f"⚠️ ShotGrid 퍼블리시 실패: {data['file_path']}")
-                return None
 
             # ShotGrid에 버전 파일 등록
             version = sg_api.create_version(task_id, version_path, data["thumbnail"], data["description"])
             if not version:
                 print(f"⚠️ ShotGrid 버전 생성 실패: {data['file_path']}")
+                return None
+        
+            # ShotGrid에 퍼블리시된 파일 등록
+            published_file = sg_api.create_published_file(task_id, version, data)
+            if not published_file:
+                print(f"⚠️ ShotGrid 퍼블리시 실패: {data['file_path']}")
                 return None
         
             # 퍼블리시된 썸네일을 태스크 썸네일로 업데이트
@@ -221,11 +221,11 @@ class ShotGridManager:
             return published_file
         
         except TypeError as e:
-            print(f"🚨 데이터 타입 오류: {e}")
+            print(f"데이터 타입 오류: {e}")
             return None
         
         except Exception as e:
-            print(f"🚨 퍼블리시 중 오류 발생: {e}")
+            print(f"퍼블리시 중 오류 발생: {e}")
             return None
 
     def close(self):

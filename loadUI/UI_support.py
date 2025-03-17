@@ -1,4 +1,11 @@
-from PySide6.QtWidgets import QMessageBox
+try:
+    from PySide6.QtWidgets import QMessageBox, QApplication, QMainWindow
+    from PySide6.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
+    from PySide6.QtCore import Qt
+except:
+    from PySide2.QtWidgets import QMessageBox, QApplication, QMainWindow
+    from PySide2.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
+    from PySide2.QtCore import Qt
 
 #====================================경고, 알림창 팝업=========================================
 
@@ -21,8 +28,6 @@ def show_message(msg_type, title, message):
 
 #===============================Qpixmap의 모서리를 둥글게 처리====================================
 
-from PySide6.QtGui import QPixmap, QPainter, QBrush, QPainterPath
-from PySide6.QtCore import Qt
 
 def round_corners_pixmap(pixmap, radius=10):
     """
@@ -48,8 +53,6 @@ def round_corners_pixmap(pixmap, radius=10):
 
 #================================UI를 윈도우 가운데에서 시작=====================================
 
-from PySide6.QtWidgets import QApplication, QMainWindow
-from PySide6.QtGui import QScreen
 
 def center_on_screen(ui):
         """
