@@ -684,7 +684,7 @@ class LoadUI(QMainWindow):
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
                 task_name = task_data.get("name", "Unknown Task")
                 task_id = task_data.get("id", "Unknown Task")
-                task_path = manager.get_task_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
+                task_path = manager.get_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
                 thumbnail_path = self.get_latest_thumbnail(task_path)  # 최신 썸네일 가져오기
 
                 # file_box 생성
