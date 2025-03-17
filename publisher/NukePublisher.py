@@ -1,16 +1,21 @@
 import os
 import nuke
+import importlib
 import subprocess
-from convert_to_mov import FileConverter
 from GeneratingPath import FilePath
+from convert_to_mov import FileConverter
 
 class NukePublisher:
-    """Nuke에서 씬을 렌더링하고 MOV 파일을 생성하는 클래스"""
+
+
     def __init__(self, shot_data):
-        """초기화 및 퍼블리싱 경로 설정"""
+        """ NukePublisher 초기화 함수.
+        :param output_mov_path: 최종mov 파일이 저장될 경로"""
+
+        """기본 shot_data 설정"""
+        # 기본값 설정
         default_data = {
             "project": "Viper",
-            "entity_type": "seq",
             "task_type": "LGT",
             "seq": None,
             "shot": None,
@@ -18,15 +23,18 @@ class NukePublisher:
             "start_num": 1,
             "last_num": 99
         }
-        default_data.update(shot_data)
 
-        # 프로젝트 정보 및 경로 설정
-        self.project = default_data["project"]
-        self.entity_type = default_data["entity_type"]
-        self.task_type = default_data["task_type"]
-        self.seq = default_data["seq"]
-        self.shot = default_data["shot"]
-        self.version = default_data.get("version", 1)
+        
+        # 전달된 shot_data를 기본값에 병합
+        default_data.update(shot_data)  # 전달된 shot_data를 덮어씁니다.
+        self.shot_data = default_data  # 기본값을 포함한 shot_data 설정
+
+        # 기본값을 포함한 shot_data에서 필요한 항목 추출
+        self.project = self.shot_data["project"]
+        self.task_type = self.shot_data["task_type"]
+        self.seq = self.shot_data["seq"]
+        self.shot = self.shot_data["shot"]
+        self.version = self.shot_data.get("version", 1)
 
         self.publish_data = {
             "project_name": self.project,
@@ -39,116 +47,54 @@ class NukePublisher:
 
         # 퍼블리싱 경로 생성
         publish_paths = FilePath.generate_paths(
-            self.project, self.entity_type, self.seq, self.shot, self.task_type, self.version
+            self.project, "seq", 
+            self.seq, self.shot, self.task_type, self.version
         )
-
+        
+        # 각 퍼블리쉬 관련 경로 설정
         self.scene_path = publish_paths["nuke"]["pub_scene"]
-        self.plb_path = publish_paths["nuke"]["mov_comp"]
+        self.mov_path = publish_paths["nuke"]["mov_comp"]
         self.prod_path = publish_paths["nuke"]["mov_product"]
 
-        # Nuke 씬을 렌더링하고 MOV 변환 실행
-        self.nuke_publish()
+        # Nuke 퍼블리쉬 함수 호출
+        self.nuke_publish([self.mov_path, self.prod_path])
 
-    def nuke_publish(self):
-        """Nuke에서 씬을 렌더링하고 MOV 변환을 실행"""
-        temp_in_path = os.path.join(self.plb_path, "temp.mov")
-        out_name = f"_v{self.version:03d}.mov"
+    def nuke_publish(self, publish_paths):
+        """Nuke Publishing 실행 (씬 렌더링/ MOV 출력)"""
+        nuke.scriptSaveAs(self.scene_path)
 
-        # Nuke 씬을 렌더링하여 임시 MOV 파일 생성
-        self.export_nukefile(temp_in_path)
+        temp_in_path = publish_paths[0]+".mov"  # 임시 저장 경로
+        out_name = f"_v{self.version:03d}.mov" # 출력 파일 이름
 
-        # Write 노드 가져오기
-        write_nodes = self.get_all_write_nodes()
-        if not write_nodes:
-            print("Write 노드가 없습니다.")
-            return
+        # 영상 렌더 한 번만 실행
+        self.export_nukefile(temp_in_path)  # self.prod_path를 두 번째 인자로 전달      
 
-        # 최종 MOV 파일 경로 설정
-        for write_node in write_nodes:
-            node_name = write_node.name()
-            mov_path = os.path.join(self.prod_path, f"{node_name}{out_name}")
-            write_node["file"].setValue(mov_path)
-            write_node["file_type"].setValue("QuickTime")
+        for publish_path in publish_paths:
+            out_path = publish_path+out_name
 
-        # Write 노드를 실행하여 MOV 파일 렌더링
-        self.execute_write_nodes(write_nodes)
+            # MOV 변환 (레터박스 & 오버레이 적용)
+            FileConverter.convert_with_overlay_and_letterbox(temp_in_path, out_path, self.publish_data)
 
-        # FFmpeg을 이용한 레터박스 및 오버레이 적용 후 MOV 변환
-        FileConverter.convert_with_overlay_and_letterbox(temp_in_path, [self.prod_path], out_name)
+            print(f"Final MOV 생성 완료: {out_path}")
 
         # 임시 MOV 파일 삭제
         if os.path.exists(temp_in_path):
             os.remove(temp_in_path)
 
-    def get_all_write_nodes(self):
-        """현재 씬에서 모든 Write 노드를 가져옴"""
-        write_nodes = nuke.allNodes("Write")
-        if not write_nodes:
-            print("경고: Write 노드가 없습니다.")
-        return write_nodes
+    def export_nukefile(self, output_path):
+        """Nuke에서 유저가 선택한 Write 노드를 Apple ProRes MOV 파일로 렌더링"""
+        selected_write_nodes = [node for node in nuke.selectedNodes() if node.Class() == "Write"]
+        if not selected_write_nodes:
+            raise RuntimeError("선택한 Write 노드가 없습니다. 렌더링을 중단합니다.")
 
-    def execute_write_nodes(self, write_nodes, start_frame=1, end_frame=100, step=1):
-        """Write 노드를 실행하여 렌더링 수행"""
-        for write_node in write_nodes:
-            nuke.execute(write_node, start_frame, end_frame, step)
-            print(f"{write_node.name()} 렌더링 완료! ({start_frame}-{end_frame})")
+        for write_node in selected_write_nodes:
+            # 출력 경로 설정
+            write_node["file"].setValue(output_path)  # 파일 저장 경로 설정
 
-    def export_nukefile(self, temp_in_path):
-        """Nuke 씬을 렌더링하여 임시 MOV 파일 생성"""
-        write_nodes = self.get_all_write_nodes()
-        if not write_nodes:
-            return
+            # MOV 포맷과 Apple ProRes 코덱 설정
+            write_node["file_type"].setValue("mov")  # MOV 포맷 설정
+            write_node["codec"].setValue("prores")  # ProRes 코덱 설정 (필요한 경우)
 
-        for write_node in write_nodes:
-            write_node["file"].setValue(temp_in_path)
-            self.execute_write_nodes([write_node])
-
-class RVPublisher:
-    """Nuke에서 렌더링된 EXR 파일을 RV에서 실행하는 클래스"""
-    def __init__(self, shot_data):
-        self.rv_path = os.getenv("RV_PATH", "/usr/local/bin/rv")
-        self.nuke_pub = NukePublisher(shot_data)
-
-    def launch_rv(self, filename, start_frame=1, end_frame=100):
-        """RV에서 렌더링된 EXR 파일을 실행"""
-        if not os.path.exists(filename):
-            print(f"파일을 찾을 수 없음: {filename}")
-            return
-
-        rv_cmd = [
-            self.rv_path,
-            filename,
-            "-play",
-            "-frameRange", f"{start_frame}-{end_frame}",
-            "-c"
-        ]
-        subprocess.Popen(rv_cmd, close_fds=True)
-        print("RV 실행 완료!")
-
-    def play_published_exr(self):
-        """Nuke에서 렌더링된 EXR 파일을 RV에서 실행"""
-        write_nodes = self.nuke_pub.get_all_write_nodes()
-        if not write_nodes:
-            return
-
-        for node in write_nodes:
-            filename = os.path.normpath(node["file"].value())
-            self.launch_rv(filename)
-
-class UIPublisher:
-    """UI에서 Nuke 퍼블리싱을 실행하는 클래스"""
-    @staticmethod
-    def export_from_nuke(shot_data):
-        """Nuke 씬을 렌더링하고 MOV 변환을 실행"""
-        NukePublisher(shot_data)
-
-    @staticmethod
-    def play_rv_after_publish(shot_data):
-        """퍼블리싱된 EXR 파일을 RV에서 실행"""
-        rv_pub = RVPublisher(shot_data)
-        rv_pub.play_published_exr()
-
-if __name__ == "__main__":
-    shot_data = {"project": "ProjectName", "seq": "Seq01", "shot": "Shot01", "task_type": "compositing", "version": 1}
-    UIPublisher.export_from_nuke(shot_data)
-    UIPublisher.play_rv_after_publish(shot_data)
+            # 렌더 실행
+            nuke.execute(write_node, self.shot_data["start_num"], self.shot_data["last_num"])
+            print(f"렌더링 완료: {write_node['file'].value()}")

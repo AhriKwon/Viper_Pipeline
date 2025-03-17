@@ -125,9 +125,7 @@ class FileConverter:
 
         input_file: 입력 비디오 파일 경로
         output_file: 출력 비디오 파일 경로
-        text1, text2, text3, text4: 슬레이트에 표시될 텍스트
-        start_num: 시작 프레임 번호
-        last_num: 마지막 프레임 번호
+햣        data: 슬레이트 정보 (shot_name, project_name, task_name, version, start_num, last_num)
         """
         # 입력으로 받은 데이터를 사용하여 슬레이트 정보를 생성함.
         shot_name = data["shot_name"]
@@ -137,25 +135,25 @@ class FileConverter:
         start_num = data["start_num"]
         last_num = data["last_num"]
 
+        # FFmpeg 명령어 설정
         ffmpeg_cmd = [
             "ffmpeg",
             "-i", input_file,
             "-c:v", "libx264",
             "-pix_fmt", "yuv420p",
             "-filter_complex",
-            "drawbox=x=0:y=0:w=iw:h=ih*0.1:color=black@1.0:t=fill,"
-            "drawbox=x=0:y=ih*0.9:w=iw:h=ih*0.1:color=black@1.0:t=fill,"
+            f"drawbox=x=0:y=0:w=iw:h=ih*0.1:color=black@1.0:t=fill,"
+            f"drawbox=x=0:y=ih*0.9:w=iw:h=ih*0.1:color=black@1.0:t=fill,"
             f"drawtext=text='{shot_name}':fontcolor=white:fontsize=20:x=20:y=(h*0.1-text_h)/2,"
             f"drawtext=text='{project_name}':fontcolor=white:fontsize=20:x=(w-text_w)/2:y=(h*0.1-text_h)/2,"
             f"drawtext=text='%{{localtime\\:%Y-%m-%d}}':fontcolor=white:fontsize=20:x=w-text_w-20:y=(h*0.1-text_h)/2,"
             f"drawtext=text='{task_name}':fontcolor=white:fontsize=20:x=20:y=h*0.9+((h*0.1-text_h)/2),"
-            f"drawtext=text='{version}':fontcolor=white:fontsize=20:x=(w-text_w)/2:y=h*0.9+((h*0.1-text_h)/2),"
+            f"drawtext=text='v{version:03d}':fontcolor=white:fontsize=20:x=(w-text_w)/2:y=h*0.9+((h*0.1-text_h)/2),"
             f"drawtext=text='TC %{{pts\\:hms}}':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.94-text_h,"
-            f"drawtext=text=\'%{{eif\\:n+{start_num}\\:d}} / {last_num}\':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.96-text_h",
-            "-y",
+            f"drawtext=text='%{{eif\\:n+{start_num}\\:d}} / {last_num}':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.96-text_h",
+            "-y",  # 강제 덮어쓰기
             output_file
         ]
-        subprocess.Popen(ffmpeg_cmd)
 
         try:
             # FFmpeg 명령어 실행
@@ -167,3 +165,10 @@ class FileConverter:
             print("FFmpeg 실행 오류!")
             print(e.stdout)
             print(e.stderr)  # 오류 메시지 출력
+    def convert_to_prores(self, input_path, output_path):
+        """FFmpeg을 사용하여 Apple ProRes MOV 파일로 변환"""
+        # ... (기존 코드)
+        try:
+            subprocess.run(ffmpeg_cmd, check=True, stderr=subprocess.PIPE, text=True)
+        except subprocess.CalledProcessError as e:
+            print(f"FFmpeg error: {e.stderr}") # 오류 메시지 출력
