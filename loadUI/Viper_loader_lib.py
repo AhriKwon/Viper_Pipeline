@@ -305,10 +305,10 @@ class LibraryTab:
             QCheckBox::indicator {
                 width: 24px;
                 height: 24px;
-                image: url('/nas/Viper/minseo/forui/bookmark1.png');
+                image: url('/nas/Viper/minseo/forui/mark.png');
             }
             QCheckBox::indicator:checked {
-                image: url('/nas/Viper/minseo/forui/bookmark2.png');
+                image: url('/nas/Viper/minseo/forui/newbook2.png');
             }
             QCheckBox {
                 border: none;
