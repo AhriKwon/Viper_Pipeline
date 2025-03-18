@@ -7,6 +7,7 @@ from PySide6 import QtWidgets, QtCore
 
 # ShotGrid API 파일 가져오기
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+
 from shotgrid_manager import ShotGridManager
 from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
@@ -15,7 +16,10 @@ from FileDialog import FileDialog
 
 
 class FileLoader:
-    """ShotGrid에서 퍼블리시된 파일을 불러오고 실행하는 유틸리티 클래스"""
+    """
+    지정된 user_id로부터 퍼블리시된 파일들을 샷그리드에서 가져와
+        QListWidget에 표시합니다.
+    """
     base_dir = "/nas/show/Viper"
 
     @staticmethod
