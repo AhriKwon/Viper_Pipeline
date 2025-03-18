@@ -46,7 +46,7 @@ class LibraryTab:
         # self.label_duedate_2 = self.ui.findChild(QLabel, "label_duedate_2 ")
         # self.tabWidget_info2 = self.ui.findChild(QTabWidget, "tabWidget_info2 ")
         
-        self.load_files(1)
+        self.load_files(0)
 
         # 이벤트 연결
         self.ui.pushButton_import.clicked.connect(self.import_file)
@@ -285,21 +285,21 @@ class LibraryTab:
         cell_widget = QWidget()
         layout = QVBoxLayout()
 
-        # ✅ 썸네일 QLabel 생성
+        # 썸네일 QLabel 생성
         label_thumbnail = QLabel()
         if thumbnail_path and os.path.exists(thumbnail_path):
             pixmap = QPixmap(thumbnail_path)
         else:
-            pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
+            pixmap = QPixmap("/nas/Viper/789.png")  # 기본 썸네일 생성
 
-        scaled_pixmap = pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        scaled_pixmap = pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         rounded_pixmap = UI_support.round_corners_pixmap(scaled_pixmap, radius=10)
 
         label_thumbnail.setPixmap(rounded_pixmap)
         label_thumbnail.setAlignment(Qt.AlignCenter)
-        label_thumbnail.setFixedSize(320, 180)  # ✅ 크기 고정
+        label_thumbnail.setFixedSize(160, 90)  # ✅ 크기 고정
 
-        # ✅ 북마크 체크박스 생성 (썸네일 위에 배치)
+        # 북마크 체크박스 생성 (썸네일 위에 배치)
         bookmark_checkbox = QCheckBox(label_thumbnail)
         bookmark_checkbox.setStyleSheet("""
             QCheckBox::indicator {
@@ -316,21 +316,26 @@ class LibraryTab:
             }
         """)
         bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
-        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # ✅ 오른쪽 상단 배치
+        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # 오른쪽 상단 배치
+        bookmark_checkbox.show()
+
         bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
 
-        # ✅ 파일 이름 QLabel
+        # 체크박스를 label_thumbnail 내부에 고정 (썸네일 밀림 방지)
+        bookmark_checkbox.setParent(label_thumbnail)
+
+        # 파일 이름 QLabel
         label_name = QLabel(file_name)
         label_name.setAlignment(Qt.AlignCenter)
         label_name.setStyleSheet("color: white;")
 
-        # ✅ 최종 레이아웃 설정
+        # 최종 레이아웃 설정
         layout.addWidget(label_thumbnail)
         layout.addWidget(label_name)
         layout.setAlignment(Qt.AlignCenter)
         cell_widget.setLayout(layout)
 
-        # ✅ 셀에 파일 경로 저장
+        # 셀에 파일 경로 저장
         cell_widget.setProperty("file_path", file_path)
 
         return cell_widget
@@ -339,30 +344,37 @@ class LibraryTab:
         """
         파일 Import
         """
-        selected_items = self.table_widget.selectedItems()
-        print(f"선택된 아이템: {selected_items}")
+        selected_indexes = self.table_widget.selectedIndexes()
+        print(f"선택된 인덱스: {selected_indexes}")
 
-        if not selected_items:
+        if not selected_indexes:
             UI_support.show_message("error", "오류", "파일이 선택되지 않았습니다.")
             return
 
-        for item in selected_items:
-            row = item.row()
-            work_data = self.table_widget.item(row, 0).data(Qt.UserRole)
+        imported_files = []  # 가져온 파일 리스트
 
-            if not work_data:
-                UI_support.show_message("error", "오류", "work 데이터를 찾을 수 없습니다.")
+        for index in selected_indexes:
+            row = index.row()
+            col = index.column()
+
+            # 셀 위젯에서 파일 경로 가져오기
+            cell_widget = self.table_widget.cellWidget(row, col)
+            if not cell_widget:
                 continue
-
-            work_name = work_data["file_name"]
-            file_path = work_data["path"]
-            print(f"파일 경로: {file_path}")
+            
+            # 파일 경로 가져오기
+            file_path = cell_widget.property("file_path")
 
             if not file_path:
-                UI_support.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
+                print(f"경고: {row}, {col} 셀에 파일 경로 없음")
                 continue
 
-            loader.import_file(file_path)
+            print(f"파일 가져오기: {file_path}")
+            loader.import_file(file_path)  # 파일 로드 실행
+            imported_files.append(file_path)
+
+        if imported_files:
+            UI_support.show_message("info", "파일 Import", f"{len(imported_files)}개 파일을 가져왔습니다.")
 
     def save_bookmarks(self):
         """
