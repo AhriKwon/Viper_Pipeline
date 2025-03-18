@@ -2,21 +2,20 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QDialog, QWidget, QLabel, QVBoxLayout, 
     QHBoxLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit,
     QGraphicsOpacityEffect, QGridLayout,QTableWidget, QTableWidgetItem, QCheckBox,QGraphicsOpacityEffect,QGraphicsBlurEffect,
-    QLabel, QGraphicsView, QGraphicsScene, QGraphicsProxyWidget,QGraphicsEllipseItem, QGraphicsScene
+    QLabel,QGraphicsScene, QGraphicsProxyWidget, QGraphicsRotation, QGraphicsView
     )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import (
-    QFile, Qt, QPropertyAnimation, QRect, QTimer, QMimeData, QUrl,QPointF,
-    QByteArray, QDataStream, QIODevice, QTimer, QPoint,QPropertyAnimation,QEasingCurve, qInstallMessageHandler
-    
+    QFile, Qt, QPropertyAnimation, QRectF, QTimer, QMimeData, QUrl,
+    QByteArray, QDataStream, QIODevice, QTimer, QPoint,QPropertyAnimation,QEasingCurve,
+    qInstallMessageHandler
+
     )
-from PySide6.QtGui import QRegion, QTransform
+from PySide6.QtGui import QRegion, QPainter  
 from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
 
 import sys, os, glob
 from functools import partial 
-import UI_support
-from Viper_loader_lib import LibraryTab
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
@@ -26,10 +25,10 @@ manager = ShotGridManager()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
 from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
-
-
-
-import math
+from final_test import FileLoaderGUI
+# 로더 UI
+import UI_support
+from Viper_loader_lib import LibraryTab
 
  #============================================================================================
  #================================로그인 창 : LoginWindow==============================================
@@ -39,6 +38,7 @@ class LoginWindow(QDialog):
     def __init__(self):
         super().__init__()
         self.load_ui()
+        UI_support.center_on_screen(self)
     
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -55,10 +55,8 @@ class LoginWindow(QDialog):
 
         # 로그인 창 크기 조정 
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(741, 491)
+        self.resize(734, 491)
         
-        
-       
         self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
         self.label_id = self.ui.findChild(QLabel, "label_id") 
         self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
@@ -66,20 +64,18 @@ class LoginWindow(QDialog):
         self.pushButton_login.clicked.connect(self.attempt_login)
         self.label_background = self.ui.findChild(QLabel, "label_background")
 
-        image_path = "/nas/Viper/minseo/forui/login.png"  # 배경 이미지 경로 확인
+        image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
         self.label_background.setPixmap(QPixmap(image_path))
         self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
 
         self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
 
-        image_path_2 = "/nas/Viper/minseo/forui/Group 3995.png"  # 배경 이미지 경로 확인
+        image_path_2 = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인F
         self.label_id.setPixmap(QPixmap(image_path_2))
         self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
 
-        self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
         self.setAttribute(Qt.WA_TranslucentBackground)  # 창의 배경을 투명하게 설정
-        self.dragPos = None  # 창 이동을 위한 변수
-    
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -94,7 +90,6 @@ class LoginWindow(QDialog):
         # 검정 테두리를 그리기 (1px)
         painter.drawRect(rect.adjusted(10, 10, -10, -10))  # 안쪽으로 1px 조정하여 테두리만 표시
         self.forlogin_ani()
-        
 
         def custom_message_handler(mode, context, message):
             ignored_messages = [
@@ -106,10 +101,6 @@ class LoginWindow(QDialog):
                 "QPainter::begin: A paint device can only be painted by one painter at a time.",
                 "QPainter::begin: Paint device returned engine == 0, type: 1",
                 "QPainter::drawRects: Painter not active"
-                "QPainter::save: Painter not active"
-                "QPainter::worldTransform: Painter not active"
-                "QWidgetEffectSourcePrivate::pixmap: Painter not active"
-                "QPainter::worldTransform: Painter not active"
             ]
             
             # 특정 메시지 무시
@@ -121,9 +112,7 @@ class LoginWindow(QDialog):
 
         # Qt 메시지 핸들러 설치
         qInstallMessageHandler(custom_message_handler)
-
-    
-
+      
 
     #/////////////////////로그인창 애니메이션 실행 함수 넣는 곳!!1/////////////////////////////////////
     def mousePressEvent(self, event):
@@ -145,7 +134,6 @@ class LoginWindow(QDialog):
 
     def forlogin_ani(self):
        
-
         # 텍스트 애니메이션 설정
         self.full_text = "Please enter your e-mail"  # 최종 표시될 텍스트
         self.current_text = ""  # 현재 보여질 텍스트
@@ -165,12 +153,9 @@ class LoginWindow(QDialog):
         else:
             self.timer.stop()  # 모든 글자가 추가되면 타이머 중지
 
-    
-
-
 
     #///////////////////////////////////////////////////////////////////////////////////////////////
-
+    
 
     # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
     def attempt_login(self):
@@ -184,7 +169,7 @@ class LoginWindow(QDialog):
 
         if user_data:
             self.accept()
-            self.main_window = LoadUI(email)
+            # self.main_window = LoadUI(email)
             self.fade_out_animation()
             self.main_window.show()
            
@@ -196,7 +181,7 @@ class LoginWindow(QDialog):
         """로그인 창이 서서히 사라지는 애니메이션 효과"""
         print("로그인 창 페이드 아웃 애니메이션 시작!")  # 디버깅용 출력
 
-        # 🔹 투명도 효과 적용
+        # 투명도 효과 적용
         self.opacity_effect = QGraphicsOpacityEffect(self)
         self.setGraphicsEffect(self.opacity_effect)
 
@@ -217,6 +202,7 @@ class LoginWindow(QDialog):
         self.main_window.show()
 
 
+
         
 
  #==========================================================================================
@@ -225,37 +211,36 @@ class LoginWindow(QDialog):
 
 class LoadUI(QMainWindow):
     def __init__(self, username):
-        
         super().__init__()
         self.username = username
+        self.projects = manager.get_projects()
         self.animations = []
         self.effects = []
         self.load_ui()
-
-        # self.setup_list_widget_animations()
-
+        self.animation_executed = False  # ✅ 애니메이션 상태 변수 초기화
+        
         self.setGeometry(100, 100, 1240, 800)
         self.resize(1240, 720)
         self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
+        self.dragPos = None  # 창 이동을 위한 변수
 
-
-        self.tabWidget_info = self.ui.tabWidget_info      
+        self.tabWidget_info = self.ui.tabWidget_info 
+        self.initialize_labels()     
         
-        self.initialize_labels()
+        UI_support.center_on_screen(self)
+
         """My Task tab"""
         self.login_and_load_tasks()
 
         """Lib tab"""
         self.library_manager = LibraryTab(self.ui)
 
-        
-
-       
-
         """이벤트"""
-        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록 
+        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록
+        self.ui.listWidget_works.itemDoubleClicked.connect(self.run_file)
 
+        
 
         self.ui.listWidget_wtg.itemClicked.connect(self.on_item_clicked)
         self.ui.listWidget_wtg.itemClicked.connect(self.show_task_works)
@@ -266,43 +251,16 @@ class LoadUI(QMainWindow):
         self.ui.listWidget_fin.itemClicked.connect(self.on_item_clicked)
         self.ui.listWidget_fin.itemClicked.connect(self.show_task_works)
 
-
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
-
-        
-        # self.create_circular_animation()
 
         # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
         self.blur_in_animation()
 
         self.create_bouncing_dots()
-    #     qInstallMessageHandler(self.custom_message_handler)
-
-    # def custom_message_handler(self, mode, context, message):
-    #     """ ✅ 특정 메시지 필터링하여 디버깅을 방해하지 않도록 설정 """
-    #     ignored_messages = [
-    #         "QPainter::setOpacity: Painter not active",
-    #         "QPainter::setWorldTransform: Painter not active",
-    #         "QPainter::restore: Unbalanced save/restore",
-    #         "QPainter::begin: A paint device can only be painted by one painter at a time.",
-    #         "QPainter::translate: Painter not active",
-    #         "QPainter::drawRects: Painter not active",
-    #         "QWidgetEffectSourcePrivate::pixmap: Painter not active",
-    #         "QPainter::save: Painter not active",
-    #         "QPainter::worldTransform: Painter not active"
-    #     ]
-
-    #     # ✅ 특정 메시지는 무시하고, 나머지는 출력
-    #     if any(ignored_msg in message for ignored_msg in ignored_messages):
-    #         return
-    #     print(message)  # ⚡️ 디버깅용으로 다른 메시지는 정상 출력
-
-    # # ✅ Qt 메시지 핸들러 등록 (LoadUI 생성자에서 실행)
-    # qInstallMessageHandler(custom_message_handler)
-        
-
-     
+        self.setup_3d_list_widgets()
+        self.setup_event_handlers()  # ✅ 이벤트 핸들러 설정
+  
 
   #====================================loadui 로드=======================================
   #================================(loginui가 성공할 시에)=================================
@@ -315,216 +273,169 @@ class LoadUI(QMainWindow):
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui)
-        self.ui.show()
-        
+        # self.ui.show()
+   
 
-        # listwidget의 색깔 설정 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
-        list_labels = [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]
 
-        self.ui.tabWidget_info.setVisible(False)  
-    # def setup_list_widget_animations(self):
-    #     """ ✅ 모든 QListWidget에 마우스 이벤트를 적용하는 함수 (디버깅 메시지 추가) """
-    #     self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
-        
-    #     # ✅ 배경 이미지 리스트 (각 QListWidget에 할당된 이미지)
-    #     self.list_widget_images = {
-    #         self.ui.listWidget_wtg: "/nas/Viper/minseo/forui/list21.png",
-    #         self.ui.listWidget_ip: "/nas/Viper/minseo/forui/list2.png",
-    #         self.ui.listWidget_fin: "/nas/Viper/minseo/forui/list3.png"
-    #     }
-
-    #     self.expanded_size_factor = 1.2  # ✅ 확대 크기 비율
-    #     self.opacity_effects = {}
-
-    #     print("✅ setup_list_widget_animations 실행됨!")  # 디버깅 메시지
-
-    #     for widget in self.list_widgets:
-    #         widget.setMouseTracking(True)  # ✅ 마우스 이동 감지 활성화
-    #         effect = QGraphicsOpacityEffect(widget)
-    #         effect.setOpacity(1.0)  # ✅ 기본적으로 완전히 보이게 설정
-    #         widget.setGraphicsEffect(effect)
-    #         self.opacity_effects[widget] = effect
-
-    #         widget.enterEvent = lambda event, w=widget: self.on_list_widget_hover(w)
-    #         widget.leaveEvent = lambda event, w=widget: self.on_list_widget_leave(w)
-
-    #         print(f"✅ {widget.objectName()} 마우스 감지 설정 완료")  # 디버깅 메시지
-
-    # def on_list_widget_hover(self, target_widget):
-    #     """ ✅ 특정 QListWidget에 마우스를 올리면 배경이 확대되고, 다른 위젯은 축소되고 어두워짐 """
-    #     print(f"🔹 {target_widget.objectName()} Hover 감지!")  # 디버깅 메시지
-
-    #     for widget in self.list_widgets:
-    #         if widget == target_widget:
-    #             self.animate_list_widget(widget, self.expanded_size_factor, 1.0)  # ✅ 확대 & 밝게
-    #             print(f"🔹 {widget.objectName()} 확대 및 밝기 조정")  # 디버깅 메시지
-    #         else:
-    #             self.animate_list_widget(widget, 0.9, 0.5)  # ✅ 작아지고 어두워짐
-    #             print(f"🔹 {widget.objectName()} 축소 및 어두워짐")  # 디버깅 메시지
-
-    # def on_list_widget_leave(self, target_widget):
-    #     """ ✅ 마우스를 다른 곳으로 이동하면 원래 크기로 복구 """
-    #     print(f"🔹 {target_widget.objectName()} Leave 감지! 모든 위젯 원래 크기로 복귀")  # 디버깅 메시지
-    #     for widget in self.list_widgets:
-    #         self.animate_list_widget(widget, 1.0, 1.0)  # ✅ 원래 크기와 밝기로 복구
-
-    # def animate_list_widget(self, widget, size_factor, opacity):
-    #     """ ✅ 특정 QListWidget의 배경 이미지 크기 및 투명도 애니메이션 적용 """
-    #     image_path = self.list_widget_images[widget]
-
-    #     print(f"🎬 {widget.objectName()} 애니메이션 시작 - 크기: {size_factor}, 투명도: {opacity}")  # 디버깅 메시지
-
-    #     # ✅ 스타일시트를 이용해 이미지 확대/축소
-    #     new_width = int(200 * size_factor)  # 이미지 기본 너비 200px 기준
-    #     new_height = int(200 * size_factor)  # 이미지 기본 높이 200px 기준
-
-    #     widget.setStyleSheet(f"""
-    #         QListWidget {{
-    #             background: url({image_path});
-    #             background-repeat: no-repeat;
-    #             background-position: center;
-    #             background-size: {new_width}px {new_height}px;
-    #         }}
-    #     """)
-
-    #     print(f"🎨 {widget.objectName()} 스타일시트 적용됨 (배경 크기: {new_width}x{new_height})")  # 디버깅 메시지
-
-    #     # ✅ 투명도 애니메이션
-    #     opacity_animation = QPropertyAnimation(self.opacity_effects[widget], b"opacity")
-    #     opacity_animation.setDuration(300)
-    #     opacity_animation.setStartValue(self.opacity_effects[widget].opacity())
-    #     opacity_animation.setEndValue(opacity)
-    #     opacity_animation.setEasingCurve(QEasingCurve.OutCubic)
-
-    #     opacity_animation.start()
-    #     print(f"🎬 {widget.objectName()} 투명도 애니메이션 시작")  # 디버깅 메시지
-
-
-        
-
+        self.ui.tabWidget_info.setVisible(False)
+    def setup_event_handlers(self):
+        """ 리스트 위젯 클릭 시 3D 애니메이션 적용 """
+        self.ui.listWidget_wtg.itemClicked.connect(lambda item: self.animate_3d_list_widgets(0))
+        self.ui.listWidget_ip.itemClicked.connect(lambda item: self.animate_3d_list_widgets(1))
+        self.ui.listWidget_fin.itemClicked.connect(lambda item: self.animate_3d_list_widgets(2))
     
-    # def create_circular_animation(self):
-    #     """ 🎬 원과 점을 생성하고 회전 애니메이션 적용 """
-    #     print("🔹 원 애니메이션 생성 시작!")
+    def setup_3d_list_widgets(self):
+        """ 리스트 위젯을 3D 효과가 적용된 상태로 설정 """
+        self.scene = QGraphicsScene()
+        self.view = QGraphicsView(self.scene, self)
 
-    #     # ✅ 중심 좌표 설정
-    #     self.circle1_radius = 80  # 작은 원 반지름
-    #     self.circle2_radius = 110  # 큰 원 반지름
-    #     self.center_x, self.center_y = 600, 400  # 화면 정중앙
+        # ✅ 뷰포트 크기를 리스트 위젯 크기와 동일하게 설정
+        self.view.setGeometry(self.list_widgets[0].geometry().adjusted(-10, -10, 10, 10))
+        self.view.setStyleSheet("background: transparent; border: none;")  # 배경 제거
+        self.view.setRenderHint(QPainter.Antialiasing)  # ✅ 부드러운 렌더링
 
-    #     # ✅ 작은 원 (고정)
-    #     self.circle1 = QLabel(self)
-    #     self.circle1.setGeometry(self.center_x - self.circle1_radius, self.center_y - self.circle1_radius, 
-    #                              self.circle1_radius * 2, self.circle1_radius * 2)
-    #     self.circle1.setStyleSheet(f"border: 2px solid rgba(255, 255, 255, 80); border-radius: {self.circle1_radius}px;")
-    #     self.circle1.show()
+        self.proxy_widgets = []
 
-    #     # ✅ 큰 원 (고정)
-    #     self.circle2 = QLabel(self)
-    #     self.circle2.setGeometry(self.center_x - self.circle2_radius, self.center_y - self.circle2_radius, 
-    #                              self.circle2_radius * 2, self.circle2_radius * 2)
-    #     self.circle2.setStyleSheet(f"border: 2px solid rgba(255, 255, 255, 60); border-radius: {self.circle2_radius}px;")
-    #     self.circle2.show()
+        for list_widget, label in zip(self.list_widgets, [self.ui.label_wtg, self.ui.label_ip, self.ui.label_fin]):
+            proxy = QGraphicsProxyWidget()
+            proxy.setWidget(list_widget)  # ✅ 기존 리스트 위젯을 Proxy로 변환
+            self.scene.addItem(proxy)
 
-    #     # ✅ 하얀 점 추가 (회전하는 점)
-    #     self.point1 = QLabel(self)
-    #     self.point1.setGeometry(self.center_x - 3, self.center_y - self.circle1_radius - 3, 6, 6)
-    #     self.point1.setStyleSheet("background-color: white; border-radius: 3px;")
-    #     self.point1.show()
+            # ✅ Y축을 기준으로 회전할 수 있도록 설정
+            rotation = QGraphicsRotation()
+            rotation.setAxis(Qt.YAxis)
+            proxy.setTransformations([rotation])
 
-    #     self.point2 = QLabel(self)
-    #     self.point2.setGeometry(self.center_x - 3, self.center_y + self.circle2_radius - 3, 6, 6)
-    #     self.point2.setStyleSheet("background-color: white; border-radius: 3px;")
-    #     self.point2.show()
+            self.proxy_widgets.append((proxy, label, rotation))
 
-    #     # ✅ 회전 애니메이션 실행
-    #     self.start_rotation_animation()
+        self.view.setScene(self.scene)
+        self.view.show()
 
-    #     # ✅ 2초 후 투명화 애니메이션 실행
-    #     QTimer.singleShot(2000, self.start_fade_out_animation)
 
-    # def start_rotation_animation(self):
-    #     """ ✅ 원은 고정 & 점만 회전하는 애니메이션 """
-    #     print("🔄 점 회전 애니메이션 시작!")
+    def animate_3d_list_widgets(self, target_index):
+        """ 리스트 위젯과 라벨을 3D 회전 축을 기준으로 이동 """
+        self.animations = []
 
-    #     self.rotation_angle1 = 0  # 작은 원의 점 회전 각도 (시계 방향)
-    #     self.rotation_angle2 = 0  # 큰 원의 점 회전 각도 (반시계 방향)
+        for i, (proxy, label, rotation) in enumerate(self.proxy_widgets):
+            anim_rotation = QPropertyAnimation(rotation, b"angle")
+            anim_rotation.setDuration(1000)
+            anim_rotation.setStartValue(0)
 
-    #     self.timer = QTimer(self)
-    #     self.timer.timeout.connect(self.update_rotation)
-    #     self.timer.start(50)  # 50ms마다 업데이트 (부드러운 회전)
+            if i == target_index:
+                anim_rotation.setEndValue(-20)  # ✅ 선택된 리스트는 앞으로 기울어짐
+            else:
+                anim_rotation.setEndValue(15)  # ✅ 나머지는 뒤로 기울어짐
 
-    # def update_rotation(self):
-    #     """ ✅ 점만 회전시키는 함수 (원의 중심을 기준으로 회전) """
-    #     if not hasattr(self, "point1") or not hasattr(self, "point2"):
-    #         print("⚠️ 회전 애니메이션 실행 전에 점이 존재하지 않음! 업데이트 중지")
-    #         return
+            anim_rotation.setEasingCurve(QEasingCurve.OutCubic)
+            anim_rotation.start()
 
-    #     self.rotation_angle1 += 2  # 작은 원 (시계 방향)
-    #     self.rotation_angle2 -= 1  # 큰 원 (반시계 방향)
+            # ✅ 라벨도 동일하게 애니메이션 적용
+            anim_label = QPropertyAnimation(label, b"geometry")
+            anim_label.setDuration(1000)
+            label_rect = label.geometry()
 
-    #     # ✅ 회전 각도를 라디안 값으로 변환
-    #     angle_rad1 = math.radians(self.rotation_angle1 % 360)
-    #     angle_rad2 = math.radians(self.rotation_angle2 % 360)
+            new_x = label_rect.x() + (-30 if i == target_index else 30)  # ✅ 선택된 아이템은 왼쪽으로, 나머지는 오른쪽으로 이동
+            anim_label.setStartValue(label_rect)
+            anim_label.setEndValue(QRectF(new_x, label_rect.y(), label_rect.width(), label_rect.height()))
+            anim_label.setEasingCurve(QEasingCurve.OutCubic)
+            anim_label.start()
 
-    #     # ✅ 점의 새로운 위치 계산 (원의 중심을 기준으로 회전)
-    #     new_x1 = self.center_x + int(self.circle1_radius * math.cos(angle_rad1)) - 3
-    #     new_y1 = self.center_y + int(self.circle1_radius * math.sin(angle_rad1)) - 3
-    #     if self.point1:
-    #         self.point1.move(new_x1, new_y1)
+            self.animations.append(anim_rotation)
+            self.animations.append(anim_label)
 
-    #     new_x2 = self.center_x + int(self.circle2_radius * math.cos(angle_rad2)) - 3
-    #     new_y2 = self.center_y + int(self.circle2_radius * math.sin(angle_rad2)) - 3
-    #     if self.point2:
-    #         self.point2.move(new_x2, new_y2)
-
-    # def start_fade_out_animation(self):
-    #     """ ✅ 원과 점을 점점 투명하게 사라지도록 애니메이션 실행 """
-    #     print("🎬 원과 점 투명화 애니메이션 시작!")
-
-    #     # ✅ 회전 애니메이션 중지
-    #     if hasattr(self, "timer"):
-    #         self.timer.stop()  # ✅ 회전 애니메이션 종료 (점이 삭제되기 전에 멈춰야 함)
-
-    #     self.opacity_effects = {}
-    #     self.fade_animation_circle1 = QPropertyAnimation()
-    #     self.fade_animation_circle2 = QPropertyAnimation()
-    #     self.fade_animation_point1 = QPropertyAnimation()
-    #     self.fade_animation_point2 = QPropertyAnimation()
-
-    #     elements = [(self.circle1, self.fade_animation_circle1), 
-    #                 (self.circle2, self.fade_animation_circle2),
-    #                 (self.point1, self.fade_animation_point1), 
-    #                 (self.point2, self.fade_animation_point2)]
         
-    #     for element, fade_animation in elements:
-    #         if element is None:
-    #             continue  # ✅ 요소가 삭제된 경우 스킵
 
-    #         opacity_effect = QGraphicsOpacityEffect()
-    #         element.setGraphicsEffect(opacity_effect)
-    #         self.opacity_effects[element] = opacity_effect
+    def mousePressEvent(self, event):
+            """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+            if event.button() == Qt.LeftButton:
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
 
-    #         fade_animation.setTargetObject(opacity_effect)
-    #         fade_animation.setPropertyName(b"opacity")
-    #         fade_animation.setDuration(4000)  # ✅ 4초 동안 서서히 사라짐
-    #         fade_animation.setStartValue(1.0)
-    #         fade_animation.setEndValue(0.0)
-    #         fade_animation.setEasingCurve(QEasingCurve.OutCubic)
+    def mouseMoveEvent(self, event):
+            """ 마우스를 드래그하면 창 이동 """
+            if event.buttons() == Qt.LeftButton and self.dragPos:
+                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
 
-    #         fade_animation.start()
+    def mouseReleaseEvent(self, event):
+            """ 마우스를 떼면 위치 초기화 """
+            self.dragPos = None
 
-    #     # ✅ 애니메이션이 끝난 후에만 삭제 실행
-    #     QTimer.singleShot(4500, self.delete_circles)
+    #====================================애니메이션 함수들=======================================
+    #================================(loginui가 성공할 시에)=================================
 
-    # def delete_circles(self):
-    #     """ ✅ 원과 점을 삭제하여 메모리 정리 """
-    #     print("🗑️ 원과 점 제거")
-    #     for element in [self.circle1, self.circle2, self.point1, self.point2]:
-    #         element.deleteLater()
+    def show_task_details(self, task_id, event=None):
+        """
+        클릭한 테스크 정보를 info탭에 띄워주는 함수
+        """
+        task = manager.get_task_by_id(task_id)
+        works = manager.get_works_for_task(task_id)
+        if works:
+            file_name = works[-1]['path']
+        else:
+            file_name = None
 
-    # 가에 있는 라벨들 이동 
+        self.ui.label_filename2.setText(task['content'])
+        self.ui.label_filename.setText(task['content'])
+        self.ui.label_startdate.setText(task["start_date"])
+        self.ui.label_duedate.setText(task["due_date"])
+
+        file_type = self.get_filetype(file_name)
+        self.ui.label_type.setText(file_type)  
+
+        self.ui.tabWidget_info.show()
+
+        # 애니메이션 실행
+        self.animate_list_widgets(left=True)
+
+    def animate_list_widgets(self):
+        """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
+        if self.animation_executed:
+            print("⚠️ 이미 애니메이션이 실행됨, 다시 실행 안 함!")
+            return  # ✅ 한 번 실행된 후에는 다시 실행되지 않음
+
+        print("✅ 리스트 위젯과 라벨 이동 애니메이션 시작!")
+        self.animation_executed = True  # ✅ 실행 상태 변경
+
+        self.animations = []  # 애니메이션 리스트
+
+        # 리스트 위젯과 해당하는 라벨 매칭
+        widgets = [
+            (self.ui.listWidget_wtg, self.ui.label_wtg),
+            (self.ui.listWidget_ip, self.ui.label_ip),
+            (self.ui.listWidget_fin, self.ui.label_fin)
+        ]
+
+        for list_widget, label in widgets:
+            # 기존 위치 저장
+            start_x = list_widget.x()
+            end_x = start_x - 50  # 원래 위치에서 50px 왼쪽으로 이동
+
+            # 리스트 위젯 애니메이션
+            list_animation = QPropertyAnimation(list_widget, b"pos")
+            list_animation.setDuration(800)  # 0.5초 동안 이동
+            list_animation.setStartValue(QPoint(start_x, list_widget.y()))
+            list_animation.setEndValue(QPoint(end_x, list_widget.y()))
+            list_animation.setEasingCurve(QEasingCurve.OutQuad)
+
+            # 라벨 애니메이션 (리스트 위젯과 동일하게 이동)
+            label_animation = QPropertyAnimation(label, b"pos")
+            label_animation.setDuration(500)
+            label_animation.setStartValue(QPoint(start_x, label.y()))
+            label_animation.setEndValue(QPoint(end_x, label.y()))
+            label_animation.setEasingCurve(QEasingCurve.OutQuad)
+
+            # 애니메이션 실행
+            list_animation.start()
+            label_animation.start()
+
+            # GC 방지: 리스트에 저장
+            self.animations.append(list_animation)
+            self.animations.append(label_animation)
+
+
     def initialize_labels(self):
         """ 애니메이션 실행 전에 모든 라벨을 초기 위치로 설정 """
         print(" 모든 라벨 초기화")
@@ -564,7 +475,6 @@ class LoadUI(QMainWindow):
             label.setVisible(False)
 
         print("모든 라벨 초기화 완료")
-
 
     def animate_labels(self):
         """  라벨이 위에서 아래로 떨어지는 애니메이션 실행 """
@@ -607,9 +517,6 @@ class LoadUI(QMainWindow):
 
             self.label_animations.append(timer)
 
-            
-        
-
     def start_label_animation(self, label, duration, opacity_effect):
         """ 개별 라벨 애니메이션 실행 (더 부드럽게) """
         print(f"{label.objectName()} 애니메이션 시작! 지속시간: {duration}ms")
@@ -635,8 +542,6 @@ class LoadUI(QMainWindow):
         self.start_expand_animation()
         self.start_label_left_animation()
      
-
-
     # label_central 용 애니메이션 
     def start_expand_animation(self):
         """ 중앙 라벨이 마스크처럼 펼쳐지는 애니메이션 """
@@ -676,22 +581,23 @@ class LoadUI(QMainWindow):
             self.mask_step += 4  # 확장 속도 (원하는 대로 조정)
         else:
             self.mask_timer.stop()  # 최대 크기에 도달하면 애니메이션 종료
-            
+
+
     def start_label_left_animation(self):
         """ label_left, label_logo, label_viper, label_user가 함께 이동하는 애니메이션 실행 """
         print("label_left 애니메이션 시작!")
 
         self.animations = []  # 애니메이션 참조 유지 리스트
         labels = [
-            ("left", self.label_left),
-            ("logo", self.label_logo),
-            ("viper", self.label_viper),
-            ("user", self.label_user)
+            ("left", self.ui.label_left),
+            ("logo", self.ui.label_logo),
+            ("viper", self.ui.label_viper),
+            ("user", self.ui.label_user)
         ]
 
         # 디버깅용: 현재 위치와 이동 거리 확인
         for key, label in labels:
-            print(f"{key} 시작 위치: {self.start_positions[key]} -> {self.original_positions[key]}")
+            print(f"🔹 {key} 시작 위치: {self.start_positions[key]} -> {self.original_positions[key]}")
 
         for key, label in labels:
             label.setVisible(True)  # 애니메이션 시작 전 보이도록 설정
@@ -710,7 +616,7 @@ class LoadUI(QMainWindow):
 
     def create_bouncing_dots(self):
         """ label_central 아래에 원이 튀어오르는 애니메이션 생성 """
-        print(" 점프 애니메이션 원 생성 시작!")
+        print("점프 애니메이션 원 생성 시작!")
 
         self.dots = []  # 원 리스트
         self.dot_animations = []  # 애니메이션 리스트
@@ -719,7 +625,7 @@ class LoadUI(QMainWindow):
         dot_size = 3  # 원 크기
         spacing = 20  # 원 간격
 
-        # 🔹 기준이 되는 중앙 라벨 가져오기
+        # 기준이 되는 중앙 라벨 가져오기
         label_central = self.ui.label_central
         central_x = label_central.x()
         central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
@@ -740,7 +646,7 @@ class LoadUI(QMainWindow):
             animation.setEasingCurve(QEasingCurve.OutQuad)  # 부드럽게 점프
 
             # 애니메이션이 끝나면 다시 원래 위치로 돌아옴
-            animation.setLoopCount(-1)  # 🔹 무한 반복
+            animation.setLoopCount(-1)  # 무한 반복
             self.dot_animations.append(animation)
 
         self.start_bouncing_animation()
@@ -751,8 +657,7 @@ class LoadUI(QMainWindow):
 
         for index, animation in enumerate(self.dot_animations):
             QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
-
-        
+    
     def blur_in_animation(self):
         """ 메인 윈도우가 흐릿하게 시작되었다가 점점 선명해지는 효과 """
         print("메인 윈도우 블러 애니메이션 시작!")
@@ -774,15 +679,15 @@ class LoadUI(QMainWindow):
 
 
         self.animation.finished.connect(lambda: QTimer.singleShot(4000, self.remove_login_message))
-
         self.animation.start()
-    #     self.show_login_message()  # 로그인 메시지 표시
 
+        # self.show_login_message()  # 로그인 메시지 애니메이션 시작
+    
     # def show_login_message(self):
     #     """로그인 메시지를 중앙에 표시하고 글자 간격이 벌어지는 애니메이션 실행"""
     #     print("로그인 메시지 애니메이션 시작!")
 
-    #     text = "You are logged in as owlgrwol0v0@gmail.com "
+    #     text = "12345456로 로그인되셨습니다"
     #     self.letter_labels = []  # 개별 글자 라벨 저장
     #     self.letter_animations = []  # 애니메이션 리스트
 
@@ -817,7 +722,7 @@ class LoadUI(QMainWindow):
     #     for anim in self.letter_animations:
     #         anim.start()
 
-    #     QTimer.singleShot(4000, self.fade_out_login_message)
+    #     QTimer.singleShot(7300, self.remove_login_message)
 
     # def fade_out_login_message(self):
     #     """로그인 메시지를 서서히 사라지게 만듦"""
@@ -827,7 +732,7 @@ class LoadUI(QMainWindow):
 
     #     for label in self.letter_labels:
     #         fade_animation = QPropertyAnimation(label, b"windowOpacity")
-    #         fade_animation.setDuration(3000)  # 3초 동안 서서히 사라짐
+    #         fade_animation.setDuration(1000)  # 1초 동안 서서히 사라짐
     #         fade_animation.setStartValue(1.0)  # 시작은 불투명
     #         fade_animation.setEndValue(0.0)  # 끝은 완전 투명
     #         fade_animation.setEasingCurve(QEasingCurve.OutCubic)
@@ -836,19 +741,20 @@ class LoadUI(QMainWindow):
     #         fade_animation.start()
 
     #     # 애니메이션이 끝난 후 QLabel 삭제
-    #     QTimer.singleShot(5000, self.remove_login_message)
+    #     QTimer.singleShot(1000, self.remove_login_message)
 
     # def remove_login_message(self):
-    #     """ 로그인 메시지 완전히 삭제"""
+    #     """로그인 메시지 완전히 삭제"""
     #     print("로그인 메시지 제거")
     #     for label in self.letter_labels:
     #         label.deleteLater()
     #     self.letter_labels.clear()
+    
+    
 
-   
 
-     
-#=============================로그인, task 목록을 가져오는 함수====================================
+#=============================로그인 후, task 목록을 가져오는 함수====================================
+#=============================파일 오픈 및 My task 탭 여러 내부 기능====================================
 
     def login_and_load_tasks(self):
         user_data = UserAuthenticator.login(self.username)
@@ -877,12 +783,12 @@ class LoadUI(QMainWindow):
             for task in filtered_tasks:
                 task_id = task["id"]
                 task_name = task["content"]
-                    #  AnimatedListView에 아이템 추가
                 if hasattr(self, 'list_animated_view'):
                     self.list_animated_view.add_task(task_name, task_id)
                 else:
-                    print("⚠️ list_animated_view가 아직 초기화되지 않음!")
+                    print("list_animated_view가 아직 초기화되지 않음!")
                
+
                 # 리스트 아이템 생성
                 list_item = QListWidgetItem()
                 list_item.setData(Qt.UserRole, {"id": task_id, "name": task_name})  # Task 데이터 저장
@@ -891,11 +797,6 @@ class LoadUI(QMainWindow):
                 # QListWidget에 추가 (초기 상태에서는 UI 요소 없이 추가)
                 target_list = self.list_widgets[index]
                 target_list.addItem(list_item)
-
-                # 리스트 아이템 클릭 시 show_task_details 실행
-                # target_list.itemClicked.connect(self.on_item_clicked)
-                # target_list.itemClicked.connect(self.show_task_works)
-                
 
             self.update_list_items(self.list_widgets[index])
             index += 1
@@ -910,23 +811,39 @@ class LoadUI(QMainWindow):
             if list_item:
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
                 task_name = task_data.get("name", "Unknown Task")
+                task_id = task_data.get("id", "Unknown Task")
+                task_path = manager.get_task_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
+                thumbnail_path = self.get_latest_thumbnail(task_path)  # 최신 썸네일 가져오기
 
                 # file_box 생성
                 widget = QWidget()
                 layout = QVBoxLayout()
 
+                # 썸네일 QLabel
+                label_thumb = QLabel()
+                if os.path.exists(thumbnail_path):
+                    pixmap = QPixmap(thumbnail_path)
+                else:
+                    pixmap = QPixmap(160, 90)  # 기본 썸네일 생성
+                rounded_pixmap = UI_support.round_corners_pixmap(pixmap, radius=15)
+                label_thumb.setPixmap(rounded_pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                label_thumb.setAlignment(Qt.AlignCenter)
+                layout.addWidget(label_thumb)
+
+                # 테스크 이름 QLabel
                 label_task_name = QLabel(task_name)
                 label_task_name.setAlignment(Qt.AlignCenter)
+                label_task_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
+
                 layout.addWidget(label_task_name)
-                
+
                 widget.setLayout(layout)
-                # widget.setContentsMargins(20, 0, 0, 0)
 
                 # 기존 list_item의 크기 조정 및 file_box 추가
                 list_item.setSizeHint(widget.sizeHint())
                 list_widget.setItemWidget(list_item, widget)
     
-    def on_item_clicked(self, item):
+    def on_item_clicked(self, item,target_index):
         """
         리스트 아이템 클릭 시 해당 Task ID를 show_task_details로 전달
         """
@@ -935,16 +852,42 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             self.show_task_details(task_id)
             self.show_task_works(task_id)
+            self.animate_list_widgets()
+            self.animate_3d_list_widgets(target_index)
+
+    def get_latest_thumbnail(self, task_path):
+        """
+        해당 테스크의 퍼블리시 썸네일 폴더에서 가장 최근 생성된 이미지를 찾음
+        """
+        thumb_path = os.path.join(task_path, "thumb")
+        
+        if not os.path.exists(thumb_path) or not os.path.isdir(thumb_path):
+            return "/nas/Viper/789.png"
+        
+        # 지원하는 이미지 확장자
+        valid_extensions = (".png", ".jpg", ".jpeg", ".tiff", ".bmp", ".gif")
+        
+        # 해당 폴더 내 파일 목록 가져오기 (이미지 파일만 필터링)
+        image_files = [f for f in os.listdir(thumb_path) if f.lower().endswith(valid_extensions)]
+        
+        if not image_files:
+            return
+        
+        # 가장 최근 생성된 파일 찾기 (생성 시간 기준 정렬)
+        image_files.sort(key=lambda f: os.path.getctime(os.path.join(thumb_path, f)), reverse=True)
+        latest_thumbnail = os.path.join(thumb_path, image_files[0])
+
+        return latest_thumbnail
 
     def get_filetype(self, file_name):
         if file_name == None:
             return "work file 없음"
         elif file_name.endswith((".ma", ".mb")):
-            return "Maya 파일"
-        elif file_name.endswith(".nk"):
-            return "Nuke 파일"
-        elif file_name.endswith(".hip"):
-            return "Houdini 파일"
+            return "Maya"
+        elif file_name.endswith((".nk", ".nknc")):
+            return "Nuke"
+        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
+            return "Houdini"
         else:
             return "알 수 없는 파일 형식"
 
@@ -958,7 +901,7 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-
+        self.ui.label_filename2.setText(task['content'])
         self.ui.label_filename.setText(task['content'])
         self.ui.label_startdate.setText(task["start_date"])
         self.ui.label_duedate.setText(task["due_date"])
@@ -970,37 +913,65 @@ class LoadUI(QMainWindow):
         QTimer.singleShot(10, self.animate_info_labels)
         print ("show task details")
 
-       
 
     def show_task_works(self, task_id, event=None):
         """
-        클릭한 테스크의 work파일들을 리스트 위젯에 보여주는 함수
+        클릭한 Task의 Work 파일들을 리스트 위젯에 표시
         """
-        self.ui.listWidget_works.clear()
-        print(task_id)
-        # 데이터베이스에서 works 가져오기
-        works = manager.get_works_for_task(task_id)
-        print(f"로컬 Work 파일 목록: {works}")
-
-        if not works:
+        if not task_id:
+            print("⚠️ show_task_works() - task_id가 None입니다!")
             return
 
-        # works 데이터 추가
+        works = manager.get_works_for_task(task_id)
+
+        if not works:
+            print(f"⚠️ show_task_works() - Task ID {task_id}에 해당하는 works가 없습니다!")
+            return
+
+        self.ui.listWidget_works.clear()
+
         for work in works:
-            file_name = work.get("file_name", "Unknown File")  # 파일 이름이 없을 경우 기본값 설정
-            item = QListWidgetItem(file_name)  # 리스트 아이템 생성
-            item.setData(Qt.UserRole, work)  # work 데이터를 저장
+            file_name = work.get("file_name", "Unknown File")
+            file_type = self.get_filetype(file_name)
+
+            # 썸네일 및 라벨 추가
+            label_logo = QLabel()
+            if file_type == "Maya":
+                pixmap = QPixmap("/nas/Viper/logo/maya.png")
+            elif file_type == "Nuke":
+                pixmap = QPixmap("/nas/Viper/logo/nuke.png")
+            elif file_type == "Houdini":
+                pixmap = QPixmap("/nas/Viper/logo/houdini.png")
+            else:
+                pixmap = QPixmap(20, 20)
+
+            label_logo.setPixmap(pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+            label_logo.setMaximumSize(20, 20)
+
+            label_name = QLabel(file_name)
+            label_name.setStyleSheet("color: white;")
+
+            H_layout = QHBoxLayout()
+            H_layout.addWidget(label_logo)
+            H_layout.addWidget(label_name)
+
+            item_widget = QWidget()
+            item_widget.setLayout(H_layout)
+
+            item = QListWidgetItem()
+            item.setSizeHint(item_widget.sizeHint())
 
             self.ui.listWidget_works.addItem(item)
-
-   
+            self.ui.listWidget_works.setItemWidget(item, item_widget)
+            item.setData(Qt.UserRole, work)
 
     def animate_info_labels(self):
-        """ Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
-        print("ask 정보 라벨 애니메이션 시작!")
+        """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+        print("Task 정보 라벨 애니메이션 시작!")
 
         # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
         label_pairs = [
+           
             ("label_6", "label_filename"),
             ("label_7", "label_type"),
             ("label_8", "label_startdate"),
@@ -1010,14 +981,10 @@ class LoadUI(QMainWindow):
         # 라벨 객체 저장
         self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
 
-        
-
         # 원래 위치 저장
         self.original_positions = {
             label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
         }
-
-     
 
         # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
         screen_offset = -200  
@@ -1025,9 +992,7 @@ class LoadUI(QMainWindow):
             label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
         }
 
-      
-
-        #  애니메이션 실행 전에 위치 강제 설정
+        # 애니메이션 실행 전에 위치 강제 설정
         for pair in self.labels:
             
             for label in pair:
@@ -1035,12 +1000,12 @@ class LoadUI(QMainWindow):
                 label.move(self.start_positions[label])  
                 label.setVisible(True)  
 
-        #  UI 업데이트 후 100ms 뒤에 애니메이션 실행
+        # UI 업데이트 후 100ms 뒤에 애니메이션 실행
         QTimer.singleShot(100, self._start_info_label_animation)
 
 
     def _start_info_label_animation(self):
-        """ Task 정보 라벨 등장 애니메이션 실행"""
+        """Task 정보 라벨 등장 애니메이션 실행"""
         print("Task 정보 라벨 등장 애니메이션 실행!")
 
         self.animations = []
@@ -1060,56 +1025,42 @@ class LoadUI(QMainWindow):
 
             delay += 200  # 딜레이 추가 (순차적 등장)
 
-       
-    
-    
     def run_file(self):
         """
         설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
         """
-        selected_items = [widget.currentItem() for widget in self.list_widgets if widget.currentItem()]
+        selected_items = [self.ui.listWidget_works.currentItem()]
+        print(f"선택된 아이템: {selected_items}")
         
         for selected_item in selected_items:
-            task_data = selected_item.data(Qt.UserRole)
-            if not task_data:
-                print("Task 데이터를 찾을 수 없습니다.")
+            work_data = selected_item.data(Qt.UserRole)
+            if not work_data:
+                UI_support.show_message("error", "오류", "work 데이터를 찾을 수 없습니다.")
                 continue
 
-            task_id = task_data["id"]
-            file_paths = manager.get_works_for_task(task_id)
+            work_name = work_data["file_name"]
 
-            if not file_paths:
-                UI_support.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
-                continue
+            file_path = work_data["path"]
+            print(f"파일 경로: {file_path}")
 
-            file_path = file_paths[-1]["path"]
             if not file_path:
-                UI_support.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
+                UI_support.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
                 continue
-        
-        if not file_path or not os.path.exists(file_path):
-            UI_support.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
-            return
 
         # 경로를 절대 경로로 변환
         file_path = os.path.abspath(file_path)
 
         if file_path.endswith((".ma", ".mb")):
             MayaLoader.launch_maya(file_path)
-        elif file_path.endswith(".nk"):
+        elif file_path.endswith((".nk", ".nknc")):
             NukeLoader.launch_nuke(file_path)
-        elif file_path.endswith((".hip", ".hiplc")):
-            self.launch_houdini(file_path)
+        elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
+            FileLoaderGUI.launch_houdini(file_path)
         else:
             UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     login_window = LoginWindow()
     if login_window.exec():
         sys.exit(app.exec())
-
-
-
-

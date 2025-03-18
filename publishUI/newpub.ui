@@ -71,6 +71,29 @@ QHeaderView::section {
 </string>
     </property>
    </widget>
+   <widget class="QTableWidget" name="tableWidget_filelist">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>280</y>
+      <width>241</width>
+      <height>231</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QTableWidget {
+    background: transparent; /* 🔹 배경을 완전히 투명하게 설정 */
+    border: none; /* 🔹 테두리 없애기 */
+    gridline-color: rgba(0, 0, 0, 50); /* 🔹 그리드 라인 투명하게 */
+}
+
+QHeaderView::section {
+    background: transparent; /* 🔹 헤더 배경도 투명 */
+    border: none;
+}
+</string>
+    </property>
+   </widget>
    <widget class="QPushButton" name="pushButton_publish">
     <property name="geometry">
      <rect>
@@ -155,6 +178,7 @@ color: black;  /* 글자 색상 */</string>
     color: #696969;
     font-size: 14px;
     text-align: center;  /* 중앙 정렬 */
+    padding-top: 50px;  /* ✅ 배경 이미지와 텍스트가 겹치지 않도록 여백 추가 */
 }</string>
     </property>
     <property name="text">
@@ -365,7 +389,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>667</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>

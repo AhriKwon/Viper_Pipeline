@@ -15,8 +15,6 @@ from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
 
 import sys, os, glob
 from functools import partial 
-import UI_support
-from Viper_loader_lib import LibraryTab
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
@@ -30,6 +28,7 @@ from NukeLoader import NukeLoader
 
 
 import math
+from Viper_loader_lib import LibraryTab
 
  #============================================================================================
  #================================로그인 창 : LoginWindow==============================================
@@ -48,6 +47,7 @@ class LoginWindow(QDialog):
         self.dragPos = None  # 창 이동을 위한 변수
 
         ui_file = QFile(ui_file_path)
+
         loader = QUiLoader()
         self.ui = loader.load(ui_file)
         self.setLayout(QVBoxLayout())
@@ -124,8 +124,6 @@ class LoginWindow(QDialog):
 
     
 
-
-    #/////////////////////로그인창 애니메이션 실행 함수 넣는 곳!!1/////////////////////////////////////
     def mousePressEvent(self, event):
             """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
             if event.button() == Qt.LeftButton:
@@ -142,6 +140,9 @@ class LoginWindow(QDialog):
     def mouseReleaseEvent(self, event):
             """ 마우스를 떼면 위치 초기화 """
             self.dragPos = None
+
+
+   #/////////////////////로그인창 애니메이션 실행 함수 넣는 곳!!1/////////////////////////////////////
 
     def forlogin_ani(self):
        
@@ -176,21 +177,21 @@ class LoginWindow(QDialog):
     def attempt_login(self):
         email = self.lineEdit_id.text().strip()
 
-        if not email:
-            UI_support.show_message("error", "오류", "이메일을 입력해주세요")
-            return
+        # if not email:
+        #     popup.show_message("error", "오류", "이메일을 입력해주세요")
+        #     return
         
         user_data = UserAuthenticator.login(email)
 
         if user_data:
             self.accept()
-            self.main_window = LoadUI(email)
+            # self.main_window = LoadUI(email)
             self.fade_out_animation()
             self.main_window.show()
            
-        else:
-            UI_support.show_message("error", "오류", "등록되지 않은 사용자입니다")
-            return
+        # else:
+        #     popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
+        #     return
         
     def fade_out_animation(self):
         """로그인 창이 서서히 사라지는 애니메이션 효과"""
@@ -238,6 +239,7 @@ class LoadUI(QMainWindow):
         self.resize(1240, 720)
         self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
+        self.dragPos = None  # 창 이동을 위한 변수
 
 
         self.tabWidget_info = self.ui.tabWidget_info      
@@ -277,35 +279,51 @@ class LoadUI(QMainWindow):
         self.blur_in_animation()
 
         self.create_bouncing_dots()
-    #     qInstallMessageHandler(self.custom_message_handler)
+        qInstallMessageHandler(self.custom_message_handler)
+    def custom_message_handler(mode, context, message):
+        """ ✅ 특정 메시지 필터링하여 디버깅을 방해하지 않도록 설정 """
+        ignored_messages = [
+            "QPainter::setOpacity: Painter not active",
+            "QPainter::setWorldTransform: Painter not active",
+            "QPainter::restore: Unbalanced save/restore",
+            "QPainter::begin: A paint device can only be painted by one painter at a time.",
+            "QPainter::translate: Painter not active",
+            "QPainter::drawRects: Painter not active",
+            "QWidgetEffectSourcePrivate::pixmap: Painter not active",
+            "QPainter::save: Painter not active",
+            "QPainter::worldTransform: Painter not active"
+        ]
 
-    # def custom_message_handler(self, mode, context, message):
-    #     """ ✅ 특정 메시지 필터링하여 디버깅을 방해하지 않도록 설정 """
-    #     ignored_messages = [
-    #         "QPainter::setOpacity: Painter not active",
-    #         "QPainter::setWorldTransform: Painter not active",
-    #         "QPainter::restore: Unbalanced save/restore",
-    #         "QPainter::begin: A paint device can only be painted by one painter at a time.",
-    #         "QPainter::translate: Painter not active",
-    #         "QPainter::drawRects: Painter not active",
-    #         "QWidgetEffectSourcePrivate::pixmap: Painter not active",
-    #         "QPainter::save: Painter not active",
-    #         "QPainter::worldTransform: Painter not active"
-    #     ]
+        # ✅ 특정 메시지는 무시하고, 나머지는 출력
+        if any(ignored_msg in message for ignored_msg in ignored_messages):
+            return
+        print(message)  # ⚡️ 디버깅용으로 다른 메시지는 정상 출력
 
-    #     # ✅ 특정 메시지는 무시하고, 나머지는 출력
-    #     if any(ignored_msg in message for ignored_msg in ignored_messages):
-    #         return
-    #     print(message)  # ⚡️ 디버깅용으로 다른 메시지는 정상 출력
-
-    # # ✅ Qt 메시지 핸들러 등록 (LoadUI 생성자에서 실행)
-    # qInstallMessageHandler(custom_message_handler)
+    # ✅ Qt 메시지 핸들러 등록 (LoadUI 생성자에서 실행)
+    qInstallMessageHandler(custom_message_handler)
         
 
      
 
   #====================================loadui 로드=======================================
   #================================(loginui가 성공할 시에)=================================
+    def mousePressEvent(self, event):
+            """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+            if event.button() == Qt.LeftButton:
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
+
+    def mouseMoveEvent(self, event):
+            """ 마우스를 드래그하면 창 이동 """
+            if event.buttons() == Qt.LeftButton and self.dragPos:
+                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+                self.dragPos = event.globalPosition().toPoint()
+                event.accept()
+
+    def mouseReleaseEvent(self, event):
+            """ 마우스를 떼면 위치 초기화 """
+            self.dragPos = None
+
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -657,7 +675,6 @@ class LoadUI(QMainWindow):
 
         # 0.1초 후 애니메이션 시작 (label_central이 애니메이션 시작 전 보이지 않도록)
         QTimer.singleShot(200, self._start_mask_animation)
-
     def _start_mask_animation(self):
         """ 마스크 애니메이션 시작 """
         self.label_central.setVisible(True)  # 이제 보이도록 설정
@@ -676,7 +693,6 @@ class LoadUI(QMainWindow):
             self.mask_step += 4  # 확장 속도 (원하는 대로 조정)
         else:
             self.mask_timer.stop()  # 최대 크기에 도달하면 애니메이션 종료
-            
     def start_label_left_animation(self):
         """ label_left, label_logo, label_viper, label_user가 함께 이동하는 애니메이션 실행 """
         print("label_left 애니메이션 시작!")
@@ -857,16 +873,16 @@ class LoadUI(QMainWindow):
             user_id = user_data["id"]
             user_tasks = manager.get_tasks_by_user(user_id) 
             self.populate_table(user_tasks)
-        else:
-            UI_support.show_message("error", "오류", "부여받은 Task가 없습니다")
+        # else:
+        #     popup.show_message("error", "오류", "부여받은 Task가 없습니다")
 
     def populate_table(self, tasks):
         """
         Task 데이터를 받아서 list_widgets에 QListWidgetItem을 추가
         """
-        if not tasks:
-            UI_support.show_message("error", "오류", "Task를 찾을 수 없습니다.")
-            return
+        # if not tasks:
+        #     popup.show_message("error", "오류", "Task를 찾을 수 없습니다.")
+        #     return
 
         index = 0
         status_list = ["wtg", "ip", "fin"]
@@ -1078,18 +1094,18 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             file_paths = manager.get_works_for_task(task_id)
 
-            if not file_paths:
-                UI_support.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
-                continue
+            # if not file_paths:
+            #     popup.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
+            #     continue
 
             file_path = file_paths[-1]["path"]
-            if not file_path:
-                UI_support.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
-                continue
+        #     if not file_path:
+        #         popup.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
+        #         continue
         
-        if not file_path or not os.path.exists(file_path):
-            UI_support.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
-            return
+        # if not file_path or not os.path.exists(file_path):
+        #     popup.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
+        #     return
 
         # 경로를 절대 경로로 변환
         file_path = os.path.abspath(file_path)
@@ -1100,8 +1116,8 @@ class LoadUI(QMainWindow):
             NukeLoader.launch_nuke(file_path)
         elif file_path.endswith((".hip", ".hiplc")):
             self.launch_houdini(file_path)
-        else:
-            UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+        # else:
+        #     popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
 
 if __name__ == "__main__":
