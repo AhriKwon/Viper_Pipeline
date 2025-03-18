@@ -5,11 +5,17 @@ import subprocess
 
 
 class HoudiniLoader:
-    """Houdini 관련 작업을 처리하는 클래스 (정적 메서드 사용)"""
+    """
+    Houdini 관련 작업을 처리하는 클래스
+    
+    """
 
     @staticmethod
     def launch_houdini(file_path):
-        """Houdini 실행 후 파일 열기"""
+        """
+        Houdini 실행 후 파일 열기
+        
+        """
         houdini_executable = HoudiniLoader.find_houdini_path()
         if houdini_executable:
             subprocess.Popen([houdini_executable, file_path], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -19,7 +25,12 @@ class HoudiniLoader:
 
     @staticmethod
     def import_houdini(file_path):
-        """Houdini에서 파일을 Import"""
+        """
+        Houdini에서 파일을 Import
+        현재 Houdini 세션에 .hip 또는 기타 확장자를 merge
+        hython을 사용하여 스크립트를 실행함
+        
+        """
         if not os.path.exists(file_path):
             print(f"파일이 존재하지 않습니다: {file_path}")
             return
@@ -56,7 +67,11 @@ print("Houdini에서 파일을 import 했습니다: {file_path}")'''
 
     @staticmethod
     def is_houdini_running():
-        """Houdini 실행 여부 확인"""
+        """
+        pgrep -f "houdini"를 통해
+        Houdini 실행 여부 확인
+
+        """
         try:
             result = subprocess.run(["pgrep", "-f", "houdini"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             return bool(result.stdout.strip())
@@ -66,7 +81,12 @@ print("Houdini에서 파일을 import 했습니다: {file_path}")'''
 
     @staticmethod
     def send_houdini_command(command):
-        """Houdini에서 Python 명령 실행"""
+        """
+        Houdini에서 Python 명령 실행
+        Houdini 실행 파일에 -c 옵션으로
+        지정된 Python 명령어를 전달해 실행
+
+        """
         houdini_executable = HoudiniLoader.find_houdini_path()
         if houdini_executable:
             try:
@@ -79,7 +99,10 @@ print("Houdini에서 파일을 import 했습니다: {file_path}")'''
 
     @staticmethod
     def find_houdini_path():
-        """Houdini 실행 파일 경로 찾기"""
+        """
+        Houdini 실행 파일 경로 찾기
+        
+        """
         possible_paths = [
             "/opt/hfs20.5.487/bin/houdini",
             "/usr/local/bin/houdini",

@@ -17,14 +17,18 @@ from shotgrid_manager import ShotGridManager
 
 class FileLoader:
     """
-    지정된 user_id로부터 퍼블리시된 파일들을 샷그리드에서 가져와
-        QListWidget에 표시합니다.
+    1. 지정된 user_id로부터 퍼블리시된 파일들을 샷그리드에서 가져오는 기능
+    2. 파일을 import하고 실행하는 기능
+        
     """
     base_dir = "/nas/show/Viper"
 
     @staticmethod
     def load_published_files(user_id, file_list_widget):
-        """샷그리드의 user에게 퍼블리시된 파일을 불러옴"""
+        """
+        user에게 퍼블리시된 task를 조회 및 불러오기
+        
+        """
         file_list_widget.clear()
         tasks = ShotGridManager.get_tasks_by_user(user_id)
 
@@ -40,7 +44,10 @@ class FileLoader:
 
     @staticmethod
     def set_file_path(file_path_input):
-        """사용자가 파일 경로를 직접 설정"""
+        """
+        사용자가 파일 경로를 직접 설정
+        
+        """
         file_dialog = QtWidgets.QFileDialog()
         file_path, _ = file_dialog.getOpenFileName(None, "파일 선택", "", "Maya Files (*.ma *.mb);;Nuke Files (*.nk);;All Files (*.*)")
 
@@ -49,7 +56,10 @@ class FileLoader:
 
     @staticmethod
     def run_file(file_path):
-        """설정된 파일 경로를 읽고 Maya 또는 Nuke에서 실행"""
+        """
+        설정된 파일 확장자를 읽고 Maya,Nuke,Houdini에서 실행
+        
+        """
 
         file_path = os.path.abspath(file_path)
 
@@ -64,7 +74,11 @@ class FileLoader:
 
     @staticmethod
     def open_selected_file(item, file_path_input):
-        """리스트에서 선택한 파일을 실행"""
+        """
+        선택된 파일 정보를 가져와서
+        file_path_input에 세팅 후 run_file을 호출한다
+        
+        """
         file_info = item.data(QtCore.Qt.UserRole)
         if file_info:
             file_path_input.setText(file_info["path"])
@@ -72,7 +86,11 @@ class FileLoader:
 
     @staticmethod
     def import_file(file_path):
-        """Maya, Nuke, Houdini에서 파일 Import"""
+        """
+        Maya, Nuke, Houdini가 이미 실행 중일 경우
+        해당 프로그램에서 파일 import
+        
+        """
 
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
@@ -101,7 +119,10 @@ class FileLoader:
 
     @staticmethod
     def create_reference_file(file_path):
-        """Maya에서 Reference 추가"""
+        """
+        Maya 씬에서 Reference 추가 (MayaLoader 연동해서 사용)
+        
+        """
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
             return
@@ -112,7 +133,10 @@ class FileLoader:
 
     @staticmethod
     def version_up_selected_file(file_list_widget):
-        """선택된 파일을 Version Up"""
+        """
+        선택된 파일을 Version Up 해서 새 파일명으로 바꾸기
+        
+        """
         selected_items = file_list_widget.selectedItems()
         if not selected_items:
             QtWidgets.QMessageBox.warning(None, "오류", "파일을 선택하세요.")
@@ -126,7 +150,11 @@ class FileLoader:
 
     @staticmethod
     def version_up(file_path):
-        """파일의 버전을 자동 증가"""
+        """
+        파일의 버전을 자동 증가
+        v001.ma --> v002.ma
+        
+        """
         version_pattern = re.compile(r"(.*)_v(\d{3})(\..+)$")
         match = version_pattern.match(file_path)
 
@@ -146,7 +174,11 @@ class FileLoader:
 
     @staticmethod
     def create_file_path(program, part, asset_type, asset_name, seq, shot, task):
-        """파일 생성 경로를 반환"""
+        """
+        기본 파일 경로 생성
+        이미 존재하는 파일은 버전업해서 생성
+        
+        """
         file_templates = {
             "MDL": f"{FileLoader.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
             "RIG": f"{FileLoader.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
@@ -178,7 +210,10 @@ class FileLoader:
 
     @staticmethod
     def create_nuke_file(empty_nknc_path):
-        """Nuke 빈 파일 생성"""
+        """
+        Nuke 빈 파일(.nknc) 생성
+        
+        """
         empty_nknc_content = """# Empty Nuke Non-Commercial Script
         version 15.1 v1
         Root {
@@ -187,25 +222,34 @@ class FileLoader:
         """
         with open(empty_nknc_path, "w") as f:
             f.write(empty_nknc_content)
-        print(f"[INFO] Nuke 임시 파일 생성 완료: {empty_nknc_path}")
+        print(f"Nuke 임시 파일 생성 완료: {empty_nknc_path}")
 
     @staticmethod
     def create_maya_file(file_path):
-        """빈 Maya 파일 생성"""
+        """
+        미리 만든 Maya 파일 복사해서 새 파일을 생성
+        
+        """
         empty_maya_file = "/home/rapa/Viper/loader_test_createfile/test_v001.ma"
         shutil.copy(empty_maya_file, file_path)
-        print(f"[INFO] Maya 파일 생성 완료: {file_path}")
+        print(f"Maya 파일 생성 완료: {file_path}")
 
     @staticmethod
     def create_houdini_file(file_path):
-        """빈 Houdini 파일 생성"""
+        """
+        미리 만든 Houdini 파일 복사해서 새 파일을 생성
+        
+        """
         empty_hip_file = "/home/rapa/Viper/loader_test_createfile/test_v001.hip"
         shutil.copy(empty_hip_file, file_path)
-        print(f"[INFO] Houdini 파일 생성 완료: {file_path}")
+        print(f"Houdini 파일 생성 완료: {file_path}")
 
     @staticmethod
     def create_and_run_task_file(program, part, asset_type, asset_name, seq, shot, task, file_path_input):
-        """파일 생성 후 실행"""
+        """
+        파일 생성 후 프로그램으로 실행
+        
+        """
         file_path = FileLoader.create_file_path(program, part, asset_type, asset_name, seq, shot, task)
 
         if not file_path:
@@ -221,7 +265,7 @@ class FileLoader:
         elif file_path.endswith(".hip"):
             FileLoader.create_houdini_file(file_path)
 
-        print(f"[INFO] 새 파일 생성 완료: {file_path}")
+        print(f"새 파일 생성 완료: {file_path}")
 
         # UI 업데이트 및 실행
         file_path_input.setText(file_path)
@@ -230,10 +274,14 @@ class FileLoader:
 
     @staticmethod
     def create_new_file_dialog(parent=None):
-        """파일 생성 대화 상자를 열고 결과를 반환"""
+        """
+        파일 생성 대화 상자를 열고 정보 입력 후 
+        결과값 반환
+        
+        """
         dialog = FileDialog(parent)
         if dialog.exec():
             selected_options = dialog.get_selected_options()
-            print("[INFO] 선택된 옵션:", selected_options)
+            print("선택된 옵션:", selected_options)
             return selected_options
         return None

@@ -5,26 +5,36 @@ import socket
 
 
 class MayaLoader:
-    """Maya 관련 유틸리티 함수 클래스"""
+    """
+    Maya 관련 유틸리티 함수 클래스
+    
+    """
 
     @staticmethod
     def launch_maya(file_path):
-        """Maya 실행 후 파일 열기 (환경 변수 추가)"""
+        """
+        Maya 실행 후  파일 열기 
+        maya.env source 후 실행하기
+        
+        """
         maya_executable = MayaLoader.find_maya_path()
         if maya_executable:
             maya_command = f'bash -c "source /home/rapa/env/maya.env && {maya_executable} -command \\"file -o \\\\\\"{file_path}\\\\\\";\\""'
             subprocess.Popen(maya_command, shell=True)
             print(f"Maya에서 파일을 불러왔습니다: {file_path}")
-        elif maya_executable:
-                subprocess.Popen(["bash", "-c", f"source /home/rapa/env/maya.env && {maya_executable}"], shell=False)
-                print(f"Maya 실행됨 (환경 변수 적용됨)")
+        # elif maya_executable:
+        #         subprocess.Popen(["bash", "-c", f"source /home/rapa/env/maya.env && {maya_executable}"], shell=False)
+        #         print(f"Maya 실행됨 (환경 변수 적용됨)")
         else:
             print("Maya 실행 파일을 찾을 수 없습니다.")
 
 
     @staticmethod
     def open_new_scene_maya():
-        """기존 Maya를 종료하지 않고 새로운 Maya 창을 띄움"""
+        """
+        기존 Maya를 종료하지 않고 새로운 Maya 창을 띄움
+        
+        """
         maya_executable = MayaLoader.find_maya_path()
         if maya_executable:
             maya_command = f'bash -c "source /home/rapa/env/maya.env && {maya_executable}"'
@@ -35,7 +45,10 @@ class MayaLoader:
 
     @staticmethod
     def find_maya_path():
-        """Maya 실행 파일 경로 찾기"""
+        """
+        Maya 실행 파일 경로 찾기
+        
+        """
         possible_paths = ["/usr/autodesk/maya2023/bin/maya"]
         for path in possible_paths:
             if os.path.exists(path):
@@ -44,7 +57,11 @@ class MayaLoader:
 
     @staticmethod
     def is_maya_running():
-        """Maya 실행 여부 확인"""
+        """
+        pgrep -f 명령어로 'maya' 문자열을 검색,
+        현재 Maya 프로세스가 동작 중인지 확인
+        
+        """
         try:
             result = subprocess.run(["pgrep", "-f", "maya"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
             return bool(result.stdout.strip())
@@ -54,7 +71,10 @@ class MayaLoader:
 
     @staticmethod
     def is_cmd_port_open(port=7001):
-        """cmdPort가 활성화되어 있는지 확인"""
+        """
+        cmdPort가 활성화되어 있는지 확인
+        
+        """
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(1)
         result = sock.connect_ex(("localhost", port))
@@ -69,14 +89,21 @@ class MayaLoader:
 
     @staticmethod
     def enable_maya_cmd_port():
-        """Maya에서 cmdPort 활성화"""
+        """
+        Maya에서 cmdPort 활성화하는 명령을 보냄
+        
+        """
         print("Maya에서 cmdPort 활성화를 시도합니다...")
         mel_command = 'commandPort -name ":7001" -sourceType "python";'
         MayaLoader.send_maya_command(mel_command)
 
     @staticmethod
     def send_maya_command(command):
-        """Maya cmdPort를 통해 명령어 실행 후 응답 확인"""
+        """
+        Maya cmdPort(7001)를 소켓으로 연결, 
+        명령어 실행 후 응답 확인
+        
+        """
         try:
             with socket.create_connection(("localhost", 7001), timeout=2) as sock:
                 sock.sendall((command + "\n").encode("utf-8"))  # 문자열을 utf-8 바이트로 변환 후 전송
@@ -88,7 +115,11 @@ class MayaLoader:
 
     @staticmethod
     def import_maya(file_path):
-        """Maya에서 Import 수행"""
+        """
+        Maya가 이미 실행 중이라면 cmdPort 방식을 통해 Import,
+        실행 중이 아니면 mayapy를 사용하여 Import 시도하기
+        
+        """
         if MayaLoader.is_maya_running():
             print("Maya 실행 중! `cmdPort` 방식으로 Import 시도.")
             if not MayaLoader.is_cmd_port_open():
@@ -115,7 +146,11 @@ cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었
 
     @staticmethod
     def create_reference_maya(file_path):
-        """Maya에서 Create Reference 수행"""
+        """
+        Maya가 실행 중이면 cmdPort로 Reference 파일 생성,
+        실행 중이 아니라면 mayapy로 실행
+        
+        """
         if MayaLoader.is_maya_running():
             if not MayaLoader.is_cmd_port_open():
                 MayaLoader.enable_maya_cmd_port()
@@ -136,7 +171,10 @@ cmds.evalDeferred(lambda: print("Import 완료! 파일이 제대로 로드되었
 
     @staticmethod
     def import_with_mayapy(file_path):
-        """Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Import"""
+        """
+        Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Import
+        
+        """
         mayapy_path = "/usr/autodesk/maya2023/bin/mayapy"
         if not os.path.exists(mayapy_path):
             print("Maya Python 실행 파일(mayapy)을 찾을 수 없습니다.")
@@ -157,7 +195,10 @@ print("Maya에서 파일을 Import 했습니다: {file_path}")
 
     @staticmethod
     def create_reference_with_mayapy(file_path):
-        """Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Create Reference"""
+        """
+        Maya가 실행 중이 아닐 때 `mayapy`를 사용하여 Create Reference
+        
+        """
         mayapy_path = "/usr/autodesk/maya2023/bin/mayapy"
         if not os.path.exists(mayapy_path):
             print("Maya Python 실행 파일(mayapy)을 찾을 수 없습니다.")
@@ -184,6 +225,7 @@ print("Maya에서 Reference 파일을 불러왔습니다: {file_path}")
     def create_workspace_mel(project_path):
         """
         Maya 프로젝트 폴더 내 workspace.mel 파일을 자동 생성
+        
         """
         workspace_mel_path = os.path.join(project_path, "workspace.mel")
 
