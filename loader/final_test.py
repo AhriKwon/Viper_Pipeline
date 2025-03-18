@@ -2,7 +2,8 @@ import os
 import sys
 import subprocess
 import socket
-
+import re
+import shutil
 
 
 
@@ -25,6 +26,9 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         self.setGeometry(100, 100, 900, 600)
         self.user_id = user_id
         self.initUI()
+
+        #기본 경로
+        self.base_dir = "/nas/show/Viper"
 
     def initUI(self):
         """GUI 레이아웃 설정"""
@@ -65,13 +69,10 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         self.reference_button.clicked.connect(self.create_reference_file)
         button_layout.addWidget(self.reference_button)
 
-        self.new_scene_button = QtWidgets.QPushButton("새 파일 Open")
-        self.new_scene_button.clicked.connect(self.open_new_scene_maya)
-        button_layout.addWidget(self.new_scene_button)
+        
 
-
-        self.task_button = QtWidgets.QPushButton("Task 파일 열기")
-        self.task_button.clicked.connect(self.open_or_create_task_file)
+        self.task_button = QtWidgets.QPushButton("Task 파일 생성")
+        self.task_button.clicked.connect(self.create_new_file_dialog)
         button_layout.addWidget(self.task_button)
 
         layout.addLayout(button_layout)
@@ -79,7 +80,269 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
         # 퍼블리시된 파일 불러오기
         self.load_published_files()
+
+
+    def version_up_selected_file(self):
+        """선택된 파일을 Version Up"""
+        selected_items = self.file_list.selectedItems()
+        if not selected_items:
+            QtWidgets.QMessageBox.warning(self, "오류", "파일을 선택하세요.")
+            return
+
+        old_file_path = selected_items[0].text()
+        new_file_path = self.version_up(old_file_path)
+
+        # UI 업데이트
+        selected_items[0].setText(new_file_path)
+
+
+    def version_up(self, file_path):
+        """파일의 버전을 자동 증가"""
+        version_pattern = re.compile(r"(.*)_v(\d{3})(\..+)$")
+        match = version_pattern.match(file_path)
+
+        if match:
+            base_name, version_num, extension = match.groups()
+            version_num = int(version_num)
+
+            # 가장 높은 버전 찾기
+            while True:
+                version_num += 1
+                new_file_path = f"{base_name}_v{version_num:03d}{extension}"
+                if not os.path.exists(new_file_path):
+                    return new_file_path
+        else:
+            base_name, extension = os.path.splitext(file_path)
+            return f"{base_name}_v001{extension}"
+
+
+    def create_new_file_dialog(self):
+        """새 파일을 생성하는 대화 상자"""
+        dialog = QtWidgets.QDialog(self)
+        dialog.setWindowTitle("새 파일 생성")
+        layout = QtWidgets.QVBoxLayout(dialog)
+
+        # 프로그램 선택 (Maya, Nuke, Houdini)
+        self.program_selector = QtWidgets.QComboBox()
+        self.program_selector.addItems(["Maya", "Nuke", "Houdini"])
+        layout.addWidget(self.program_selector)
+
+        # 파트 선택 드롭다운
+        self.part_selector = QtWidgets.QComboBox()
+        self.part_selector.addItems(["MDL", "RIG", "LDV", "LAY", "ANM", "LGT", "FX", "COM"])
+        layout.addWidget(self.part_selector)
+
+        # 필수 정보 입력 필드
+        self.asset_type_input = QtWidgets.QLineEdit()
+        self.asset_type_input.setPlaceholderText("asset_type (MDL, RIG, LDV 전용)")
+        layout.addWidget(self.asset_type_input)
+
+        self.asset_name_input = QtWidgets.QLineEdit()
+        self.asset_name_input.setPlaceholderText("asset_name")
+        layout.addWidget(self.asset_name_input)
+
+        self.seq_input = QtWidgets.QLineEdit()
+        self.seq_input.setPlaceholderText("seq (LAY, ANM, LGT, FX, COM 전용)")
+        layout.addWidget(self.seq_input)
+
+        self.shot_input = QtWidgets.QLineEdit()
+        self.shot_input.setPlaceholderText("shot (LAY, ANM, LGT, FX, COM 전용)")
+        layout.addWidget(self.shot_input)
+
+        self.task_input = QtWidgets.QLineEdit()
+        self.task_input.setPlaceholderText("task")
+        layout.addWidget(self.task_input)
+
+        # 파일 생성 버튼
+        create_button = QtWidgets.QPushButton("파일 생성 및 실행")
+        create_button.clicked.connect(self.create_and_run_task_file)
+        layout.addWidget(create_button)
+       
+        dialog.setLayout(layout)
+        dialog.exec()
         
+
+    def create_file_path(self):
+        
+
+        """파일을 생성"""
+        program = self.program_selector.currentText()
+        part = self.part_selector.currentText()
+        asset_type = self.asset_type_input.text()
+        asset_name = self.asset_name_input.text()
+        seq = self.seq_input.text()
+        shot = self.shot_input.text()
+        task = self.task_input.text()
+
+        # 경로 템플릿
+        file_templates = {
+            "MDL": f"{self.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
+            "RIG": f"{self.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
+            "LDV": f"{self.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
+            "LAY": f"{self.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
+            "ANM": f"{self.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
+            "LGT": f"{self.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
+            "FX": f"{self.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/houdini/scenes/{{shot}}_{{task}}_v001.hip",
+            "COM": f"{self.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/nuke/scenes/{{shot}}_{{task}}_v001.nk",
+        }
+
+        if part not in file_templates:
+            QtWidgets.QMessageBox.warning(self, "오류", "잘못된 파트를 선택하였습니다.")
+            return None
+
+        # 경로 생성
+        file_path = file_templates[part].format(
+            asset_type=asset_type or "Unknown",
+            asset_name=asset_name or "Unknown",
+            seq=seq or "Unknown",
+            shot=shot or "Unknown",
+            task=task or "Unknown"
+        )
+
+        # 기존 파일이 있으면 버전 증가
+        if os.path.exists(file_path):
+            file_path = self.version_up(file_path)
+
+
+        # 디렉토리 생성
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        # 파일 생성
+
+
+        if file_path.endswith(".nk"):
+            self.create_nuke_file(file_path)
+
+        elif file_path.endswith(".ma"):
+            self.create_maya_file(file_path)
+
+
+        elif file_path.endswith(".hip"):
+            self.create_houdini_file(file_path)
+            
+            
+        print(f"새 파일 생성 완료: {file_path}")
+        return file_path
+
+
+    def create_nuke_file(self, empty_nknc_path):
+        """
+        뉴크 빈파일 만드는 메서드.
+        """
+
+        empty_nknc_content = """# Empty Nuke Non-Commercial Script
+        version 15.1 v1
+        Root {
+        inputs 0
+        }
+        """
+        # 빈 .nknc 파일 생성
+        with open(empty_nknc_path, "w") as f:
+            f.write(empty_nknc_content)
+
+        print(f"Nuke 임시 파일 생성 완료: {empty_nknc_path}")
+
+
+    def create_maya_file(self, file_path):
+        """
+        빈 마야 파일을 복사해오는 메서드
+        """
+        empty_maya_file = "/home/rapa/Viper/loader_test_createfile/test_v001.ma"
+        shutil.copy(empty_maya_file, file_path)        
+        print(f"Maya 파일 생성 완료: {file_path}")
+
+        maya_project_folder = os.path.dirname(os.path.dirname(file_path))
+        self.create_workspace_mel(maya_project_folder)
+
+    
+    def create_workspace_mel(self, project_path):
+        """
+        Maya 프로젝트 폴더 내 workspace.mel 파일을 자동 생성
+        """
+        workspace_mel_path = os.path.join(project_path, "workspace.mel")
+
+        if not os.path.exists(workspace_mel_path):
+            workspace_mel_content = """//Maya 2023 Project Definition
+
+    workspace -fr "fluidCache" "cache/nCache/fluid";
+    workspace -fr "DXF_FBX" "data";
+    workspace -fr "images" "images";
+    workspace -fr "offlineEdit" "scenes/edits";
+    workspace -fr "furShadowMap" "renderData/fur/furShadowMap";
+    workspace -fr "SVG" "data";
+    workspace -fr "scripts" "scripts";
+    workspace -fr "DAE_FBX" "data";
+    workspace -fr "shaders" "renderData/shaders";
+    workspace -fr "furFiles" "renderData/fur/furFiles";
+    workspace -fr "OBJ" "data";
+    workspace -fr "FBX export" "data";
+    workspace -fr "furEqualMap" "renderData/fur/furEqualMap";
+    workspace -fr "DAE_FBX export" "data";
+    workspace -fr "DXF_FBX export" "data";
+    workspace -fr "movie" "movies";
+    workspace -fr "ASS Export" "data";
+    workspace -fr "move" "data";
+    workspace -fr "mayaAscii" "scenes";
+    workspace -fr "autoSave" "autosave";
+    workspace -fr "sound" "sound";
+    workspace -fr "mayaBinary" "scenes";
+    workspace -fr "timeEditor" "Time Editor";
+    workspace -fr "Arnold-USD" "data";
+    workspace -fr "iprImages" "renderData/iprImages";
+    workspace -fr "FBX" "data";
+    workspace -fr "renderData" "renderData";
+    workspace -fr "fileCache" "cache/nCache";
+    workspace -fr "eps" "data";
+    workspace -fr "3dPaintTextures" "sourceimages/3dPaintTextures";
+    workspace -fr "mel" "scripts";
+    workspace -fr "translatorData" "data";
+    workspace -fr "particles" "cache/particles";
+    workspace -fr "scene" "scenes";
+    workspace -fr "USD Export" "data";
+    workspace -fr "mayaLT" "";
+    workspace -fr "sourceImages" "sourceimages";
+    workspace -fr "clips" "clips";
+    workspace -fr "furImages" "renderData/fur/furImages";
+    workspace -fr "depth" "renderData/depth";
+    workspace -fr "sceneAssembly" "sceneAssembly";
+    workspace -fr "teClipExports" "Time Editor/Clip Exports";
+    workspace -fr "ASS" "data";
+    workspace -fr "audio" "sound";
+    workspace -fr "USD Import" "data";
+    workspace -fr "Alembic" "data";
+    workspace -fr "illustrator" "data";
+    workspace -fr "diskCache" "data";
+    workspace -fr "templates" "assets";
+    workspace -fr "OBJexport" "data";
+    workspace -fr "furAttrMap" "renderData/fur/furAttrMap";
+    """
+
+            with open(workspace_mel_path, "w") as workspace_file:
+                workspace_file.write(workspace_mel_content)
+
+
+
+            
+
+    def create_houdini_file(self, file_path):
+        """
+        후디니 빈 파일 만드는 메서드.
+        """
+        empty_hip_file = "/home/rapa/Viper/loader_test_createfile/test_v001.hip"
+        shutil.copy(empty_hip_file, file_path)        
+        print(f"Houdini 파일 생성 완료: {file_path}")
+
+
+
+    def create_and_run_task_file(self):
+        """파일 생성 후 실행"""
+        file_path = self.create_file_path()
+        if file_path:
+            self.file_path_input.setText(file_path)
+            self.run_file()
+
+           
+
+
 
     def load_published_files(self):
         """샷그리드의 user에게 퍼블리시된 파일을 불러옴"""
@@ -160,71 +423,6 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
 
 
-    def open_or_create_task_file(self):
-        """할당된 Task 파일을 열거나, 없으면 자동으로 생성"""
-
-        task_info = self.get_task_info()
-        if not task_info:
-            QtWidgets.QMessageBox.warning(self, "오류", "Task 정보를 가져올 수 없습니다.")
-            return
-
-        file_path = self.get_task_file_path(task_info)
-    
-        # 디버깅 로그 추가
-        print(f"생성할 Task 파일 경로: {file_path}")
-
-        # 디렉토리 존재 확인 및 생성
-        directory = os.path.dirname(file_path)
-        if not os.path.exists(directory):
-            print(f"디렉토리가 존재하지 않습니다. 생성 중: {directory}")
-            os.makedirs(directory, exist_ok=True)
-
-        # 파일이 존재하면 새로운 버전 파일 생성
-        if os.path.exists(file_path):
-            print(f"파일이 이미 존재합니다: {file_path}")
-            new_file_path = self.get_next_version_file(file_path)
-        else:
-            print(f"파일이 존재하지 않습니다. 새 파일 생성 예정: {file_path}")
-            new_file_path = file_path
-
-        # 빈 파일 생성
-        try:
-            with open(new_file_path, "w") as f:
-                f.write("")  # 빈 파일 생성
-            print(f"새로운 Task 파일 생성됨: {new_file_path}")
-        except Exception as e:
-            print(f"파일 생성 실패: {e}")
-            QtWidgets.QMessageBox.warning(self, "오류", f"파일 생성 실패: {e}")
-            return
-
-        # 프로그램 실행
-        self.launch_program(new_file_path)
-
-
-
-    def get_task_info(self):
-        """사용자의 Task 정보를 가져오는 함수"""
-        tasks = manager.get_tasks_by_user(user_id)
-        if not tasks:
-            return None
-        return tasks[0]  # 첫 번째 Task를 가져옴
-
-    def get_task_file_path(self, task_info):
-        """Task 정보를 기반으로 파일 경로 생성"""
-        base_path = "/nas/show/Viper/assets"
-        asset_type = task_info.get("asset_type", "Unknown")
-        asset_name = task_info.get("asset_name", "Unknown")
-        task_name = task_info.get("task", "Unknown")
-        ext = "ma" if task_name in ["MDL", "ANM"] else "nk"
-
-        # 파일 경로 생성
-        file_path = f"{base_path}/{asset_type}/{asset_name}/{task_name}/work/maya/scenes/{asset_name}_{task_name}_v001.{ext}"
-    
-        # 디버깅 로그 추가
-        print(f"생성된 파일 경로: {file_path}")
-
-        return file_path
-
 
     def get_next_version_file(self, file_path):
         """파일 버전을 자동으로 업그레이드"""
@@ -239,15 +437,6 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
         return file_path
 
 
-    def launch_program(self, file_path):
-        """파일 확장자에 따라 Maya 또는 Nuke 실행"""
-        if file_path.endswith(".ma") or file_path.endswith(".mb"):
-            self.launch_maya(file_path)
-        elif file_path.endswith(".nk"):
-            self.launch_nuke(file_path)
-        elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
-            self.launch_houdini(file_path)
-
 
     def launch_nuke(self, file_path):
         """Nuke 실행 후 파일 열기"""
@@ -258,7 +447,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             env["RLM_LICENSE"] = "/usr/local/foundry/RLM"
 
             try:
-                nuke_command = f"source /home/rapa/env/nuke.env && {nuke_executable} {file_path}"
+                nuke_command = f'source /home/rapa/env/nuke.env && {nuke_executable} "{file_path}"'
                 subprocess.Popen(["/bin/bash", "-c", nuke_command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
                 print(f"Nuke에서 파일을 실행했습니다: {file_path}")
             except Exception as e:
@@ -290,7 +479,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def import_nuke(self, file_path):
         """사용자가 직접 Nuke 파일(.nk)을 선택하여 Import하는 기능"""
         self.send_nuke_command(f"nuke.nodePaste(r'{file_path}')")
-        
+
         
 
     def is_nuke_running(self):
@@ -426,9 +615,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
             print(f"`cmdPort` Import 실패: {e}")
             QtWidgets.QMessageBox.warning(self, "오류", f"Maya `cmdPort` 연결 실패: {e}")
 
-
  
-
 
     def import_maya(self, file_path):
         """Maya에서 Import 수행"""
@@ -540,7 +727,7 @@ print("Maya에서 Reference 파일을 불러왔습니다: {file_path}")
             print(f"파일이 존재하지 않습니다: {file_path}")
             return
 
-        houdini_seup = "/opt/hfs20.5.487/houdini_setup"
+        houdini_setup = "/opt/hfs20.5.487/houdini_setup"
         houdini_python = "/opt/hfs20.5.487/bin/hython"
 
         # Houdini 환경변수 직접 설정

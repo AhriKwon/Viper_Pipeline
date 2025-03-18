@@ -23,9 +23,9 @@ from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
 # 로더
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
-from MayaLoader import MayaLoader
-from NukeLoader import NukeLoader
-from final_test import FileLoaderGUI
+from FileLoader import FileLoader
+loader = FileLoader()
+
 # 로더 UI
 import UI_support
 from Viper_loader_lib import LibraryTab
@@ -55,7 +55,7 @@ class LoginWindow(QDialog):
 
         # 로그인 창 크기 조정 
         self.setGeometry(100, 100, 1200, 800)
-        self.resize(734, 491)
+        self.resize(741, 491)
         
         self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
         self.label_id = self.ui.findChild(QLabel, "label_id") 
@@ -217,7 +217,7 @@ class LoadUI(QMainWindow):
         self.animations = []
         self.effects = []
         self.load_ui()
-        self.animation_executed = False  # ✅ 애니메이션 상태 변수 초기화
+        self.animation_executed = False  # 애니메이션 상태 변수 초기화
         
         self.setGeometry(100, 100, 1240, 800)
         self.resize(1240, 720)
@@ -237,17 +237,16 @@ class LoadUI(QMainWindow):
         self.library_manager = LibraryTab(self.ui)
 
         """이벤트"""
-        self.ui.pushButton_open.clicked.connect(self.run_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록
-        self.ui.listWidget_works.itemDoubleClicked.connect(self.run_file)
+        self.ui.pushButton_open.clicked.connect(self.open_file) # open 버튼을 누르면 마야와 누크 파일이 열리도록
+        self.ui.listWidget_works.itemDoubleClicked.connect(self.open_file)
 
+        # 탭이 바뀔 때
+        self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
+
+        # My Task Tab의 테스트 클릭시
         self.ui.listWidget_wtg.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_wtg.itemClicked.connect(self.show_task_works)
-
         self.ui.listWidget_ip.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_ip.itemClicked.connect(self.show_task_works)
-
         self.ui.listWidget_fin.itemClicked.connect(self.on_item_clicked)
-        self.ui.listWidget_fin.itemClicked.connect(self.show_task_works)
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
@@ -277,8 +276,6 @@ class LoadUI(QMainWindow):
         self.ui.tabWidget_info.setVisible(False)
 
     
-    
-
     def mousePressEvent(self, event):
             """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
             if event.button() == Qt.LeftButton:
@@ -327,46 +324,40 @@ class LoadUI(QMainWindow):
         """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
         if self.animation_executed:
             print("⚠️ 이미 애니메이션이 실행됨, 다시 실행 안 함!")
-            return  # ✅ 한 번 실행된 후에는 다시 실행되지 않음
+            return  # 한 번 실행된 후에는 다시 실행되지 않음
 
-        print("✅ 리스트 위젯과 라벨 이동 애니메이션 시작!")
-        self.animation_executed = True  # ✅ 실행 상태 변경
+        print("리스트 위젯과 라벨 이동 애니메이션 시작!")
+        self.animation_executed = True  # 실행 상태 변경
 
         self.animations = []  # 애니메이션 리스트
 
         # 리스트 위젯과 해당하는 라벨 매칭
         widgets = [
-            (self.ui.listWidget_wtg, self.ui.label_wtg),
-            (self.ui.listWidget_ip, self.ui.label_ip),
-            (self.ui.listWidget_fin, self.ui.label_fin)
+            self.ui.label_wtg_bg, self.ui.label_ip_bg, self.ui.label_fin_bg
         ]
 
-        for list_widget, label in widgets:
+        for label_bg in widgets:
             # 기존 위치 저장
-            start_x = list_widget.x()
-            end_x = start_x - 50  # 원래 위치에서 50px 왼쪽으로 이동
+            start_x_bg = label_bg.x()
+            end_x_bg = start_x_bg - 295
 
-            # 리스트 위젯 애니메이션
-            list_animation = QPropertyAnimation(list_widget, b"pos")
-            list_animation.setDuration(800)  # 0.5초 동안 이동
-            list_animation.setStartValue(QPoint(start_x, list_widget.y()))
-            list_animation.setEndValue(QPoint(end_x, list_widget.y()))
-            list_animation.setEasingCurve(QEasingCurve.OutQuad)
-
-            # 라벨 애니메이션 (리스트 위젯과 동일하게 이동)
-            label_animation = QPropertyAnimation(label, b"pos")
-            label_animation.setDuration(500)
-            label_animation.setStartValue(QPoint(start_x, label.y()))
-            label_animation.setEndValue(QPoint(end_x, label.y()))
-            label_animation.setEasingCurve(QEasingCurve.OutQuad)
+            if not label_bg == self.ui.label_wtg_bg:
+                end_x_bg -= 285
+            if label_bg == self.ui.label_fin_bg:
+                end_x_bg -= 270
+            
+            # 리스트 위젯 배경 애니메이션
+            bg_animation = QPropertyAnimation(label_bg, b"pos")
+            bg_animation.setDuration(800)  # 0.5초 동안 이동
+            bg_animation.setStartValue(QPoint(start_x_bg, label_bg.y()))
+            bg_animation.setEndValue(QPoint(end_x_bg, label_bg.y()))
+            bg_animation.setEasingCurve(QEasingCurve.OutQuad)
 
             # 애니메이션 실행
-            list_animation.start()
-            label_animation.start()
+            bg_animation.start()
 
             # GC 방지: 리스트에 저장
-            self.animations.append(list_animation)
-            self.animations.append(label_animation)
+            self.animations.append(bg_animation)
 
 
     def initialize_labels(self):
@@ -745,7 +736,7 @@ class LoadUI(QMainWindow):
                 task_data = list_item.data(Qt.UserRole)  # Task 데이터 가져오기
                 task_name = task_data.get("name", "Unknown Task")
                 task_id = task_data.get("id", "Unknown Task")
-                task_path = manager.get_task_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
+                task_path = manager.get_publish_path(self.projects[0], task_id)  # 퍼블리시 경로 가져오기
                 thumbnail_path = self.get_latest_thumbnail(task_path)  # 최신 썸네일 가져오기
 
                 # file_box 생성
@@ -776,6 +767,21 @@ class LoadUI(QMainWindow):
                 list_item.setSizeHint(widget.sizeHint())
                 list_widget.setItemWidget(list_item, widget)
     
+    def on_tab_changed(self, index):
+        # 현재 선택된 탭 위젯이 `tab_lib`인지 확인
+        current_tab = self.ui.tabWidget.widget(index)
+        
+        if current_tab == self.ui.tab_lib:
+            # 배경 이미지 라벨 숨기기
+            self.ui.label_wtg_bg.hide()
+            self.ui.label_ip_bg.hide()
+            self.ui.label_fin_bg.hide()
+        else:
+            # 다른 탭일 경우 다시 표시
+            self.ui.label_wtg_bg.show()
+            self.ui.label_ip_bg.show()
+            self.ui.label_fin_bg.show()
+    
     def on_item_clicked(self, item):
         """
         리스트 아이템 클릭 시 해당 Task ID를 show_task_details로 전달
@@ -783,6 +789,7 @@ class LoadUI(QMainWindow):
         task_data = item.data(Qt.UserRole)
         if task_data:
             task_id = task_data["id"]
+            print(f"id 전달: {task_id}")
             self.show_task_details(task_id)
             self.show_task_works(task_id)
             self.animate_list_widgets()
@@ -833,13 +840,11 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-        self.ui.label_filename2.setText(task['content'])
-        self.ui.label_filename.setText(task['content'])
-        self.ui.label_startdate.setText(task["start_date"])
-        self.ui.label_duedate.setText(task["due_date"])
 
-        file_type = self.get_filetype(file_name)
-        self.ui.label_type.setText(file_type)  
+        self.ui.label_info1.setText(task['content'])
+        self.ui.label_info2.setText(task['content'])
+        self.ui.label_info3.setText(task["start_date"])
+        self.ui.label_info4.setText(task["due_date"]) 
 
         self.ui.tabWidget_info.show()
         QTimer.singleShot(10, self.animate_info_labels)
@@ -879,7 +884,7 @@ class LoadUI(QMainWindow):
 
             # 파일 이름 QLabel
             label_name = QLabel(file_name)
-            label_name.setStyleSheet("color: white;")
+            label_name.setStyleSheet("color: white; font-size: 12px;")
             # H_layout에 라벨 추가
             H_layout = QHBoxLayout()
             H_layout.addWidget(label_logo)
@@ -902,10 +907,10 @@ class LoadUI(QMainWindow):
         # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
         label_pairs = [
            
-            ("label_6", "label_filename"),
-            ("label_7", "label_type"),
-            ("label_8", "label_startdate"),
-            ("label_9", "label_duedate")
+            ("label_6", "label_info1"),
+            ("label_7", "label_info2"),
+            ("label_8", "label_info3"),
+            ("label_9", "label_info4")
         ]
 
         # 라벨 객체 저장
@@ -955,7 +960,7 @@ class LoadUI(QMainWindow):
 
             delay += 200  # 딜레이 추가 (순차적 등장)
 
-    def run_file(self):
+    def open_file(self):
         """
         설정된 파일 경로를 읽고 Maya or Nuke or Houdini에서 실행
         """
@@ -977,17 +982,7 @@ class LoadUI(QMainWindow):
                 UI_support.show_message("error", "오류", f"{work_name}의 파일 경로를 찾을 수 없습니다.")
                 continue
 
-        # 경로를 절대 경로로 변환
-        file_path = os.path.abspath(file_path)
-
-        if file_path.endswith((".ma", ".mb")):
-            MayaLoader.launch_maya(file_path)
-        elif file_path.endswith((".nk", ".nknc")):
-            NukeLoader.launch_nuke(file_path)
-        elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
-            FileLoaderGUI.launch_houdini(file_path)
-        else:
-            UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+        loader.run_file(file_path)
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

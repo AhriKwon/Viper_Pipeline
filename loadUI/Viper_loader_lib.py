@@ -14,6 +14,11 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 's
 from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
 
+# 로더
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
+from FileLoader import FileLoader
+loader = FileLoader()
+
 
 class LibraryTab:
     def __init__(self, ui):
@@ -41,12 +46,11 @@ class LibraryTab:
         # self.label_duedate_2 = self.ui.findChild(QLabel, "label_duedate_2 ")
         # self.tabWidget_info2 = self.ui.findChild(QTabWidget, "tabWidget_info2 ")
         
+        self.load_files(0)
 
-
-
-        self.load_files(1)
-
-        # self.ui.pushButton_import.clicked.connect(self.import_file)
+        # 이벤트 연결
+        self.ui.pushButton_import.clicked.connect(self.import_file)
+        # self.ui.pushButton_reference.clicked.connect(self.reference_file)
 
     def show_task_details(self, task_id, event=None):
         """
@@ -69,6 +73,7 @@ class LibraryTab:
         self.ui.tabWidget_info2.show()
         QTimer.singleShot(10, self.animate_info_labels)
         print ("show task details")
+
     def get_filetype(self, file_name):
         if file_name == None:
             return "work file 없음"
@@ -80,8 +85,6 @@ class LibraryTab:
             return "Houdini"
         else:
             return "알 수 없는 파일 형식"
-
-
    
     def animate_info_labels(self):
         """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
@@ -121,9 +124,10 @@ class LibraryTab:
         # UI 업데이트 후 100ms 뒤에 애니메이션 실행
         QTimer.singleShot(100, self._start_info_label_animation)
 
-
     def _start_info_label_animation(self):
-        """Task 정보 라벨 등장 애니메이션 실행"""
+        """
+        Task 정보 라벨 등장 애니메이션 실행
+        """
         print("Task 정보 라벨 등장 애니메이션 실행!")
 
         self.animations = []
@@ -169,7 +173,6 @@ class LibraryTab:
         self.table_widget.setStyleSheet("""QTableWidget { background: transparent; border: none; }
                                    QTableWidget::item { background: transparent; }""")
 
-
         # tabWidget_lib 내부에 레이아웃이 있는지 확인 후 추가
         if self.ui.tabWidget_lib.layout() is None:
             layout = QVBoxLayout()
@@ -195,7 +198,6 @@ class LibraryTab:
             self.load_bookmarked_files()
         else:
             self.load_files(index)
-
 
     def load_files(self, index):
         """
@@ -282,29 +284,23 @@ class LibraryTab:
         """
         cell_widget = QWidget()
         layout = QVBoxLayout()
-        H_layout = QHBoxLayout()
 
-        # 썸네일 QLabel (기본값 제공)
+        # 썸네일 QLabel 생성
         label_thumbnail = QLabel()
         if thumbnail_path and os.path.exists(thumbnail_path):
             pixmap = QPixmap(thumbnail_path)
         else:
-            pixmap = QPixmap(320, 180)  # 기본 썸네일 생성
+            pixmap = QPixmap("/nas/Viper/789.png")  # 기본 썸네일 생성
 
-        scaled_pixmap = pixmap.scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        rounded_pixmap = UI_support.round_corners_pixmap(scaled_pixmap, radius=30)
+        scaled_pixmap = pixmap.scaled(160, 90, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        rounded_pixmap = UI_support.round_corners_pixmap(scaled_pixmap, radius=10)
 
         label_thumbnail.setPixmap(rounded_pixmap)
         label_thumbnail.setAlignment(Qt.AlignCenter)
-        label_thumbnail.setFixedSize(320, 180)  # ✅ 썸네일 크기 고정 (밀리지 않도록)
+        label_thumbnail.setFixedSize(160, 90)  # ✅ 크기 고정
 
-        # # 폴더 이름 QLabel
-        # label_name = QLabel(file_name)
-        # label_name.setAlignment(Qt.AlignCenter)
-        # label_name.setStyleSheet("color: white;")  # 흰색 텍스트 적용
-        # ✅ 북마크 체크박스 (이미지로 설정)
-                # ✅ 북마크 체크박스 (이미지로 설정)
-        bookmark_checkbox = QCheckBox(label_thumbnail)  # ✅ 체크박스를 label_thumbnail의 자식으로 설정
+        # 북마크 체크박스 생성 (썸네일 위에 배치)
+        bookmark_checkbox = QCheckBox(label_thumbnail)
         bookmark_checkbox.setStyleSheet("""
             QCheckBox::indicator {
                 width: 24px;
@@ -320,71 +316,22 @@ class LibraryTab:
             }
         """)
         bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
-        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # ✅ 썸네일의 오른쪽 상단에 배치
+        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # 오른쪽 상단 배치
         bookmark_checkbox.show()
 
-        # ✅ 체크박스 클릭 시 기존 북마크 기능 유지
         bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
 
-        # ✅ 체크박스를 label_thumbnail 내부에 고정 (썸네일 밀림 방지)
+        # 체크박스를 label_thumbnail 내부에 고정 (썸네일 밀림 방지)
         bookmark_checkbox.setParent(label_thumbnail)
 
-        
-
-
-       
-        # ✅ 파일 이름 추가
+        # 파일 이름 QLabel
         label_name = QLabel(file_name)
         label_name.setAlignment(Qt.AlignCenter)
         label_name.setStyleSheet("color: white;")
 
-        # ✅ 최종 레이아웃 설정
-        layout.addWidget(label_thumbnail)  # ✅ 체크박스는 label_thumbnail 위에 겹쳐 있음
-        layout.addWidget(label_name)
-        layout.setAlignment(Qt.AlignCenter)
-        cell_widget.setLayout(layout)
-
-        
-        # ✅ 썸네일의 오른쪽 상단에 체크박스 배치
-        thumbnail_layout = QHBoxLayout()
-        thumbnail_layout.addWidget(bookmark_checkbox, alignment=Qt.AlignRight)
-        thumbnail_layout.addWidget(label_thumbnail)
-        
-        # ✅ 파일 이름 추가
-        label_name = QLabel(file_name)
-        label_name.setAlignment(Qt.AlignCenter)
-        label_name.setStyleSheet("color: white;")
-
-        # ✅ 최종 레이아웃 설정
-        layout.addLayout(thumbnail_layout)
-        layout.addWidget(label_name)
-        layout.setAlignment(Qt.AlignCenter)
-        cell_widget.setLayout(layout)
-
-       
-        # 북마크 체크박스
-        bookmark_checkbox = QCheckBox()
-        bookmark_checkbox.setStyleSheet("QCheckBox { margin-left: 10px; }")
-        bookmark_checkbox.setMaximumSize(25, 25)
-        bookmark_checkbox.setAttribute(Qt.WA_TranslucentBackground)  # ✅ 체크박스 완전 투명화
-        bookmark_checkbox.setStyleSheet("background: rgba(0,0,0,0); border: none;")  # ✅ 체크박스 투명 처리
-
-        bookmark_checkbox.move(label_thumbnail.width() - 34, 14)  # ✅ 썸네일의 오른쪽 상단에 배치
-        bookmark_checkbox.show()
-
-        # 기존 북마크 여부 반영
-        bookmark_checkbox.setChecked(self.bookmarked_items.get(file_path, False))
-
-        # 체크박스 클릭 시 업데이트 함수 실행
-        bookmark_checkbox.stateChanged.connect(lambda state, f=file_path: self.update_bookmark(state, f))
-         
-        bookmark_checkbox.setParent(label_thumbnail)
-
-        # 레이아웃에 추가
+        # 최종 레이아웃 설정
         layout.addWidget(label_thumbnail)
-        H_layout.addWidget(label_name)
-        H_layout.addWidget(bookmark_checkbox)
-        layout.addLayout(H_layout)
+        layout.addWidget(label_name)
         layout.setAlignment(Qt.AlignCenter)
         cell_widget.setLayout(layout)
 
@@ -393,6 +340,41 @@ class LibraryTab:
 
         return cell_widget
 
+    def import_file(self):
+        """
+        파일 Import
+        """
+        selected_indexes = self.table_widget.selectedIndexes()
+        print(f"선택된 인덱스: {selected_indexes}")
+
+        if not selected_indexes:
+            UI_support.show_message("error", "오류", "파일이 선택되지 않았습니다.")
+            return
+
+        imported_files = []  # 가져온 파일 리스트
+
+        for index in selected_indexes:
+            row = index.row()
+            col = index.column()
+
+            # 셀 위젯에서 파일 경로 가져오기
+            cell_widget = self.table_widget.cellWidget(row, col)
+            if not cell_widget:
+                continue
+            
+            # 파일 경로 가져오기
+            file_path = cell_widget.property("file_path")
+
+            if not file_path:
+                print(f"경고: {row}, {col} 셀에 파일 경로 없음")
+                continue
+
+            print(f"파일 가져오기: {file_path}")
+            loader.import_file(file_path)  # 파일 로드 실행
+            imported_files.append(file_path)
+
+        if imported_files:
+            UI_support.show_message("info", "파일 Import", f"{len(imported_files)}개 파일을 가져왔습니다.")
 
     def save_bookmarks(self):
         """

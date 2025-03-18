@@ -26,7 +26,14 @@ class FilePath:
     def get_timestamp() -> str:
         """현재 날짜(년-월일) 문자열 반환"""
         return datetime.datetime.now().strftime("%Y-%m%d")
-
+    @staticmethod
+    def create_directory(path: str) -> None:
+        """디렉터리 생성. 이미 존재하면 무시하고, 없으면 생성"""
+        if not os.path.exists(path):
+            try:
+                os.makedirs(path, exist_ok=True)  # 경로가 없으면 생성
+            except Exception as e:
+                raise RuntimeError(f"디렉터리를 생성할 수 없습니다: {path}. 오류: {str(e)}")
     @staticmethod
     def generate_paths(project: str, entity_type: str, seq_or_type: str, shot_or_name: str, task: str, version: int=1):
         version = int(version) # 정수 변환 
@@ -45,7 +52,7 @@ class FilePath:
                 "work_scene": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/work/nuke/scenes/{shot_or_name}_{task}_v{version:03d}.nk",
                 "pub_scene": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/nuke/scenes/{shot_or_name}_{task}_v{version:03d}.nk",
                 "mov_comp": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/nuke/data/{shot_or_name}_{task}",
-                "mov_product": f"/nas/show/{project}/product/{timestamp}/seq/{shot_or_name}_{task}"
+                "mov_product": f"/nas/show/{project}/product/{timestamp}/seq/{shot_or_name}_{task}_v{version:03d}.mov"
             }
         }
         
@@ -56,5 +63,7 @@ class FilePath:
                     path = os.path.join("/default/base/path", key)  # 기본 경로 설정
                     os.makedirs(path, exist_ok=True)  # 경로가 없으면 생성
                     base_paths[category][key] = path  # 새 경로로 업데이트
+                else:
+                    FilePath.create_directory(path)  # 기존 경로가 있다면, 해당 경로 생성
 
         return base_paths

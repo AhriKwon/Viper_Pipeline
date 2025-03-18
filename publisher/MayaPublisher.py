@@ -196,7 +196,7 @@ class MayaPublisher():
         """
         라이팅 퍼블리쉬 자동화 ㅣ render presets + batch render execution
         """
-        output_dir = f"/nas/show/{self.project}/seq/{self.seq}/{self.shot}/{self.task_type}/pub/maya/render/v{self.version:03d}/"
+        output_dir = f"/nas/show/{self.project}/seq/{self.seq}/{self.shot}/{self.task_type}/pub/maya/images/v{self.version:03d}/"
         self.apply_render_settings()
         self.start_batch_render(output_dir)
 
@@ -320,13 +320,13 @@ class MayaPublisher():
             type_name = option.replace(" ", "")
             in_name = f"_{type_name}.mov"
             temp_in_path = publish_paths[0]+in_name  # 임시 저장 경로
-            out_name = f"_{type_name}_v{self.version:03d}.mov"
+            self.out_name = f"_{type_name}_v{self.version:03d}.mov"
 
             # Playblast 한 번만 실행
             self.export_playblast(temp_in_path)
 
             for publish_path in publish_paths:
-                out_path = publish_path+out_name
+                out_path = publish_path+self.out_name
 
                 # FFmpeg 변환 (레터박스 & 오버레이 적용)
                 FileConverter.convert_with_overlay_and_letterbox(temp_in_path, out_path, self.publish_data)

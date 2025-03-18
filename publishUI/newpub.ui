@@ -133,13 +133,13 @@ QPushButton:pressed {
     <property name="geometry">
      <rect>
       <x>390</x>
-      <y>430</y>
+      <y>440</y>
       <width>251</width>
-      <height>81</height>
+      <height>71</height>
      </rect>
     </property>
     <property name="title">
-     <string>GroupBox</string>
+     <string/>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit_memo">
@@ -369,35 +369,17 @@ QLabel {
      <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="label_3">
+   <widget class="QLabel" name="label_publish_info">
     <property name="geometry">
      <rect>
-      <x>460</x>
-      <y>210</y>
-      <width>151</width>
-      <height>41</height>
+      <x>130</x>
+      <y>280</y>
+      <width>241</width>
+      <height>231</height>
      </rect>
     </property>
-    <property name="font">
-     <font>
-      <family>Pretendard ExtraLight</family>
-      <pointsize>-1</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel {
-
-    background-repeat: no-repeat;  /* 반복 방지 */
-    background-position: center;  /* 중앙 정렬 */
-    background-size: contain;  /* 크기를 자동 조정 */
-    color: #696969;
-    font-size: 14px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-    </property>
     <property name="text">
-     <string>Import the Thumbanil</string>
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>
