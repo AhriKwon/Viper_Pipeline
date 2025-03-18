@@ -136,7 +136,6 @@
      <font>
       <family>Pretendard Light</family>
       <pointsize>-1</pointsize>
-      <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
@@ -160,7 +159,7 @@
       <x>10</x>
       <y>72</y>
       <width>1200</width>
-      <height>611</height>
+      <height>600</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -232,7 +231,6 @@ QTabBar::tab:!selected {
 QTabBar::tab:hover {
     background: rgba(255, 255, 255, 0.2);
 }
-
 </string>
     </property>
     <property name="tabPosition">
@@ -249,6 +247,15 @@ QTabBar::tab:hover {
       <string/>
      </attribute>
      <layout class="QHBoxLayout" name="horizontalLayout_3">
+      <property name="spacing">
+       <number>5</number>
+      </property>
+      <property name="topMargin">
+       <number>8</number>
+      </property>
+      <property name="bottomMargin">
+       <number>10</number>
+      </property>
       <item>
        <layout class="QVBoxLayout" name="verticalLayout_wtg">
         <property name="spacing">
@@ -490,7 +497,6 @@ QListWidget::viewport {
            <font>
             <family>Pretendard Light</family>
             <pointsize>-1</pointsize>
-            <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
@@ -595,6 +601,12 @@ QTabWidget::pane {
     border: none;
     background: transparent;
 }
+QTabBar::tab {
+    height: 25px;  /* 탭의 높이 */
+    width: 60px;   /* 탭의 너비 */
+    padding: 2px;  /* 내부 여백 최소화 */
+	margin-right: 10px; /* ✅ 탭 간 간격 설정 */
+}
 
 /* QTabBar 완전 투명화 */
 QTabBar {
@@ -634,8 +646,8 @@ QTabBar {
 
 /* 탭 스타일 */
 QTabBar::tab {
-    min-width: 200px;  /* 가로 크기 */
-    min-height: 30px;  /* 세로 크기 */
+    min-width: 20px;  /* 가로 크기 */
+    min-height: 10px;  /* 세로 크기 */
     padding: 5px;
     border-radius: 5px;
     background: rgba(255, 255, 255, 0.1);
@@ -660,25 +672,53 @@ QTabBar::tab {
          </attribute>
          <layout class="QVBoxLayout" name="verticalLayout_2">
           <property name="spacing">
-           <number>30</number>
+           <number>15</number>
           </property>
           <property name="sizeConstraint">
            <enum>QLayout::SetFixedSize</enum>
           </property>
           <property name="leftMargin">
-           <number>77</number>
+           <number>75</number>
           </property>
           <property name="topMargin">
-           <number>0</number>
+           <number>10</number>
           </property>
           <property name="rightMargin">
-           <number>20</number>
+           <number>24</number>
           </property>
           <property name="bottomMargin">
-           <number>58</number>
+           <number>73</number>
           </property>
           <item>
-           <widget class="QLabel" name="label_15">
+           <widget class="QLabel" name="label_filename3">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Pretendard Light</family>
+              <pointsize>-1</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 22px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_3">
             <property name="text">
              <string/>
             </property>
@@ -707,74 +747,8 @@ QTabBar::tab {
             <property name="verticalSpacing">
              <number>8</number>
             </property>
-            <item row="3" column="1">
-             <widget class="QLabel" name="label_info4">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
             <item row="2" column="1">
              <widget class="QLabel" name="label_info3">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_info1">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_info2">
               <property name="minimumSize">
                <size>
                 <width>150</width>
@@ -823,19 +797,13 @@ QTabBar::tab {
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_6">
+            <item row="3" column="1">
+             <widget class="QLabel" name="label_info4">
               <property name="minimumSize">
                <size>
-                <width>0</width>
-                <height>35</height>
+                <width>150</width>
+                <height>0</height>
                </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Pretendard Light</family>
-                <pointsize>-1</pointsize>
-               </font>
               </property>
               <property name="styleSheet">
                <string notr="true">QLabel {
@@ -847,23 +815,17 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>file name</string>
+               <string/>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
-             <widget class="QLabel" name="label_9">
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_info1">
               <property name="minimumSize">
                <size>
-                <width>0</width>
-                <height>35</height>
+                <width>150</width>
+                <height>0</height>
                </size>
-              </property>
-              <property name="font">
-               <font>
-                <family>Pretendard Light</family>
-                <pointsize>-1</pointsize>
-               </font>
               </property>
               <property name="styleSheet">
                <string notr="true">QLabel {
@@ -875,7 +837,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>due date</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -907,6 +869,84 @@ QTabBar::tab {
               </property>
              </widget>
             </item>
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_info2">
+              <property name="minimumSize">
+               <size>
+                <width>150</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string/>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
+             <widget class="QLabel" name="label_9">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string>due date</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_6">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string>file name</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
           <item>
@@ -914,13 +954,13 @@ QTabBar::tab {
             <property name="minimumSize">
              <size>
               <width>185</width>
-              <height>158</height>
+              <height>130</height>
              </size>
             </property>
             <property name="maximumSize">
              <size>
-              <width>250</width>
-              <height>158</height>
+              <width>230</width>
+              <height>100</height>
              </size>
             </property>
             <property name="font">
@@ -942,6 +982,13 @@ QTabBar::tab {
            </widget>
           </item>
           <item>
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="pushButton_open">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
@@ -953,7 +1000,6 @@ QTabBar::tab {
              <font>
               <family>Pretendard Light</family>
               <pointsize>-1</pointsize>
-              <weight>50</weight>
               <bold>false</bold>
              </font>
             </property>
@@ -962,9 +1008,9 @@ QTabBar::tab {
             </property>
             <property name="styleSheet">
              <string notr="true">QPushButton {
-    width: 140px;  /* 버튼 너비 */
-    height: 30px;  /* 버튼 높이 */
-    min-width: 140px;  /* 최소 너비 */
+    width: 170px;  /* 버튼 너비 */
+    height: 28px;  /* 버튼 높이 */
+    min-width: 170px;  /* 최소 너비 */
     min-height: 30px;  /* 최소 높이 */
     max-width: 170px;  /* 최대 너비 */
     max-height: 30px;  /* 최대 높이 */
@@ -1017,8 +1063,51 @@ QPushButton#pushButton_import:hover {
           <family>Myriad Pro</family>
          </font>
         </property>
+        <property name="styleSheet">
+         <string notr="true">QTabBar {
+    qproperty-alignment: AlignRight;  /* ✅ 탭 바를 오른쪽으로 정렬 */
+}
+QTabBar {
+    qproperty-alignment: AlignRight; /* ✅ 탭 바를 오른쪽으로 정렬 */
+    margin-right: 100px;  /* ✅ 오른쪽 여백 추가 */
+}
+
+QTabBar::tab {
+    height: 60px;  /* 탭의 높이 */
+    width: 60px;   /* 탭의 너비 */
+    padding: 2px;  /* 내부 여백 최소화 */
+	margin-right: 10px; /* ✅ 탭 간 간격 설정 */
+}
+QTabBar::tab {
+    margin-right: 15px; /* ✅ 탭 간 간격 설정 */
+    padding: 100px 50px;
+}
+QTabBar::tab {
+  
+    font-size: 14px;        /* 글자 크기 */
+    
+    color: white;           /* 글자 색상 */
+}
+QTabBar::tab:selected {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 5px;
+    padding: 5px 10px;  /* 내부 여백 줄이기 */
+    margin: 40px 7px;  /* 외부 여백 추가 (위아래 2px, 좌우 4px) */
+    min-width: 70px;
+    min-height: 15px;
+}
+/* 선택되지 않은 탭 */
+QTabBar::tab:!selected{
+	border-radius: 5px;
+    padding: 5px 10px;  /* 내부 여백 줄이기 */
+    margin: 40px 7px;  /* 외부 여백 추가 (위아래 2px, 좌우 4px) */
+    min-width: 70px;
+    min-height: 15px;
+}
+</string>
+        </property>
         <property name="currentIndex">
-         <number>0</number>
+         <number>3</number>
         </property>
         <widget class="QWidget" name="tab_asset">
          <property name="styleSheet">
@@ -1064,6 +1153,61 @@ QPushButton#pushButton_import:hover {
           <height>16777215</height>
          </size>
         </property>
+        <property name="styleSheet">
+         <string notr="true">/* QTabWidget 패널 제거 */
+QTabWidget::pane {
+    border: none;
+    background: transparent;
+}
+
+/* QTabBar 완전 투명화 */
+QTabBar {
+    background: transparent;
+    border: none;
+}
+
+/* 개별 탭도 투명하게 설정 */
+QTabBar::tab {
+    background: transparent;
+    border: none;
+    min-width: 60px;
+    min-height: 20px;
+    color: white;  /* 텍스트 유지 */
+}
+
+/* 선택된 탭도 투명하게 유지 */
+QTabBar::tab:selected {
+    background: transparent;
+    border: none;
+    font-weight: bold;
+}
+
+/* 마우스 호버 시 효과 제거 */
+QTabBar::tab:hover {
+    background: transparent;
+}
+QTabBar::tab {
+    margin-left: 70px; /* 탭을 오른쪽으로 이동 */
+}
+/* QTabBar 크기 및 스타일 */
+QTabBar {
+    background: transparent;
+    min-height: 30px;  /* 최소 높이 */
+    max-height: 40px;  /* 최대 높이 */
+}
+
+/* 탭 스타일 */
+QTabBar::tab {
+    min-width: 100px;  /* 가로 크기 */
+    min-height: 20px;  /* 세로 크기 */
+    padding: 5px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-size: 12px;
+    text-align: center;
+}</string>
+        </property>
         <property name="currentIndex">
          <number>0</number>
         </property>
@@ -1088,6 +1232,34 @@ QPushButton#pushButton_import:hover {
            <number>23</number>
           </property>
           <item>
+           <widget class="QLabel" name="label_filename4">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="font">
+             <font>
+              <family>Pretendard Light</family>
+              <pointsize>-1</pointsize>
+             </font>
+            </property>
+            <property name="styleSheet">
+             <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 22px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item>
            <layout class="QGridLayout" name="gridLayout_3">
             <property name="sizeConstraint">
              <enum>QLayout::SetFixedSize</enum>
@@ -1096,66 +1268,22 @@ QPushButton#pushButton_import:hover {
              <number>5</number>
             </property>
             <property name="topMargin">
-             <number>10</number>
+             <number>2</number>
             </property>
             <property name="rightMargin">
-             <number>0</number>
+             <number>6</number>
             </property>
             <property name="bottomMargin">
-             <number>146</number>
-            </property>
-            <property name="horizontalSpacing">
-             <number>42</number>
-            </property>
-            <property name="verticalSpacing">
              <number>10</number>
             </property>
+            <property name="horizontalSpacing">
+             <number>23</number>
+            </property>
+            <property name="verticalSpacing">
+             <number>8</number>
+            </property>
             <item row="3" column="1">
-             <widget class="QLabel" name="label_duedate_2">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="0" column="1">
-             <widget class="QLabel" name="label_filename_2">
-              <property name="minimumSize">
-               <size>
-                <width>150</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QLabel {
-   
-    color: white;  /* 글자 색상 (흰색) */
-    font-size: 12px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-              </property>
-              <property name="text">
-               <string/>
-              </property>
-             </widget>
-            </item>
-            <item row="1" column="1">
-             <widget class="QLabel" name="label_type_2">
+             <widget class="QLabel" name="label_info44">
               <property name="minimumSize">
                <size>
                 <width>150</width>
@@ -1177,7 +1305,7 @@ QPushButton#pushButton_import:hover {
              </widget>
             </item>
             <item row="2" column="1">
-             <widget class="QLabel" name="label_startdate_2">
+             <widget class="QLabel" name="label_info33">
               <property name="minimumSize">
                <size>
                 <width>150</width>
@@ -1198,12 +1326,12 @@ QPushButton#pushButton_import:hover {
               </property>
              </widget>
             </item>
-            <item row="0" column="0">
-             <widget class="QLabel" name="label_10">
+            <item row="0" column="1">
+             <widget class="QLabel" name="label_info11">
               <property name="minimumSize">
                <size>
-                <width>0</width>
-                <height>35</height>
+                <width>150</width>
+                <height>0</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -1220,12 +1348,12 @@ QPushButton#pushButton_import:hover {
               </property>
              </widget>
             </item>
-            <item row="1" column="0">
-             <widget class="QLabel" name="label_11">
+            <item row="1" column="1">
+             <widget class="QLabel" name="label_info22">
               <property name="minimumSize">
                <size>
-                <width>0</width>
-                <height>35</height>
+                <width>150</width>
+                <height>0</height>
                </size>
               </property>
               <property name="styleSheet">
@@ -1243,6 +1371,62 @@ QPushButton#pushButton_import:hover {
              </widget>
             </item>
             <item row="2" column="0">
+             <widget class="QLabel" name="label_10">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string>modified date</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_11">
+              <property name="minimumSize">
+               <size>
+                <width>0</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
+              <property name="styleSheet">
+               <string notr="true">QLabel {
+   
+    color: white;  /* 글자 색상 (흰색) */
+    font-size: 12px;  /* 글자 크기 */
+  
+    text-align: center;  /* 텍스트 중앙 정렬 */
+}</string>
+              </property>
+              <property name="text">
+               <string>start date</string>
+              </property>
+             </widget>
+            </item>
+            <item row="3" column="0">
              <widget class="QLabel" name="label_12">
               <property name="minimumSize">
                <size>
@@ -1250,6 +1434,12 @@ QPushButton#pushButton_import:hover {
                 <height>35</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
               <property name="styleSheet">
                <string notr="true">QLabel {
    
@@ -1260,11 +1450,11 @@ QPushButton#pushButton_import:hover {
 }</string>
               </property>
               <property name="text">
-               <string/>
+               <string>file capacity</string>
               </property>
              </widget>
             </item>
-            <item row="3" column="0">
+            <item row="1" column="0">
              <widget class="QLabel" name="label_13">
               <property name="minimumSize">
                <size>
@@ -1272,6 +1462,12 @@ QPushButton#pushButton_import:hover {
                 <height>35</height>
                </size>
               </property>
+              <property name="font">
+               <font>
+                <family>Pretendard Light</family>
+                <pointsize>-1</pointsize>
+               </font>
+              </property>
               <property name="styleSheet">
                <string notr="true">QLabel {
    
@@ -1282,11 +1478,18 @@ QPushButton#pushButton_import:hover {
 }</string>
               </property>
               <property name="text">
-               <string/>
+               <string>due date</string>
               </property>
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string/>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QPushButton" name="pushButton_import">
@@ -1639,7 +1842,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>1229</width>
-     <height>25</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>

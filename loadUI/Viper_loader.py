@@ -5,6 +5,9 @@ from PySide6.QtWidgets import (
     QLabel,QTabWidget
     )
 from PySide6.QtUiTools import QUiLoader
+from PySide6.QtMultimedia import QSoundEffect,QMediaPlayer, QAudioOutput
+
+
 from PySide6.QtCore import (
     QFile, Qt, QPropertyAnimation, QRect, QTimer, QMimeData, QUrl,
     QByteArray, QDataStream, QIODevice, QTimer, QPoint,QPropertyAnimation,QEasingCurve,
@@ -39,12 +42,43 @@ class LoginWindow(QDialog):
         super().__init__()
         self.load_ui()
         UI_support.center_on_screen(self)
-      
+        # 버튼 가져오기
+        self.login_button = self.ui.findChild(QPushButton, "pushButton_login")
+
+        # 버튼 클릭 시 소리 재생 연결
+        self.login_button.clicked.connect(self.play_button_sound)
+
+        #  사운드 효과 설정
+        self.button_sound = QSoundEffect()
+        self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
+        self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
+
+
+        # 로그인 화면 음악 설정 (QMediaPlayer 사용)
+        self.start_music = QMediaPlayer()
+        self.audio_output = QAudioOutput()  # 오디오 출력 장치 설정
+        self.start_music.setAudioOutput(self.audio_output)
+        #  MP3 파일 경로 설정
+        self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/cinema.mp3"))
+        self.audio_output.setVolume(0.5)  # 음량 설정 (0.0 ~ 1.0)
+
+        
+
+    def showEvent(self, event):
+        
+        self.start_music.play()
+        super().showEvent(event)  # 부모 클래스의 showEvent 실행
+
+    def play_button_sound(self):
+            """ 로그인 버튼 클릭 시 소리 재생 """
+            print("버튼 클릭 소리 재생")
+            self.button_sound.play()
+
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
         ui_file_path = f"{current_directory}/newlogin.ui"
-        self.setWindowFlags(Qt.FramelessWindowHint)  # 🔹 타이틀바 제거
-        self.setAttribute(Qt.WA_TranslucentBackground)  # 🔹 배경 투명 설정
+        self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
+        self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
         self.dragPos = None  # 창 이동을 위한 변수
 
         ui_file = QFile(ui_file_path)
@@ -92,7 +126,7 @@ class LoginWindow(QDialog):
         # 검정 테두리를 그리기 (1px)
         painter.drawRect(rect.adjusted(10, 10, -10, -10))  # 안쪽으로 1px 조정하여 테두리만 표시
         self.forlogin_ani()
-
+        
         def custom_message_handler(mode, context, message):
             ignored_messages = [
                 "QPainter::setOpacity: Painter not active",
@@ -230,7 +264,7 @@ class LoadUI(QMainWindow):
         self.tabWidget_lib = self.ui.tabWidget_lib
         self.initialize_labels()     
         tab_bar = self.ui.tabWidget_lib.tabBar()
-        tab_bar.move(tab_bar.x() + 200, tab_bar.y())  # ✅ 50px 오른쪽으로 이동
+        tab_bar.move(tab_bar.x() + 200, tab_bar.y())  #  50px 오른쪽으로 이동
         
         UI_support.center_on_screen(self)
 
@@ -255,14 +289,72 @@ class LoadUI(QMainWindow):
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
 
+       
         # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
         self.blur_in_animation()
 
         self.create_bouncing_dots()
+
+         # 버튼 가져오기
+        self.open_button = self.ui.findChild(QPushButton, "pushButton_open")
+        self.import_button = self.ui.findChild(QPushButton, "pushButton_import")
+        self.refer_button = self.ui.findChild(QPushButton, "pushButton_reference")
+
+        # 버튼 클릭 시 소리 재생 연결
+        self.open_button.clicked.connect(self.play_button_sound)
+        self.import_button.clicked.connect(self.play_button_sound)
+        self.refer_button.clicked.connect(self.play_button_sound)
+
+
+        #  사운드 효과 설정
+        self.button_sound = QSoundEffect()
+        self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
+        self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
+
+        # ✅ 파일 선택 시 효과음 플레이어 설정
+        self.selection_sound = QMediaPlayer()
+        self.selection_audio_output = QAudioOutput()
+        self.selection_sound.setAudioOutput(self.selection_audio_output)
+        self.selection_audio_output.setVolume(0.8)  # 볼륨 설정 (0.0 ~ 1.0)
+
+        # ✅ 리스트 위젯에 아이템 선택 이벤트 연결
+        self.ui.listWidget_wtg.itemSelectionChanged.connect(self.play_selection_sound)
+        self.ui.listWidget_ip.itemSelectionChanged.connect(self.play_selection_sound)
+        self.ui.listWidget_fin.itemSelectionChanged.connect(self.play_selection_sound)
+
+        # 로그인 화면 음악 설정 (QMediaPlayer 사용)
+        self.start_music = QMediaPlayer()
+        self.audio_output = QAudioOutput()  # 오디오 출력 장치 설정
+        self.start_music.setAudioOutput(self.audio_output)
+        #  MP3 파일 경로 설정
+        self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/load2.mp3"))
+        self.audio_output.setVolume(0.4)  # 음량 설정 (0.0 ~ 1.0)
+
+
+
   
 
   #====================================loadui 로드=======================================
   #================================(loginui가 성공할 시에)=================================
+
+    # 로드열리면 실행
+    def showEvent(self, event):
+        
+        self.start_music.play()
+        super().showEvent(event)  # 부모 클래스의 showEvent 실행
+    # 파일항목 선택하면 실행 
+    def play_selection_sound(self):
+       
+        sound_path = "/nas/Viper/minseo/forui/amusic/select.wav"  # 효과음 파일 경로 설정
+
+        if os.path.exists(sound_path):  # 파일이 존재하는지 확인
+            self.selection_sound.setSource(QUrl.fromLocalFile(sound_path))
+            self.selection_sound.play()
+    # 버튼클릭음 
+    def play_button_sound(self):
+          
+            print("버튼 클릭 소리 재생")
+            self.button_sound.play()
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -273,14 +365,14 @@ class LoadUI(QMainWindow):
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui)
         # self.ui.show()
-        # 🔹 위젯을 직접 찾기
+        # 위젯을 직접 찾기
         self.tabWidget_info = self.ui.findChild(QTabWidget, "tabWidget_info")
 
         if self.tabWidget_info:
             print("tabWidget_info가 정상적으로 로드됨!")
             self.tabWidget_info.move(self.tabWidget_info.x(), self.tabWidget_info.y() - 10)  # 10px 위로 이동
         else:
-            print("❌ tabWidget_info를 찾을 수 없음!")
+            print("tabWidget_info를 찾을 수 없음!")
             
 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
@@ -333,7 +425,7 @@ class LoadUI(QMainWindow):
     def animate_list_widgets(self):
         """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
         if self.animation_executed:
-            print("⚠️ 이미 애니메이션이 실행됨, 다시 실행 안 함!")
+            print("이미 애니메이션이 실행됨, 다시 실행 안 함!")
             return  # 한 번 실행된 후에는 다시 실행되지 않음
 
         print("리스트 위젯과 라벨 이동 애니메이션 시작!")
@@ -850,13 +942,27 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-        self.label_filename3 = self.ui.findChild(QLabel, "label_filename3") 
-        
+        self.label_filename3 = self.ui.findChild(QLabel, "label_filename3")
+        self.label_filename4 = self.ui.findChild(QLabel, "label_filename4")
+
+        self.label_info11 = self.ui.findChild(QLabel, "label_info11")
+        self.label_info22 = self.ui.findChild(QLabel, "label_info22") 
+        self.label_info33 = self.ui.findChild(QLabel, "label_info33") 
+        self.label_info44 = self.ui.findChild(QLabel, "label_info44")  
+         
+        # task 탭 정보들
         self.label_filename3.setText(task['content'])
         self.ui.label_info1.setText(task['content'])
         self.ui.label_info2.setText(task['content'])
         self.ui.label_info3.setText(task["start_date"])
         self.ui.label_info4.setText(task["due_date"]) 
+
+        # lib 탭 정보들
+        self.label_filename4.setText(task['content'])
+        self.label_info11.setText(task["start_date"])
+        self.label_info22.setText(task["due_date"]) 
+        self.label_info33.setText(task["due_date"])
+        self.label_info44.setText(task['content']) 
 
         self.ui.tabWidget_info.show()
         QTimer.singleShot(10, self.animate_info_labels)
