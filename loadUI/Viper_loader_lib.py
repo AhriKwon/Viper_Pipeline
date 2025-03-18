@@ -40,12 +40,8 @@ class LibraryTab:
         self.bookmarked_items = []  # 북마크된 항목 저장
         self.bookmarked_items = self.load_bookmarks()
         self.tab_bookmark = self.ui.tabWidget_lib.widget(4)
-        # self.label_filename_2 = self.ui.findChild(QLabel, "label_filename_2")
-        # self.label_startdate_2 = self.ui.findChild(QLabel, "label_startdate_2")
-        # self.label_filtype_2 = self.ui.findChild(QLabel, "label_filtype_2 ")
-        # self.label_duedate_2 = self.ui.findChild(QLabel, "label_duedate_2 ")
-        # self.tabWidget_info2 = self.ui.findChild(QTabWidget, "tabWidget_info2 ")
         
+        # 라이브러리 첫 페이지 고정
         self.load_files(0)
 
         # 이벤트 연결
@@ -297,7 +293,7 @@ class LibraryTab:
 
         label_thumbnail.setPixmap(rounded_pixmap)
         label_thumbnail.setAlignment(Qt.AlignCenter)
-        label_thumbnail.setFixedSize(160, 90)  # ✅ 크기 고정
+        label_thumbnail.setFixedSize(160, 90)  # 크기 고정
 
         # 북마크 체크박스 생성 (썸네일 위에 배치)
         bookmark_checkbox = QCheckBox(label_thumbnail)

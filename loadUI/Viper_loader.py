@@ -265,15 +265,17 @@ class LoadUI(QMainWindow):
         # 탭이 바뀔 때
         self.ui.tabWidget.currentChanged.connect(self.on_tab_changed)
 
-        # My Task Tab의 테스트 클릭시
+        # My Task Tab의 테스크 클릭시
         self.ui.listWidget_wtg.itemClicked.connect(self.on_item_clicked)
         self.ui.listWidget_ip.itemClicked.connect(self.on_item_clicked)
         self.ui.listWidget_fin.itemClicked.connect(self.on_item_clicked)
+        
+        # My Task Tab의 워크파일 클릭시
+        self.ui.listWidget_works.itemClicked.connect(self.show_works_details)
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
         self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
 
-       
         # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
         self.blur_in_animation()
 
@@ -288,7 +290,6 @@ class LoadUI(QMainWindow):
         self.open_button.clicked.connect(self.play_button_sound)
         self.import_button.clicked.connect(self.play_button_sound)
         self.refer_button.clicked.connect(self.play_button_sound)
-
 
         #  사운드 효과 설정
         self.button_sound = QSoundEffect()
@@ -314,9 +315,6 @@ class LoadUI(QMainWindow):
         self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/load2.mp3"))
         self.audio_output.setVolume(0.4)  # 음량 설정 (0.0 ~ 1.0)
 
-
-
-  
 
   #====================================loadui 로드=======================================
   #================================(loginui가 성공할 시에)=================================
@@ -383,28 +381,27 @@ class LoadUI(QMainWindow):
     #====================================애니메이션 함수들=======================================
     #================================(loginui가 성공할 시에)=================================
 
-    def show_task_details(self, task_id, event=None):
-        """
-        클릭한 테스크 정보를 info탭에 띄워주는 함수
-        """
-        task = manager.get_task_by_id(task_id)
-        works = manager.get_works_for_task(task_id)
-        if works:
-            file_name = works[-1]['path']
-        else:
-            file_name = None
+    # def show_task_details(self, task_id, event=None):
+    #     """
+    #     클릭한 테스크 정보를 info탭에 띄워주는 함수
+    #     """
+    #     task = manager.get_task_by_id(task_id)
+    #     works = manager.get_works_for_task(task_id)
+    #     if works:
+    #         file_name = works[-1]['path']
+    #     else:
+    #         file_name = None
         
-        self.ui.label_filename.setText(task['content'])
-        self.ui.label_startdate.setText(task["start_date"])
-        self.ui.label_duedate.setText(task["due_date"])
+    #     self.ui.label_info1.setText(task["start_date"])
+    #     self.ui.label_info2.setText(task["due_date"])
 
-        file_type = self.get_filetype(file_name)
-        self.ui.label_type.setText(file_type)  
+    #     file_type = self.get_filetype(file_name)
+    #     self.ui.label_type.setText(file_type)  
 
-        self.ui.tabWidget_info.show()
+    #     self.ui.tabWidget_info.show()
 
-        # 애니메이션 실행
-        self.animate_list_widgets(left=True)
+    #     # 애니메이션 실행
+    #     self.animate_list_widgets(left=True)
 
     def animate_list_widgets(self):
         """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
@@ -691,77 +688,6 @@ class LoadUI(QMainWindow):
         self.animation.finished.connect(lambda: QTimer.singleShot(4000, self.remove_login_message))
         self.animation.start()
 
-        # self.show_login_message()  # 로그인 메시지 애니메이션 시작
-    
-    # def show_login_message(self):
-    #     """로그인 메시지를 중앙에 표시하고 글자 간격이 벌어지는 애니메이션 실행"""
-    #     print("로그인 메시지 애니메이션 시작!")
-
-    #     text = "12345456로 로그인되셨습니다"
-    #     self.letter_labels = []  # 개별 글자 라벨 저장
-    #     self.letter_animations = []  # 애니메이션 리스트
-
-    #     # 🔹 중앙 정렬 기준
-    #     window_width = self.width()
-    #     window_height = self.height()
-    #     start_x = window_width // 2
-    #     start_y = window_height // 2 - 20  # 🔹 중앙 위치
-       
-    #     letter_spacing = 20  # 글자 간격 (최종 간격)
-    #     total_text_width = len(text) * letter_spacing  # 전체 텍스트의 너비 계산
-        
-    #     # 개별 글자 QLabel 생성
-    #     for i, char in enumerate(text):
-    #         letter_label = QLabel(char, self)
-    #         letter_label.setStyleSheet("font-size: 10px; color: white;")
-    #         letter_label.setGeometry(start_x, start_y, 20, 30)  # 초기 위치 (모든 글자가 한 점에 모여있음)
-    #         letter_label.show()
-    #         self.letter_labels.append(letter_label)
-
-    #         # 🔹 글자가 점점 퍼지는 애니메이션
-    #         final_x = start_x - ((len(text) * letter_spacing) // 2) + (i * letter_spacing)  # 중앙 정렬된 최종 위치
-    #         animation = QPropertyAnimation(letter_label, b"pos")
-    #         animation.setDuration(3000)  # 1초 동안 진행
-    #         animation.setStartValue(QPoint(start_x, start_y))
-    #         animation.setEndValue(QPoint(final_x, start_y))
-    #         animation.setEasingCurve(QEasingCurve.OutCubic)
-
-    #         self.letter_animations.append(animation)
-
-    #     # 모든 애니메이션 시작
-    #     for anim in self.letter_animations:
-    #         anim.start()
-
-    #     QTimer.singleShot(7300, self.remove_login_message)
-
-    # def fade_out_login_message(self):
-    #     """로그인 메시지를 서서히 사라지게 만듦"""
-    #     print("로그인 메시지 페이드아웃 시작!")
-
-    #     self.fade_animations = []  # 페이드아웃 애니메이션 리스트
-
-    #     for label in self.letter_labels:
-    #         fade_animation = QPropertyAnimation(label, b"windowOpacity")
-    #         fade_animation.setDuration(1000)  # 1초 동안 서서히 사라짐
-    #         fade_animation.setStartValue(1.0)  # 시작은 불투명
-    #         fade_animation.setEndValue(0.0)  # 끝은 완전 투명
-    #         fade_animation.setEasingCurve(QEasingCurve.OutCubic)
-
-    #         self.fade_animations.append(fade_animation)
-    #         fade_animation.start()
-
-    #     # 애니메이션이 끝난 후 QLabel 삭제
-    #     QTimer.singleShot(1000, self.remove_login_message)
-
-    # def remove_login_message(self):
-    #     """로그인 메시지 완전히 삭제"""
-    #     print("로그인 메시지 제거")
-    #     for label in self.letter_labels:
-    #         label.deleteLater()
-    #     self.letter_labels.clear()
-    
-    
-
 
 #=============================로그인 후, task 목록을 가져오는 함수====================================
 #=============================파일 오픈 및 My task 탭 여러 내부 기능====================================
@@ -904,49 +830,17 @@ class LoadUI(QMainWindow):
 
         return latest_thumbnail
 
-    def get_filetype(self, file_name):
-        if file_name == None:
-            return "work file 없음"
-        elif file_name.endswith((".ma", ".mb")):
-            return "Maya"
-        elif file_name.endswith((".nk", ".nknc")):
-            return "Nuke"
-        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
-            return "Houdini"
-        else:
-            return "알 수 없는 파일 형식"
-
     def show_task_details(self, task_id, event=None):
         """
         클릭한 테스크 정보를 info탭에 띄워주는 함수
         """
         task = manager.get_task_by_id(task_id)
         works = manager.get_works_for_task(task_id)
-        if works:
-            file_name = works[-1]['path']
-        else:
-            file_name = None
-        self.label_filename3 = self.ui.findChild(QLabel, "label_filename3")
-        self.label_filename4 = self.ui.findChild(QLabel, "label_filename4")
-
-        self.label_info11 = self.ui.findChild(QLabel, "label_info11")
-        self.label_info22 = self.ui.findChild(QLabel, "label_info22") 
-        self.label_info33 = self.ui.findChild(QLabel, "label_info33") 
-        self.label_info44 = self.ui.findChild(QLabel, "label_info44")  
          
         # task 탭 정보들
-        self.label_filename3.setText(task['content'])
-        self.ui.label_info1.setText(task['content'])
-        self.ui.label_info2.setText(task['content'])
-        self.ui.label_info3.setText(task["start_date"])
-        self.ui.label_info4.setText(task["due_date"]) 
-
-        # lib 탭 정보들
-        self.label_filename4.setText(task['content'])
-        self.label_info11.setText(task["start_date"])
-        self.label_info22.setText(task["due_date"]) 
-        self.label_info33.setText(task["due_date"])
-        self.label_info44.setText(task['content']) 
+        self.ui.label_filename3.setText(task['content'])
+        self.ui.label_info1.setText(task["start_date"])
+        self.ui.label_info2.setText(task["due_date"])
 
         self.ui.tabWidget_info.show()
         QTimer.singleShot(10, self.animate_info_labels)
@@ -983,7 +877,6 @@ class LoadUI(QMainWindow):
             label_logo.setPixmap(pixmap.scaled(20, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation))
             label_logo.setMaximumSize(20, 20)
 
-
             # 파일 이름 QLabel
             label_name = QLabel(file_name)
             label_name.setStyleSheet("color: white; font-size: 12px;")
@@ -1001,6 +894,29 @@ class LoadUI(QMainWindow):
             self.ui.listWidget_works.addItem(item)
             self.ui.listWidget_works.setItemWidget(item, item_widget)
             item.setData(Qt.UserRole, work)
+
+    def show_works_details(self, item):
+        """
+        listWidget_works에서 아이템 클릭 시 파일 정보 표시
+        """
+        file_path = item.data(Qt.UserRole)
+        if not file_path or not os.path.exists(file_path):
+            self.ui.label_info3.setText("파일 없음")
+            self.ui.label_info4.setText("파일 크기 없음")
+            return
+
+        # 파일 최근 편집 날짜 가져오기
+        last_modified_time = os.path.getmtime(file_path)
+        formatted_time = datetime.datetime.fromtimestamp(last_modified_time).strftime('%Y-%m-%d %H:%M:%S')
+
+        # 파일 크기 가져오기 (MB 단위 변환)
+        file_size = os.path.getsize(file_path)  # 바이트 단위
+        file_size_mb = file_size / (1024 * 1024)  # MB 변환
+        formatted_size = f"{file_size_mb:.2f} MB"
+
+        # UI에 표시
+        self.ui.label_info3.setText(f"최근 수정: {formatted_time}")
+        self.ui.label_info4.setText(f"파일 크기: {formatted_size}")
 
     def animate_info_labels(self):
         """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""

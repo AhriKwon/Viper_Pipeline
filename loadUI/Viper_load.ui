@@ -134,8 +134,8 @@
     </property>
     <property name="font">
      <font>
-      <family>Pretendard Light</family>
       <pointsize>-1</pointsize>
+      <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
@@ -280,7 +280,6 @@ QTabBar::tab:hover {
          <widget class="QLabel" name="label_wtg">
           <property name="font">
            <font>
-            <family>Pretendard Light</family>
             <pointsize>-1</pointsize>
            </font>
           </property>
@@ -398,7 +397,6 @@ QListWidget::viewport {
          <widget class="QLabel" name="label_ip">
           <property name="font">
            <font>
-            <family>Pretendard Light</family>
             <pointsize>-1</pointsize>
            </font>
           </property>
@@ -495,9 +493,7 @@ QListWidget::viewport {
          <widget class="QLabel" name="label_fin">
           <property name="font">
            <font>
-            <family>Pretendard Light</family>
             <pointsize>-1</pointsize>
-            <bold>true</bold>
            </font>
           </property>
           <property name="styleSheet">
@@ -699,7 +695,6 @@ QTabBar::tab {
             </property>
             <property name="font">
              <font>
-              <family>Pretendard Light</family>
               <pointsize>-1</pointsize>
              </font>
             </property>
@@ -779,7 +774,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -851,7 +845,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -901,7 +894,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -929,7 +921,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -976,6 +967,12 @@ QTabBar::tab {
 }
 </string>
             </property>
+            <property name="verticalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
+            <property name="horizontalScrollBarPolicy">
+             <enum>Qt::ScrollBarAlwaysOff</enum>
+            </property>
             <property name="autoScrollMargin">
              <number>18</number>
             </property>
@@ -998,9 +995,7 @@ QTabBar::tab {
             </property>
             <property name="font">
              <font>
-              <family>Pretendard Light</family>
               <pointsize>-1</pointsize>
-              <bold>false</bold>
              </font>
             </property>
             <property name="layoutDirection">
@@ -1241,7 +1236,6 @@ QTabBar::tab {
             </property>
             <property name="font">
              <font>
-              <family>Pretendard Light</family>
               <pointsize>-1</pointsize>
              </font>
             </property>
@@ -1371,7 +1365,7 @@ QTabBar::tab {
              </widget>
             </item>
             <item row="2" column="0">
-             <widget class="QLabel" name="label_10">
+             <widget class="QLabel" name="label_13">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1380,7 +1374,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -1408,7 +1401,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -1427,7 +1419,7 @@ QTabBar::tab {
              </widget>
             </item>
             <item row="3" column="0">
-             <widget class="QLabel" name="label_12">
+             <widget class="QLabel" name="label_14">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1436,7 +1428,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -1455,7 +1446,7 @@ QTabBar::tab {
              </widget>
             </item>
             <item row="1" column="0">
-             <widget class="QLabel" name="label_13">
+             <widget class="QLabel" name="label_12">
               <property name="minimumSize">
                <size>
                 <width>0</width>
@@ -1464,7 +1455,6 @@ QTabBar::tab {
               </property>
               <property name="font">
                <font>
-                <family>Pretendard Light</family>
                 <pointsize>-1</pointsize>
                </font>
               </property>
@@ -1501,13 +1491,12 @@ QTabBar::tab {
             </property>
             <property name="minimumSize">
              <size>
-              <width>264</width>
+              <width>262</width>
               <height>50</height>
              </size>
             </property>
             <property name="font">
              <font>
-              <family>Myriad Pro</family>
               <pointsize>-1</pointsize>
              </font>
             </property>
@@ -1560,13 +1549,12 @@ QPushButton#pushButton_import:hover {
             </property>
             <property name="minimumSize">
              <size>
-              <width>264</width>
+              <width>262</width>
               <height>50</height>
              </size>
             </property>
             <property name="font">
              <font>
-              <family>Myriad Pro</family>
               <pointsize>-1</pointsize>
              </font>
             </property>
@@ -1842,7 +1830,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>1229</width>
-     <height>27</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
