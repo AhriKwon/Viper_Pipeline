@@ -186,36 +186,47 @@ class ShotgridDB:
         """
         file_name = os.path.basename(file_path)
 
-        # 파일명 패턴 매칭 (예: Hero_mdl_v003.ma)
-        match = re.match(r"(.+?)_(.+?)_v\d+\..+", file_name)
-        
-        if not match:
-            print("⚠️ Task ID를 추출할 수 없습니다.")
-            return None
+        # 샷과 애셋을 구별하는 Task Type 목록
+        shot_tasks = ["LAY", "ANM", "FX", "LGT", "CMP"]
+        asset_tasks = ["MDL", "RIG", "LDV"]
 
-        asset_name, task_type = match.groups()
+        match_shot = re.match(r"([A-Z]+_\d+)_(\w+)_v\d+\..+", file_name)
+        match_asset = re.match(r"(.+?)_(\w+)_v\d+\..+", file_name)
 
-        # DB에서 해당 Task 조회
-        task = self.db.get_task_by_name(asset_name, task_type)
+        if match_shot:
+            shot_name, task_type = match_shot.groups()
+            if task_type in shot_tasks:
+                return self.get_task_id_from_db(shot_name, task_type)
 
-        if not task:
-            print(f"⚠️ 오류: {asset_name} - {task_type}에 해당하는 Task를 찾을 수 없습니다.")
-            return None
+        elif match_asset:
+            asset_name, task_type = match_asset.groups()
+            if task_type in asset_tasks:
+                return self.get_task_id_from_db(asset_name, task_type)
 
-        return task["id"]
+        print("⚠️ Task ID를 추출할 수 없습니다.")
+        return None
     
-    def get_task_by_name(self, asset_name, task_type):
+    def get_task_id_from_db(self, entity_name, task_type):
         """
-        데이터베이스에서 특정 Asset과 Task Type에 해당하는 Task 조회
+        데이터베이스에서 특정 Asset 또는 Shot의 Task ID 조회
         """
-        query = {
-            "asset_name": asset_name,
-            "task_type": task_type
-        }
+        project = self.db.get_database()
+        for proj in project:
+            for asset in proj.get("assets", []):
+                if asset["code"] == entity_name:
+                    for task in asset.get("tasks", []):
+                        if task["content"] == task_type:
+                            return task["id"]
 
-        task = self.db.find_one("tasks", query)
+            for sequence in proj.get("sequences", []):
+                for shot in sequence.get("shots", []):
+                    if shot["code"] == entity_name:
+                        for task in shot.get("tasks", []):
+                            if task["content"] == task_type:
+                                return task["id"]
 
-        return task
+        print(f"⚠️ 오류: {entity_name} - {task_type}에 해당하는 Task를 찾을 수 없습니다.")
+        return None
 
     def close(self):
         """

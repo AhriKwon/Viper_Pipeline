@@ -127,14 +127,17 @@ class ShotGridManager:
         """
         특정 Task의 워크 파일 가져오기
         """
-        task = self.get_task_by_id(task_id)
-        works = task["works"]
+        task = self.get_task_by_id(task_id)  # task 가져오기
 
         if task is None:
-            print(f"⚠️ 오류: task_id {task_id}에 해당하는 Task가 없습니다.")
-            return []  # 빈 리스트 반환
+            print(f"⚠️ Error: Task with ID {task_id} not found!")
+            return []  # None이 아니라 빈 리스트를 반환하여 안전하게 처리
 
-        return works
+        if "works" not in task:
+            print(f"⚠️ Error: 'works' key missing in task {task}")
+            return []  # 마찬가지로 빈 리스트 반환
+
+        return task["works"]
 
     def get_publishes_for_task(self, task_id):
         """
@@ -156,32 +159,56 @@ class ShotGridManager:
         
         # 퍼블리시 경로 설정
         project = project_name
-        task_name = task["content"].rsplit('_',1)[1]
-        asset_name = task["content"].rsplit('_',1)[0]
+        task_name = task["content"].rsplit('_', 1)[1]
+        asset_name = task["content"].rsplit('_', 1)[0]
 
         assets = self.get_project_assets(project_name)
 
+        asset_type = "unknown"  # 기본값 설정
         for asset in assets:
             if asset["code"] == asset_name:
                 asset_type = asset.get("sg_asset_type", "unknown")
+                break  # 찾으면 바로 루프 탈출
 
         # 애셋 테스크인지 샷 테스크인지 확인
-        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"] :
-            sequence = task["content"].rsplit('_')[0]
-            shot = task["content"].rsplit('_',1)[0]
+        if task_name in ["LAY", "ANM", "FX", "LGT", "CMP"]:
+            sequence = task["content"].split('_')[0]
+            shot = task["content"].rsplit('_', 1)[0]
             publish_path = f"/nas/show/{project}/seq/{sequence}/{shot}/{task_name}/pub"
         else:
             publish_path = f"/nas/show/{project}/assets/{asset_type}/{asset_name}/{task_name}/pub"
 
         return publish_path
     
-    def get_thumbnail_save_path(self):
+    def generate_thumbnail_path(self, file_path):
         """
-        썸네일 저장 경로 생성
+        현재 열린 파일 경로를 기반으로 썸네일 저장 경로를 생성
         """
-        project, entity_type, entity_name, task_name = sg_api.get_publish_metadata()
-        base_path = f"/nas/show/{project}/{'assets' if entity_type == 'Asset' else 'seq'}/{entity_name}/{task_name}/pub/thumb"
-        return os.path.join(base_path, f"{task_name}.png")
+        if not file_path or not os.path.exists(file_path):
+            print("⚠️ 파일 경로를 찾을 수 없습니다.")
+            return None
+
+        # 프로젝트 이름 가져오기
+        path_parts = file_path.split('/')
+        project_name = path_parts[3]  # 예: Viper
+
+        # 파일명에서 Task ID 추출
+        task_id = self.get_task_id_from_file(file_path)
+        if not task_id:
+            print("⚠️ Task ID를 찾을 수 없습니다.")
+            return None
+
+        # 퍼블리시 경로 가져오기
+        publish_path = self.get_publish_path(project_name, task_id)
+        if not publish_path:
+            print("⚠️ 퍼블리시 경로를 찾을 수 없습니다.")
+            return None
+
+        # 파일명에서 버전 정보 제거 후 png 확장자로 저장
+        file_name = os.path.basename(file_path).rsplit(".", 1)[0]  # 확장자 제거
+        save_path = os.path.join(publish_path, "thumb", f"{file_name}.png")
+
+        return save_path
     
     def get_task_id_from_file(self, file_path):
         """

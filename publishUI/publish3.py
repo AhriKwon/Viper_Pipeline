@@ -48,11 +48,11 @@ class PublishUI(QMainWindow):
 
 
         self.load_ui() # qt
-        self.connect_signals() # 파일 정보 열람
+        # self.connect_signals() # 파일 정보 열람
         self.set_checkbox() # 체크박스 실행 (마야파일일때)
-        self.populate_file_list()  # 파일 목록을 tableWidget_filelist에 추가
+        # self.populate_file_list()  # 파일 목록을 tableWidget_filelist에 추가
          # ✅ UI 로드 후 실행되도록 추가
-        self.hide_scrollbars()
+        # self.hide_scrollbars()
 
 
         # publish2.ui 사이즈 조절
@@ -197,7 +197,7 @@ class PublishUI(QMainWindow):
             checkbox.setStyleSheet("""
                 QCheckBox {
                     spacing: 5px;
-                    color: white;
+                    color: white;g
                     font-size: 10px;
                 }
                 QCheckBox::indicator {
@@ -229,106 +229,105 @@ class PublishUI(QMainWindow):
     #-----------------------------------1-1.파일리스트 설정  ----------------------------------------------
 
 
-    def connect_signals(self):
+    # def connect_signals(self):
 
 
-        self.tableWidget_filelist = self.ui.findChild(QTableWidget, "tableWidget_filelist")
+    #     self.tableWidget_filelist = self.ui.findChild(QTableWidget, "tableWidget_filelist")
 
-        # tableWidget_filelist 내의 유저가 선택 행
-        self.tableWidget_filelist.itemSelectionChanged.connect(self.on_file_selected)
-        self.label_name = self.ui.findChild(QLabel, "label_filename")
-        self.lineEdit_memo = self.ui.findChild(QLineEdit, "lineEdit_memo")
+    #     # tableWidget_filelist 내의 유저가 선택 행
+    #     # self.tableWidget_filelist.itemSelectionChanged.connect(self.on_file_selected)
+    #     self.label_name = self.ui.findChild(QLabel, "label_filename")
+    #     self.lineEdit_memo = self.ui.findChild(QLineEdit, "lineEdit_memo")
         
 
     #---------------------------------1-2.파일리스트 --------- ---------------------------------------
 
-    def populate_file_list(self):
+    # def populate_file_list(self):
 
-        # task 경로 # 바꿔야 함
-        directory_path = "/nas/show/Viper/assets/Character/teapot/LKD/pub/lookfile"
+    #     # task 경로 # 바꿔야 함
+    #     directory_path = "/nas/show/Viper/assets/Character/teapot/LKD/pub/lookfile"
 
-        self.tableWidget_filelist.clear()
-        self.tableWidget_filelist.setColumnCount(5)
-        self.tableWidget_filelist.verticalHeader().setVisible(False)  # 행 번호 제거
-        self.tableWidget_filelist.horizontalHeader().setVisible(False)
-        self.tableWidget_filelist.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
-        self.tableWidget_filelist.verticalHeader().setDefaultSectionSize(50)  # 행 간격 늘리기
-        self.tableWidget_filelist.horizontalHeader().setStretchLastSection(True)  # 마지막 열 자동 확장
-        self.tableWidget_filelist.horizontalHeader().setSectionResizeMode(self.tableWidget_filelist.horizontalHeader().ResizeToContents)  # 전체 테이블 폭에 맞춤
+    #     self.tableWidget_filelist.clear()
+    #     self.tableWidget_filelist.setColumnCount(5)
+    #     self.tableWidget_filelist.verticalHeader().setVisible(False)  # 행 번호 제거
+    #     self.tableWidget_filelist.horizontalHeader().setVisible(False)
+    #     self.tableWidget_filelist.setSelectionBehavior(QTableWidget.SelectRows)  # 행 단위 선택
+    #     self.tableWidget_filelist.verticalHeader().setDefaultSectionSize(50)  # 행 간격 늘리기
+    #     self.tableWidget_filelist.horizontalHeader().setStretchLastSection(True)  # 마지막 열 자동 확장
+    #     self.tableWidget_filelist.horizontalHeader().setSectionResizeMode(self.tableWidget_filelist.horizontalHeader().ResizeToContents)  # 전체 테이블 폭에 맞춤
 
-        """
-        # os.listdir : directory_path에 있는 모든 파일 의 이름을 리스트로 받아온다
-        # sorted: 오름차순 정렬
-        # os.path.join : 경로와 파일이름을 결합하여 전체 경로를 만든다 # 이게 왜 필요하지?
-        """
+    #     """
+    #     # os.listdir : directory_path에 있는 모든 파일 의 이름을 리스트로 받아온다
+    #     # sorted: 오름차순 정렬
+    #     # os.path.join : 경로와 파일이름을 결합하여 전체 경로를 만든다 # 이게 왜 필요하지?
+    #     """
 
-        for file_name in sorted(os.listdir(directory_path)):
-            file_path = os.path.join(directory_path, file_name)
-            if os.path.isfile(file_path): # 파일일 경우에만 불러온다 (폴더는 불러오지 않음)
-                row_position = self.tableWidget_filelist.rowCount()
-                self.tableWidget_filelist.insertRow(row_position)
+    #     for file_name in sorted(os.listdir(directory_path)):
+    #         file_path = os.path.join(directory_path, file_name)
+    #         if os.path.isfile(file_path): # 파일일 경우에만 불러온다 (폴더는 불러오지 않음)
+    #             row_position = self.tableWidget_filelist.rowCount()
+    #             self.tableWidget_filelist.insertRow(row_position)
 
-                # 1-2 0행: 파일리스트/ 체크
-                checkbox = QCheckBox()
-                checkbox.stateChanged.connect(lambda state, row=row_position: self.select_entire_row(row, state))
-                self.tableWidget_filelist.setCellWidget(row_position, 0, checkbox)
+    #             # 1-2 0행: 파일리스트/ 체크
+    #             checkbox = QCheckBox()
+    #             checkbox.stateChanged.connect(lambda state, row=row_position: self.select_entire_row(row, state))
+    #             self.tableWidget_filelist.setCellWidget(row_position, 0, checkbox)
 
-                # 1-2 1행 : 파일리스트/ 아이콘 
-                icon_path = self.get_icon_for_file(file_name)
-                icon_item = QTableWidgetItem()
-                if icon_path:
-                    icon_item.setIcon(QIcon(icon_path))
+    #             # 1-2 1행 : 파일리스트/ 아이콘 
+    #             icon_path = self.get_icon_for_file(file_name)
+    #             icon_item = QTableWidgetItem()
+    #             if icon_path:
+    #                 icon_item.setIcon(QIcon(icon_path))
 
-                self.tableWidget_filelist.setItem(row_position, 1, icon_item) 
+    #             self.tableWidget_filelist.setItem(row_position, 1, icon_item) 
 
-                # 1-2 3행 : 파일리스트 / 파일이름
-                self.tableWidget_filelist.setItem(row_position, 3, QTableWidgetItem(file_name))
+    #             # 1-2 3행 : 파일리스트 / 파일이름
+    #             self.tableWidget_filelist.setItem(row_position, 3, QTableWidgetItem(file_name))
 
-                # 1-2 4,5행 :파일리스트/파일크기,수정시간 
-                file_size = os.path.getsize(file_path) / (1024 * 1024)
-                modified_time = time.ctime(os.path.getmtime(file_path))
+    #             # 1-2 4,5행 :파일리스트/파일크기,수정시간 
+    #             file_size = os.path.getsize(file_path) / (1024 * 1024)
+    #             modified_time = time.ctime(os.path.getmtime(file_path))
 
-                mod_time_item = QTableWidgetItem(modified_time)
-                mod_time_item.setFont(QFont("Arial", 9))  
-                mod_time_item.setForeground(QBrush(QColor(169, 169, 169))) 
-                self.tableWidget_filelist.setItem(row_position, 4, mod_time_item)
-                file_size_item = QTableWidgetItem(f"{file_size:.2f} MB")
-                file_size_item.setFont(QFont("Arial", 9))  
-                file_size_item.setForeground(QBrush(QColor(169, 169, 169)))  
-                self.tableWidget_filelist.setItem(row_position, 5, file_size_item)
+    #             mod_time_item = QTableWidgetItem(modified_time)
+    #             mod_time_item.setFont(QFont("Arial", 9))  
+    #             mod_time_item.setForeground(QBrush(QColor(169, 169, 169))) 
+    #             self.tableWidget_filelist.setItem(row_position, 4, mod_time_item)
+    #             file_size_item = QTableWidgetItem(f"{file_size:.2f} MB")
+    #             file_size_item.setFont(QFont("Arial", 9))  
+    #             file_size_item.setForeground(QBrush(QColor(169, 169, 169)))  
+    #             self.tableWidget_filelist.setItem(row_position, 5, file_size_item)
  
 
-    # 1-2 0행: 파일리스트/체크 # 설정 
-    def select_entire_row(self, row, state):
-        for col in range(1, self.tableWidget_filelist.columnCount()):  
-            item = self.tableWidget_filelist.item(row, col)
-            if item:
-                item.setSelected(state == Qt.Checked)
-    # 1-2 1행 : 파일리스트/ 아이콘  # 설정 
-    def get_icon_for_file(self, file_name):
+    # # 1-2 0행: 파일리스트/체크 # 설정 
+    # def select_entire_row(self, row, state):
+    #     for col in range(1, self.tableWidget_filelist.columnCount()):  
+    #         item = self.tableWidget_filelist.item(row, col)
+    #         if item:
+    #             item.setSelected(state == Qt.Checked)
+    # # 1-2 1행 : 파일리스트/ 아이콘  # 설정 
+    # def get_icon_for_file(self, file_name):
       
-        if file_name.endswith((".ma", ".mb")):
-            return ICON_PATHS["maya"]
-        elif file_name.endswith(".nk"):
-            return ICON_PATHS["nuke"]
-        elif file_name.endswith(".hip"):
-            return ICON_PATHS["houdini"]
-        return None
+    #     if file_name.endswith((".ma", ".mb")):
+    #         return ICON_PATHS["maya"]
+    #     elif file_name.endswith(".nk"):
+    #         return ICON_PATHS["nuke"]
+    #     elif file_name.endswith(".hip"):
+    #         return ICON_PATHS["houdini"]
+    #     return None
     
-    def hide_scrollbars(self):
-        """ ✅ 스크롤바를 투명화하여 보이지 않도록 설정 (기능 유지) """
-        self.tableWidget_filelist.setStyleSheet("""
-            QTableWidget {
-                background-color: transparent;
-            }
-            QScrollBar:vertical, QScrollBar:horizontal {
-                background: transparent;
-                width: 0px;
-                height: 0px;
-            }
-        """)
+    # def hide_scrollbars(self):
+    #     """ ✅ 스크롤바를 투명화하여 보이지 않도록 설정 (기능 유지) """
+    #     self.tableWidget_filelist.setStyleSheet("""
+    #         QTableWidget {
+    #             background-color: transparent;
+    #         }
+    #         QScrollBar:vertical, QScrollBar:horizontal {
+    #             background: transparent;
+    #             width: 0px;
+    #             height: 0px;
+    #         }
+    #     """)
 
-   
 
     #========================================================================================================
     #-------------------------2-1 유저가 클릭한 파일만 정보 표시되도록 하기 ------------------------------------

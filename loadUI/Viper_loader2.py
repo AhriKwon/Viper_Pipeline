@@ -16,6 +16,9 @@ from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
 
 import sys, os, glob
 from functools import partial 
+# 로더 UI
+# from UI_support import show_message
+from Viper_loader_lib import LibraryTab
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
@@ -25,9 +28,6 @@ manager = ShotGridManager()
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
 from MayaLoader import MayaLoader
 from NukeLoader import NukeLoader
-# 로더 UI
-import popup
-from Viper_loader_lib import LibraryTab
 
  #============================================================================================
  #================================로그인 창 : LoginWindow==============================================
@@ -129,9 +129,9 @@ class LoginWindow(QDialog):
     def attempt_login(self):
         email = self.lineEdit_id.text().strip()
 
-        if not email:
-            popup.show_message("error", "오류", "이메일을 입력해주세요")
-            return
+        # if not email:
+        #     show_message.show_message("error", "오류", "이메일을 입력해주세요")
+        #     return
         
         user_data = UserAuthenticator.login(email)
 
@@ -141,9 +141,9 @@ class LoginWindow(QDialog):
             self.fade_out_animation()
             self.main_window.show()
            
-        else:
-            popup.show_message("error", "오류", "등록되지 않은 사용자입니다")
-            return
+        # else:
+        #     show_message.show_message("error", "오류", "등록되지 않은 사용자입니다")
+        #     return
         
     def fade_out_animation(self):
         """로그인 창이 서서히 사라지는 애니메이션 효과"""
@@ -189,8 +189,8 @@ class LoadUI(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)  # 🔹 배경 투명 설정
 
         # ✅ 기존 list_widgets를 AnimatedListView로 변경
-        self.list_animated_view = AnimatedListView()
-        self.ui.verticalLayout_wtg.addWidget(self.list_animated_view)  # UI에 추가
+        # self.list_animated_view = AnimatedListView()
+        # self.ui.verticalLayout_wtg.addWidget(self.list_animated_view)  # UI에 추가
         
         """My Task tab"""
         self.login_and_load_tasks()
@@ -408,16 +408,16 @@ class LoadUI(QMainWindow):
             user_id = user_data["id"]
             user_tasks = manager.get_tasks_by_user(user_id) 
             self.populate_table(user_tasks)
-        else:
-            popup.show_message("error", "오류", "부여받은 Task가 없습니다")
+        # else:
+        #     show_message.show_message("error", "오류", "부여받은 Task가 없습니다")
 
     def populate_table(self, tasks):
         """
         Task 데이터를 받아서 list_widgets에 QListWidgetItem을 추가
         """
-        if not tasks:
-            popup.show_message("error", "오류", "Task를 찾을 수 없습니다.")
-            return
+        # if not tasks:
+        #     show_message.show_message("error", "오류", "Task를 찾을 수 없습니다.")
+        #     return
 
         index = 0
         status_list = ["wtg", "ip", "fin"]
@@ -429,12 +429,12 @@ class LoadUI(QMainWindow):
                 task_id = task["id"]
                 task_name = task["content"]
                 # ✅ AnimatedListView에 아이템 추가
-                self.list_animated_view.add_task(task_name, task_id)
+                # self.list_animated_view.add_task(task_name, task_id)
 
-                if hasattr(self, 'list_animated_view'):
-                    self.list_animated_view.add_task(task_name, task_id)
-                else:
-                    print("⚠️ list_animated_view가 아직 초기화되지 않음!")
+                # if hasattr(self, 'list_animated_view'):
+                #     self.list_animated_view.add_task(task_name, task_id)
+                # else:
+                #     print("⚠️ list_animated_view가 아직 초기화되지 않음!")
 
                 # 리스트 아이템 생성
                 list_item = QListWidgetItem()
@@ -557,18 +557,18 @@ class LoadUI(QMainWindow):
             task_id = task_data["id"]
             file_paths = manager.get_works_for_task(task_id)
 
-            if not file_paths:
-                popup.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
-                continue
+            # if not file_paths:
+            #     show_message.show_message("error", "오류", f"Task {task_id}에 연결된 파일이 없습니다.")
+            #     continue
 
             file_path = file_paths[-1]["path"]
-            if not file_path:
-                popup.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
-                continue
+            # if not file_path:
+            #     show_message.show_message("error", "오류", f"Task {task_id}의 파일 경로를 찾을 수 없습니다.")
+            #     continue
         
-        if not file_path or not os.path.exists(file_path):
-            popup.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
-            return
+        # if not file_path or not os.path.exists(file_path):
+        #     show_message.show_message("error", "오류", "유효한 파일 경로를 입력하세요.")
+        #     return
 
         # 경로를 절대 경로로 변환
         file_path = os.path.abspath(file_path)
@@ -579,85 +579,85 @@ class LoadUI(QMainWindow):
             NukeLoader.launch_nuke(file_path)
         # elif file_path.endswith((".hip", ".hiplc")):
         #     self.launch_houdini(file_path)
-        else:
-            popup.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+        # else:
+        #     show_message.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
 
-    class AnimatedListView(QGraphicsView):
-        def __init__(self):
-            super().__init__()
-            self.setScene(QGraphicsScene(self))
-            self.setRenderHint(Qt.Antialiasing)  # 안티앨리어싱 활성화
-            self.widgets = []
+    # class AnimatedListView(QGraphicsView):
+    #     def __init__(self):
+    #         super().__init__()
+    #         self.setScene(QGraphicsScene(self))
+    #         self.setRenderHint(Qt.Antialiasing)  # 안티앨리어싱 활성화
+    #         self.widgets = []
 
-            # 🔹 UI 요소 설정 (label + listWidget 한 세트)
-            widget_names = [
-                ("label_wtg", "listWidget_wtg"),
-                ("label_ip", "listWidget_ip"),
-                ("label_fin", "listWidget_fin")
-            ]
+    #         # 🔹 UI 요소 설정 (label + listWidget 한 세트)
+    #         widget_names = [
+    #             ("label_wtg", "listWidget_wtg"),
+    #             ("label_ip", "listWidget_ip"),
+    #             ("label_fin", "listWidget_fin")
+    #         ]
 
-            # 🔹 UI 세트 추가
-            for i, (label_name, list_name) in enumerate(widget_names):
-                container = QWidget()
-                layout = QVBoxLayout(container)
+    #         # 🔹 UI 세트 추가
+    #         for i, (label_name, list_name) in enumerate(widget_names):
+    #             container = QWidget()
+    #             layout = QVBoxLayout(container)
 
-                # ✅ QLabel
-                label = QLabel(label_name)
-                label.setAlignment(Qt.AlignCenter)
+    #             # ✅ QLabel
+    #             label = QLabel(label_name)
+    #             label.setAlignment(Qt.AlignCenter)
 
-                # ✅ QListWidget
-                list_widget = QListWidget()
-                list_widget.setFixedSize(200, 300)  # ListWidget 크기
-                list_widget.addItem(f"Task {i+1}")
+    #             # ✅ QListWidget
+    #             list_widget = QListWidget()
+    #             list_widget.setFixedSize(200, 300)  # ListWidget 크기
+    #             list_widget.addItem(f"Task {i+1}")
 
-                layout.addWidget(label)
-                layout.addWidget(list_widget)
-                container.setLayout(layout)
+    #             layout.addWidget(label)
+    #             layout.addWidget(list_widget)
+    #             container.setLayout(layout)
 
-                # ✅ QGraphicsProxyWidget을 사용하여 추가
-                proxy = QGraphicsProxyWidget()
-                proxy.setWidget(container)
-                self.scene().addItem(proxy)
+    #             # ✅ QGraphicsProxyWidget을 사용하여 추가
+    #             proxy = QGraphicsProxyWidget()
+    #             proxy.setWidget(container)
+    #             self.scene().addItem(proxy)
 
-                # 초기 위치 설정
-                x_pos = i * 250  # 좌우로 정렬
-                proxy.setPos(x_pos, 0)
+    #             # 초기 위치 설정
+    #             x_pos = i * 250  # 좌우로 정렬
+    #             proxy.setPos(x_pos, 0)
 
-                self.widgets.append(proxy)
+    #             self.widgets.append(proxy)
 
-            self.centerIndex = 1  # 초기 중앙 포커스 인덱스
-            self.updatePositions()
+    #         self.centerIndex = 1  # 초기 중앙 포커스 인덱스
+    #         self.updatePositions()
 
-        def updatePositions(self):
-            """위젯 회전 및 크기 조정"""
-            for i, proxy in enumerate(self.widgets):
-                animation = QPropertyAnimation(proxy, b"pos")  # 위치 애니메이션
-                animation.setDuration(500)
+    #     def updatePositions(self):
+    #         """위젯 회전 및 크기 조정"""
+    #         for i, proxy in enumerate(self.widgets):
+    #             animation = QPropertyAnimation(proxy, b"pos")  # 위치 애니메이션
+    #             animation.setDuration(500)
 
-                if i == self.centerIndex:
-                    # 중앙 위젯 (정면, 크기 증가)
-                    transform = QTransform().rotate(0).scale(1.2, 1.2)  # 크기 확대
-                    proxy.setTransform(transform)
-                    proxy.setZValue(1)  # Z-인덱스를 높여 최상위 배치
-                    animation.setEndValue(QRectF(300, 0, 250, 300))
-                else:
-                    # 측면 위젯 (회전, 크기 감소)
-                    angle = -30 if i < self.centerIndex else 30  # 왼쪽/오른쪽 방향
-                    transform = QTransform().rotate(angle).scale(0.9, 0.9)
-                    proxy.setTransform(transform)
-                    proxy.setZValue(0)  # 뒤로 배치
-                    x_offset = -100 if i < self.centerIndex else 100
-                    animation.setEndValue(QRectF(300 + x_offset, 50, 250, 300))
+    #             if i == self.centerIndex:
+    #                 # 중앙 위젯 (정면, 크기 증가)
+    #                 transform = QTransform().rotate(0).scale(1.2, 1.2)  # 크기 확대
+    #                 proxy.setTransform(transform)
+    #                 proxy.setZValue(1)  # Z-인덱스를 높여 최상위 배치
+    #                 animation.setEndValue(QRectF(300, 0, 250, 300))
+    #             else:
+    #                 # 측면 위젯 (회전, 크기 감소)
+    #                 angle = -30 if i < self.centerIndex else 30  # 왼쪽/오른쪽 방향
+    #                 transform = QTransform().rotate(angle).scale(0.9, 0.9)
+    #                 proxy.setTransform(transform)
+    #                 proxy.setZValue(0)  # 뒤로 배치
+    #                 x_offset = -100 if i < self.centerIndex else 100
+    #                 animation.setEndValue(QRectF(300 + x_offset, 50, 250, 300))
 
-                animation.start()
+    #             animation.start()
 
-        def keyPressEvent(self, event):
-            """← → 키로 중앙 포커스 변경"""
-            if event.key() == Qt.Key_Left and self.centerIndex > 0:
-                self.centerIndex -= 1
-            elif event.key() == Qt.Key_Right and self.centerIndex < len(self.widgets) - 1:
-                self.centerIndex += 1
-            self.updatePositions()
+    #     def keyPressEvent(self, event):
+    #         """← → 키로 중앙 포커스 변경"""
+    #         if event.key() == Qt.Key_Left and self.centerIndex > 0:
+    #             self.centerIndex -= 1
+    #         elif event.key() == Qt.Key_Right and self.centerIndex < len(self.widgets) - 1:
+    #             self.centerIndex += 1
+    #         self.updatePositions()
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -666,11 +666,11 @@ if __name__ == "__main__":
         sys.exit(app.exec())
 
 
-if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    view = AnimatedListView()
-    view.show()
-    sys.exit(app.exec())
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     view = AnimatedListView()
+#     view.show()
+#     sys.exit(app.exec())
 
 
 
