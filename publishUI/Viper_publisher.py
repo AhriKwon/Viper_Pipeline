@@ -17,7 +17,7 @@ except:
     from PySide2.QtCore import Qt, QFile, QTimer, QRect
     from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
 
-import sys, os, time, subprocess
+import sys, os, time, subprocess, re
 from typing import TypedDict
 
 publish_path = os.path.dirname(__file__)
@@ -121,16 +121,16 @@ class ScreenCapture(QWidget):
                 return
 
             save_dir = os.path.dirname(save_path)
-            print(f"📂 저장 디렉토리: {save_dir}")
+            print(f"저장 디렉토리: {save_dir}")
             if not os.path.exists(save_dir):
                 os.makedirs(save_dir)
 
-            print(f"💾 저장 경로: {save_path}")
+            print(f"저장 경로: {save_path}")
             screenshot.save(save_path, "png", quality=100)
 
             # UI가 존재하면 업데이트
             if self.parent_ui:
-                print("🔄 UI 업데이트 실행")
+                print("UI 업데이트 실행")
                 self.parent_ui.update_thumbnail(save_path)
                 self.parent_ui.show()  # UI 다시 표시
 
@@ -155,8 +155,8 @@ class PublishUI(QMainWindow):
         self.setGeometry(100, 100, 1200, 800)
         self.resize(667, 692)
 
-        self.setWindowFlag(Qt.FramelessWindowHint)  # 🔹 타이틀바 제거
-        self.setAttribute(Qt.WA_TranslucentBackground)  # 🔹 배경 투명 설정
+        self.setWindowFlag(Qt.FramelessWindowHint)  # 타이틀바 제거
+        self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
         self.dragPos = None  # 창 이동을 위한 변수
 
         self.file_path = self.get_current_file_path()
@@ -385,7 +385,7 @@ class PublishUI(QMainWindow):
 
         # 퍼블리시 성공 여부 확인
         if publish_result:
-            self.update_database_and_shotgrid(version_path, publish_result)
+            self.update_db_and_sg(version_path, publish_result)
         else:
             UI_support.show_message.show_message("error", "오류", "퍼블리시 실패")
         
@@ -448,6 +448,7 @@ class PublishUI(QMainWindow):
         elif entity_type == "Shot":
             seq = task_info["entity"].get("sg_sequence", {}).get("name", "Unknown")
             shot = entity_name
+            start_frame, last_frame = manager.get_shot_cut_data(entity_name)
 
         # 현재 파일 버전 판별
         version = self.extract_version_from_filename(file_path)
@@ -462,7 +463,9 @@ class PublishUI(QMainWindow):
             "name": entity_name.rsplit('_')[0],
             "seq": seq,
             "shot": shot,
-            "version": version
+            "version": version,
+            "start_frame" : start_frame,
+            "last_frame" : last_frame
         }
 
         print(f"생성된 file_data: {file_data}")
@@ -489,7 +492,7 @@ class PublishUI(QMainWindow):
             return int(match.group(1))  # 정수 변환 후 반환
         return 1  # 기본 버전 값
 
-    def update_database_and_shotgrid(self, version_path, data):
+    def update_db_and_sg(self, version_path, data):
         """
         퍼블리시 성공 후 DB와 ShotGrid 업데이트
         """

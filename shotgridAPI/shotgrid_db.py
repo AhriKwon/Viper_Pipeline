@@ -22,6 +22,23 @@ class ShotgridDB:
         self.db_name = db_name
         self.client = MongoClient("mongodb://localhost:27017/")
         self.db = self.client[db_name]
+    
+    def get_user_data(self, email):
+        """
+        데이터베이스에서 유저 정보 조회
+        """
+        user = self.db["users"].find_one({"email": email})
+        return user  # 데이터가 있으면 반환, 없으면 None
+    
+    def save_user_data(self, user_data):
+        """
+        유저 데이터를 데이터베이스에 저장
+        """
+        self.db["users"].update_one(
+            {"email": user_data["login"]},  # 기존 유저가 있으면 업데이트
+            {"$set": user_data},
+            upsert=True  # 유저가 없으면 새로 생성
+        )
 
     def save_project_data(self, project_data):
         """
@@ -167,6 +184,93 @@ class ShotgridDB:
         )
         return result.modified_count
     
+    def get_shot_cut_data(self, shot_name):
+        """
+        샷 이름을 기반으로 Cut In / Cut Out 값을 조회
+        """
+        project_data = self.get_database()
+        for project in project_data:
+            for sequence in project.get("sequences", []):
+                for shot in sequence.get("shots", []):
+                    if shot["code"] == shot_name:
+                        return shot.get("sg_cut_in"), shot.get("sg_cut_out")
+        
+        print(f"⚠️ Shot {shot_name}에 대한 Cut 정보를 찾을 수 없습니다.")
+        return None, None
+    
+    def get_task_id_from_file(self, file_path):
+        """
+        파일 경로에서 Task ID를 추출하여 반환
+        """
+        file_name = os.path.basename(file_path)
+        print(f"처리 중인 파일명: {file_name}")  # 파일명 출력하여 정규식 확인
+
+        # 샷과 애셋을 구별하는 Task Type 목록
+        shot_tasks = ["LAY", "ANM", "FX", "LGT", "CMP"]
+        asset_tasks = ["MDL", "RIG", "LDV"]
+
+        match_shot = re.match(r"([A-Z]+_\d+)_(\w+)_v\d+\..+", file_name)
+        match_asset = re.match(r"(.+?)_(\w+)_v\d+\..+", file_name)
+
+        if match_shot:
+            shot_name, task_type = match_shot.groups()
+            print(f"✅ Shot 매칭됨: {shot_name}, {task_type}")  # 정규식 매칭 확인
+
+            if task_type in shot_tasks:
+                task_id = self.get_task_id_from_db(shot_name, task_type)
+                print(f"✅ Shot Task ID 반환: {task_id}")  # DB 조회 결과 확인
+                return task_id
+
+        elif match_asset:
+            asset_name, task_type = match_asset.groups()
+            print(f"✅ Asset 매칭됨: {asset_name}, {task_type}")  # 정규식 매칭 확인
+
+            if task_type in asset_tasks:
+                task_id = self.get_task_id_from_db(asset_name, task_type)
+                print(f"✅ Asset Task ID 반환: {task_id}")  # DB 조회 결과 확인
+                return task_id
+
+        print("⚠️ Task ID를 추출할 수 없습니다.")
+        return None
+    
+    def get_task_id_from_db(self, entity_name, task_type):
+        """
+        데이터베이스에서 특정 Asset 또는 Shot의 Task ID 조회
+        """
+        print(f"🔍 DB 조회: {entity_name}, {task_type}")  # 조회 요청 정보 출력
+
+        try:
+            project = self.get_database()
+            print(f"프로젝트 데이터 확인: {project}")  # 프로젝트 데이터 출력
+
+            for proj in project:
+                print(f"프로젝트 확인: {proj.get('name', 'Unnamed')}")  # 개별 프로젝트 정보 확인
+                
+                for asset in proj.get("assets", []):
+                    print(f"애셋 검사: {asset['code']}")  # 애셋 코드 출력
+                    if asset["code"] == entity_name:
+                        for task in asset.get("tasks", []):
+                            print(f"애셋 Task 확인: {task['content']}")  # Task 종류 출력
+                            if task_type in task["content"]:
+                                print(f"Task ID 반환: {task['id']}")
+                                return task["id"]
+
+                for sequence in proj.get("sequences", []):
+                    for shot in sequence.get("shots", []):
+                        print(f"샷 검사: {shot['code']}")  # 샷 코드 출력
+                        if shot["code"] == entity_name:
+                            for task in shot.get("tasks", []):
+                                print(f"샷 Task 확인: {task['content']}")  # Task 종류 출력
+                                if task_type in task["content"]:
+                                    print(f"Task ID 반환: {task['id']}")
+                                    return task["id"]
+
+        except Exception as e:
+            print(f"데이터베이스 조회 중 오류 발생: {e}")
+
+        print(f"⚠️ 오류: {entity_name} - {task_type}에 해당하는 Task를 찾을 수 없습니다.")
+        return None
+    
     def insert_data(self, collection_name, data):
         """
         데이터 삽입
@@ -179,54 +283,6 @@ class ShotgridDB:
         """
         self.client.drop_database(self.db_name)  # 데이터베이스 전체 삭제
         print("데이터베이스가 초기화되었습니다.")
-    
-    def get_task_id_from_file(self, file_path):
-        """
-        파일 경로에서 Task ID를 추출하여 반환
-        """
-        file_name = os.path.basename(file_path)
-
-        # 샷과 애셋을 구별하는 Task Type 목록
-        shot_tasks = ["LAY", "ANM", "FX", "LGT", "CMP"]
-        asset_tasks = ["MDL", "RIG", "LDV"]
-
-        match_shot = re.match(r"([A-Z]+_\d+)_(\w+)_v\d+\..+", file_name)
-        match_asset = re.match(r"(.+?)_(\w+)_v\d+\..+", file_name)
-
-        if match_shot:
-            shot_name, task_type = match_shot.groups()
-            if task_type in shot_tasks:
-                return self.get_task_id_from_db(shot_name, task_type)
-
-        elif match_asset:
-            asset_name, task_type = match_asset.groups()
-            if task_type in asset_tasks:
-                return self.get_task_id_from_db(asset_name, task_type)
-
-        print("⚠️ Task ID를 추출할 수 없습니다.")
-        return None
-    
-    def get_task_id_from_db(self, entity_name, task_type):
-        """
-        데이터베이스에서 특정 Asset 또는 Shot의 Task ID 조회
-        """
-        project = self.db.get_database()
-        for proj in project:
-            for asset in proj.get("assets", []):
-                if asset["code"] == entity_name:
-                    for task in asset.get("tasks", []):
-                        if task["content"] == task_type:
-                            return task["id"]
-
-            for sequence in proj.get("sequences", []):
-                for shot in sequence.get("shots", []):
-                    if shot["code"] == entity_name:
-                        for task in shot.get("tasks", []):
-                            if task["content"] == task_type:
-                                return task["id"]
-
-        print(f"⚠️ 오류: {entity_name} - {task_type}에 해당하는 Task를 찾을 수 없습니다.")
-        return None
 
     def close(self):
         """

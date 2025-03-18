@@ -20,8 +20,8 @@ class NukePublisher:
             "seq": None,
             "shot": None,
             "version": 1,
-            "start_num": 1,
-            "last_num": 99
+            "start_frame": 1001,
+            "last_frame": 1099
         }
 
         
@@ -34,15 +34,17 @@ class NukePublisher:
         self.task_type = self.shot_data["task_type"]
         self.seq = self.shot_data["seq"]
         self.shot = self.shot_data["shot"]
-        self.version = self.shot_data.get("version", 1)
+        self.version = self.shot_data["version"]
+        self.start_frame = default_data["start_fram"]
+        self.last_frame = default_data["last_fram"]
 
         self.publish_data = {
             "project_name": self.project,
             "shot_name": self.shot,
             "task_name": self.task_type,
             "version": self.version,
-            "start_num": 1,
-            "last_num": 99
+            "start_num": self.start_frame,
+            "last_num": self.last_frame
         }
 
         # 퍼블리싱 경로 생성

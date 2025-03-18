@@ -215,6 +215,12 @@ class ShotGridManager:
         DB를 통해 파일 경로에서 Task ID를 추출하여 반환
         """
         return sg_db.get_task_id_from_file(file_path)
+    
+    def get_shot_cut_data(self, shot_name):
+        """
+        샷 이름을 기반으로 Cut In / Cut Out 값을 조회
+        """
+        return sg_db.get_shot_cut_data(shot_name)
 
     def publish(self, task_id: int, version_path: str, data: PublishedFileData):
         """

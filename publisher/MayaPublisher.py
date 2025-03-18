@@ -22,7 +22,9 @@ class MayaPublisher():
         "name": None,
         "seq": None,
         "shot": None,
-        "version": 1
+        "version": 1,
+        "start_frame" : 1001,
+        "last_frame" : 1099
         }
     
         # shot_data가 전달되면 기존 default_data를 업데이트
@@ -37,7 +39,9 @@ class MayaPublisher():
         self.name = default_data["name"]
         self.seq = default_data["seq"]
         self.shot = default_data["shot"]
-        self.version = default_data.get("version", 1)
+        self.version = default_data["version"]
+        self.start_frame = default_data["start_fram"]
+        self.last_frame = default_data["last_fram"]
         
         shot_name = self.name if self.name else self.shot
         self.publish_data = {
@@ -45,8 +49,8 @@ class MayaPublisher():
             "project_name" : self.project,
             "task_name" : self.task_type, 
             "version" : self.version,
-            "start_num" : 1,
-            "last_num" : 99
+            "start_num" : self.start_frame,
+            "last_num" : self.last_frame
             }
         # 경로 생성 로직 (seq or asset_type에 따라 다르게 처리)
         if self.asset_type:
@@ -74,6 +78,8 @@ class MayaPublisher():
                 print("Warning: Shader export paths are not defined in the publishing paths.")
                 self.shader_ma_path = None
                 self.shader_json_path = None
+        
+        self.publish()
         
     def publish(self): # Task 유형에 맞는 퍼블리쉬 실행
         if self.task_type in ["MDL", "RIG", "LDV"]: 
@@ -225,8 +231,8 @@ class MayaPublisher():
         self.render_settings = {
             "resolution": (1920, 1080),  # HD_1080 preset
             "camera": self.get_renderable_camera(),
-            "start_frame": 1001,  # 기본값 (샷그리드에서 업데이트 예정)
-            "end_frame": 1100     # 기본값 (샷그리드에서 업데이트 예정)
+            "start_frame": self.start_frame,
+            "end_frame": self.last_frame 
         }
 
         cmds.setAttr("defaultRenderGlobals.imageFormat", 51)  # 51은 -> EXR 렌더 포맷 지시  (image format)
@@ -337,7 +343,7 @@ class MayaPublisher():
             if os.path.exists(temp_in_path):
                 os.remove(temp_in_path)
 
-    def make_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
+    def make_turntable(self, cam_name="turntable_cam", start_frame=1001, end_frame=1100):
         """
         Maya에서 Turntable camera 생성 후 애니메이션을 적용하는 함수
         :param cam_name: 생성할 카메라 이름
@@ -360,8 +366,7 @@ class MayaPublisher():
 
         print(f"Turntable Camera '{cam_name}' created from frame {start_frame} to {end_frame}.")
 
-    @staticmethod
-    def save_playblast(output_path):
+    def save_playblast(self, output_path):
         """Playblast 실행 후 저장"""
         
         cmds.playblast(
@@ -377,8 +382,8 @@ class MayaPublisher():
             quality=100, # 비디오 품질 설정 (0~100)
             forceOverwrite=True, # 같은 이름 파일 덮어쓰기, False -> 오류 가능성 높아짐
             widthHeight=(1920, 1080), # 출력 해상도 FHD, 3840x2160 -> 4K
-            startTime=1, # 시작 프레임 설정
-            endTime=99 # 종료 프레임 설정
+            startTime=self.start_frame, # 시작 프레임 설정
+            endTime=self.last_frame # 종료 프레임 설정
         )
         print(f"Playblast 저장 완료: {output_path}")
 
@@ -417,11 +422,5 @@ class MayaPublisher():
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
         self.save_playblast(publish_path)
-    
-# if __name__ == "__main__":
-#     maya_pub = MayaPublisher()
-#     selected_options = ["shaded", "wireframe on shaded"]
-#     maya_pub.playblast_publish(selected_options)
-#     maya_pub.save_alembic()paths are not defined in the publishing paths.")
         
     
