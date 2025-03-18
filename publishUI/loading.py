@@ -46,12 +46,12 @@ class LoadingUI(QMainWindow):
         self.label_logo = self.ui.findChild(QLabel, "label_logo")
         self.label_text = self.ui.findChild(QLabel, "label_text")
         self.label_text = self.ui.findChild(QLabel, "label_text")
-        # ✅ 디버깅 메시지: QLabel이 제대로 로드되었는지 확인
+       
         if self.label_text:
-            print("✅ label_text 위젯 로드 성공!")
-            self.label_text.setText("Click to Start!")  # ✅ 기본 텍스트 설정
-            self.label_text.setAlignment(Qt.AlignCenter)  # ✅ 중앙 정렬
-            self.label_text.setStyleSheet("color: white; font-size: 18px; font-weight: bold;")
+            print(" label_text 위젯 로드 성공!")
+            self.label_text.setText("Press the Enter key!")  
+            self.label_text.setAlignment(Qt.AlignCenter)  
+            self.label_text.setStyleSheet("color: white; font-size: 18px; ")
             self.label_text.show()
         else:
             print(" label_text 위젯을 찾을 수 없음!")
@@ -66,12 +66,16 @@ class LoadingUI(QMainWindow):
 
         self.animate_logo_opacity()
         self.create_bouncing_dots()
-        
+        # self.mousePressEvent()
+        # self.mouseMoveEvent()
+        # self.mouseReleaseEvent()
         self.setup_text_rotation()  # 문장 변경 기능 추가
         self.animate_logo_opacity()  # 로고 애니메이션 실행
+        
 
     def mousePressEvent(self, event):
             """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+            
             if event.button() == Qt.LeftButton:
                 self.dragPos = event.globalPosition().toPoint()
                 event.accept()
@@ -86,31 +90,64 @@ class LoadingUI(QMainWindow):
     def mouseReleaseEvent(self, event):
             """ 마우스를 떼면 위치 초기화 """
             self.dragPos = None
+    
 
       
 
     def setup_text_rotation(self):
         """ 클릭할 때마다 label_text의 문장이 변경되도록 설정 """
         self.texts = [
-            "Welcome to Viper!",
-            "Loading... Please wait",
-            "Initializing system...",
-            "Almost ready...",
-            "Enjoy your work!"
+            
+            "The best team, Viper",
+            "Do you like the publisher of Viper?",
+            "Check the rendering items options",
+            "Team leader, amazing. Ari",
+            "The visual design manager, Minseo",
+            "Publisher's manager, Hyelin",
+            "Loader's manager, Hyelin"
+            
         ]
         self.current_text_index = 0  # 현재 문장 인덱스
         
         
         print("텍스트 변경 기능 설정 완료")
 
-    def mousePressEvent(self, event):
-        """ 화면을 클릭하면 label_text의 문장을 변경 """
-        if event.button() == Qt.LeftButton:  # 마우스 왼쪽 버튼 클릭 시 동작
+    def eventFilter(self, obj, event):
+        """ 이벤트 필터를 사용하여 마우스 이벤트 감지 """
+        if event.type() == event.MouseButtonPress:
+            return self.mousePressEvent(event)
+        elif event.type() == event.MouseMove:
+            return self.mouseMoveEvent(event)
+        elif event.type() == event.MouseButtonRelease:
+            return self.mouseReleaseEvent(event)
+        return super().eventFilter(obj, event)
+
+    def keyPressEvent(self, event):
+        """ 엔터 키를 누르면 label_text의 문장이 변경됨 """
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter): 
             if self.label_text:
-                print(f"텍스트 변경: {self.texts[self.current_text_index]}")  # 변경 확인
+                print(f" 텍스트 변경: {self.texts[self.current_text_index]}")
                 self.label_text.setText(self.texts[self.current_text_index])
-                self.current_text_index = (self.current_text_index + 1) % len(self.texts)  # 리스트 순환
-                self.label_text.adjustSize()  # 크기 자동 조정 (텍스트가 잘리는 경우 방지)
+                self.current_text_index = (self.current_text_index + 1) % len(self.texts)
+                self.label_text.adjustSize()
+                # 글자 크기 줄이기 + 오른쪽으로 이동
+                self.label_text.setStyleSheet("""
+                    font-size: 14px;    /* 글자 크기 줄이기 */
+                    color: white;
+                    
+                    
+                """)
+                self.label_text.adjustSize()  # 크기 자동 조정 (텍스트 길이에 맞게 변함)
+                self.label_text.setAlignment(Qt.AlignCenter)  #  항상 가운데 정렬
+
+                # 부모 위젯 기준으로 중앙에 위치하도록 이동
+                parent_width = self.label_text.parentWidget().width()  # 부모 위젯 가로 길이
+                label_width = self.label_text.width()  # 현재 라벨 가로 길이
+
+                new_x = (parent_width - label_width) // 2  # 중앙 정렬 계산
+                self.label_text.move(new_x, self.label_text.y())  #  X 좌표 중앙 정렬 유지
+            
+                self.label_text.adjustSize()  # 크기 자동 조정 (잘리지 않도록)
 
     def animate_logo_opacity(self):
         """ abel_logo 오퍼시티 애니메이션 (30 → 70 → 10 반복) """
@@ -196,9 +233,6 @@ class LoadingUI(QMainWindow):
 
         for index, animation in enumerate(self.dot_animations):
             QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
-
-
-
 
 
     def load_ui(self):
