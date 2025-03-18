@@ -155,7 +155,7 @@ QPushButton:pressed {
      <string notr="true">border-radius: 10px;  /* 둥근 정도 */
 padding: 5px;  /* 내부 여백 */
 
-color: black;  /* 글자 색상 */</string>
+color: white;  /* 글자 색상 */</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_thumbnail">

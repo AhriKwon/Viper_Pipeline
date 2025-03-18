@@ -53,22 +53,6 @@ class LoginWindow(QDialog):
         self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
         self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
 
-
-        # 로그인 화면 음악 설정 (QMediaPlayer 사용)
-        self.start_music = QMediaPlayer()
-        self.audio_output = QAudioOutput()  # 오디오 출력 장치 설정
-        self.start_music.setAudioOutput(self.audio_output)
-        #  MP3 파일 경로 설정
-        self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/cinema.mp3"))
-        self.audio_output.setVolume(0.5)  # 음량 설정 (0.0 ~ 1.0)
-
-        
-
-    def showEvent(self, event):
-        
-        self.start_music.play()
-        super().showEvent(event)  # 부모 클래스의 showEvent 실행
-
     def play_button_sound(self):
             """ 로그인 버튼 클릭 시 소리 재생 """
             print("버튼 클릭 소리 재생")
@@ -76,7 +60,7 @@ class LoginWindow(QDialog):
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/newlogin.ui"
+        ui_file_path = f"{current_directory}/Viper_login.ui"
         self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
         self.dragPos = None  # 창 이동을 위한 변수
@@ -358,7 +342,7 @@ class LoadUI(QMainWindow):
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/lastload.ui"
+        ui_file_path = f"{current_directory}/Viper_load.ui"
 
         ui_file = QFile(ui_file_path)
         loader = QUiLoader()

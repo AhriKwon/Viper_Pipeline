@@ -201,7 +201,7 @@ class PublishUI(QMainWindow):
         """
         퍼블리시 UI 로드
         """
-        ui_file_path = os.path.join(publish_path ,"newpub.ui")
+        ui_file_path = os.path.join(publish_path ,"Viper_pub.ui")
 
         ui_file = QFile(ui_file_path)
         if not ui_file.exists():
@@ -434,11 +434,11 @@ class PublishUI(QMainWindow):
             self.update_db_and_sg(version_path, data)
 
             # 퍼블리시 성공 시 UI 전환 및 알림 표시
-            self.show_publish_success()
+            self.show_publish_success(publish_result)
         else:
             UI_support.show_message("error", "오류", "퍼블리시 실패")
     
-    def show_publish_success(self):
+    def show_publish_success(self, publish_result):
         """
         퍼블리시 성공 후 알림창 표시 및 UI 종료
         """
