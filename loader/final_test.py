@@ -382,7 +382,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
         if file_path.endswith((".ma", ".mb")):
             self.launch_maya(file_path)
-        elif file_path.endswith(".nk"):
+        elif file_path.endswith((".nk", ".nknc")):
             self.launch_nuke(file_path)
         elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
             self.launch_houdini(file_path)
@@ -479,7 +479,9 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
     def import_nuke(self, file_path):
         """사용자가 직접 Nuke 파일(.nk)을 선택하여 Import하는 기능"""
         self.send_nuke_command(f"nuke.nodePaste(r'{file_path}')")
+        
 
+        
         
 
     def is_nuke_running(self):
@@ -544,7 +546,7 @@ class FileLoaderGUI(QtWidgets.QMainWindow):
 
         # Nuke 실행 중인지 확인 후 import
         if self.is_nuke_running():
-            if file_path.endswith((".nk", ".mov", ".abc", ".obj")):
+            if file_path.endswith((".nk", ".nknc", ".mov", ".abc", ".obj")):
                 self.import_nuke(file_path)
                 return
                   
