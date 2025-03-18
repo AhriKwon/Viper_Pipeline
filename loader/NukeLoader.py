@@ -47,12 +47,39 @@ class NukeLoader:
         
         finally:
             client.close()
-    
+
+    @staticmethod
+    def import_nk_file(file_path):
+        """Nuke 스크립트 .nk 파일을 nodePaste로 불러오기"""
+        command = f"nuke.nodePaste(r'{file_path}')"
+        NukeLoader.send_nuke_command(command)
+
+    @staticmethod
+    def import_abc_file(file_path):
+        """Alembic 파일은 ReadGeo2로 로드"""
+        command = f"nuke.createNode('ReadGeo2', 'file {{{{ {file_path} }}}}')"
+        NukeLoader.send_nuke_command(command)
+
+    @staticmethod
+    def import_2d_file(file_path):
+        """이미지/영상은 Read 노드 생성"""
+        command = f"nuke.createNode('Read', 'file {{{{ {file_path} }}}}')"
+        NukeLoader.send_nuke_command(command)
+        
         
     @staticmethod
     def import_nuke(file_path):
         """사용자가 직접 Nuke 파일(.nk)을 선택하여 Import하는 기능"""
-        NukeLoader.send_nuke_command(f"nuke.nodePaste(r'{file_path}')")
+        ext = os.path.splitext(file_path)[1].lower()
+        if ext == ".nk":
+            NukeLoader.import_nk_file(file_path)
+        elif ext in [".abc", ".obj"]:
+            NukeLoader.import_abc_file(file_path)
+        elif ext in [".exr", ".png", ".jpg", ".jpeg", ".mov", ".mp4", ".tif", ".tiff"]:
+            NukeLoader.import_2d_file(file_path)
+        else:
+            print("[오류] 지원하지 않는 확장자:", ext)
+        
 
     @staticmethod
     def find_nuke_path():
@@ -85,7 +112,11 @@ class NukeLoader:
         try:
             # 실행 중인 모든 프로세스를 검사하여 Nuke가 있는지 확인
             result = subprocess.run(["ps", "aux"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-            return any("Nuke" in line or "nuke" in line for line in result.stdout.split("\n"))
+            for line in result.stdout.split("\n"):
+                # "Nuke", "nuke", "Nuke15" 등 다양한 키워드가 들어 있는지 확인
+                if "Nuke" in line or "nuke" in line or "Nuke15" in line:
+                    return True
+            return False
         except Exception as e:
             print(f"Nuke 실행 확인 오류: {e}")
             return False

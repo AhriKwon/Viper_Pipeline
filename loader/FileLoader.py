@@ -55,7 +55,7 @@ class FileLoader:
 
         if file_path.endswith((".ma", ".mb")):
             MayaLoader.launch_maya(file_path)
-        elif file_path.endswith(".nk"):
+        elif file_path.endswith((".nk", ".nknc")):
             NukeLoader.launch_nuke(file_path)
         elif file_path.endswith((".hip", ".hiplc", ".hipnc")):
             HoudiniLoader.launch_houdini(file_path)
@@ -86,7 +86,7 @@ class FileLoader:
 
         # Nuke 실행 중인지 확인 후 Import
         if NukeLoader.is_nuke_running():
-            if file_path.endswith((".nk", ".mov", ".abc", ".obj")):
+            if file_path.endswith((".nk", ".nknc", ".mov", ".mp4", ".abc", ".obj")):
                 NukeLoader.import_nuke(file_path)
                 return
 
@@ -214,7 +214,7 @@ class FileLoader:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         # 파일 생성
-        if file_path.endswith(".nk"):
+        if file_path.endswith(".nk", ".nknc"):
             FileLoader.create_nuke_file(file_path)
         elif file_path.endswith(".ma"):
             FileLoader.create_maya_file(file_path)
