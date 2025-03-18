@@ -40,8 +40,14 @@ class MayaPublisher():
         self.seq = default_data["seq"]
         self.shot = default_data["shot"]
         self.version = default_data["version"]
-        self.start_frame = default_data["start_fram"]
-        self.last_frame = default_data["last_fram"]
+        if default_data["start_frame"] == None:
+            self.start_frame = 1001
+        else:
+            self.start_frame = default_data["start_frame"]
+        if default_data["last_frame"] == None:
+            self.last_frame = 1099
+        else:
+            self.last_frame = default_data["last_frame"]
         
         shot_name = self.name if self.name else self.shot
         self.publish_data = {
@@ -49,8 +55,8 @@ class MayaPublisher():
             "project_name" : self.project,
             "task_name" : self.task_type, 
             "version" : self.version,
-            "start_num" : self.start_frame,
-            "last_num" : self.last_frame
+            "start_frame" : self.start_frame,
+            "last_frame" : self.last_frame
             }
         # 경로 생성 로직 (seq or asset_type에 따라 다르게 처리)
         if self.asset_type:
@@ -67,21 +73,25 @@ class MayaPublisher():
         self.scene_path = publish_paths["maya"]["pub_scene"]
         self.plb_path = publish_paths["maya"]["mov_plb"]
         self.prod_path = publish_paths["maya"]["mov_product"]
+        option_name = self.options[0] if self.options else None
+        self.out_name = f"_{option_name}_v{self.version:03d}.mov"
         self.abc_path = publish_paths["maya"]["abc_cache"]
         
         # LDV 작업일 경우에만 쉐이더 파일 경로 추가
         if self.task_type == "LDV":
             if "shader_ma" in publish_paths["maya"] and "shader_json" in publish_paths["maya"]:
-                self.shader_ma_path = publish_paths["maya"]["shader_ma"]
                 self.shader_json_path = publish_paths["maya"]["shader_json"]
             else:
                 print("Warning: Shader export paths are not defined in the publishing paths.")
-                self.shader_ma_path = None
                 self.shader_json_path = None
         
-        self.publish()
-        
     def publish(self): # Task 유형에 맞는 퍼블리쉬 실행
+        publish_pathes = {
+            "scene path": self.scene_path,
+            "cache path": self.abc_path,
+            "playblast path": self.prod_path+self.out_name
+            }
+        
         if self.task_type in ["MDL", "RIG", "LDV"]: 
             # Asset 퍼블리쉬 실행
             self._publish_asset()
@@ -89,6 +99,7 @@ class MayaPublisher():
             # LDV 작업일 경우 쉐이더 퍼블리쉬 실행
             if self.task_type == "LDV":
                 self._publish_shader()
+                publish_pathes["shader path"] = self.shader_json_path
 
         elif self.task_type in ["MM", "LAY", "ANM"]:
             # Shot 퍼블리쉬 작업
@@ -97,6 +108,8 @@ class MayaPublisher():
         elif self.task_type in ["LGT"]:
             # 라이팅 렌더 작업
             self._publish_light()
+        
+        return publish_pathes
 
     def get_shaders(self):
         shading_groups = cmds.ls(type="shadingEngine")
@@ -141,11 +154,11 @@ class MayaPublisher():
 
     def _publish_shader(self): # LDV에서 하나의 오브제에 연결된 쉐이더 값 받아와서 퍼블리쉬
         """LDV 퍼블리쉬 : 쉐이더를 .ma & .json 파일로 저장"""
-        os.makedirs(os.path.dirname(self.shader_ma_path), exist_ok=True) # 폴더가 없으면 자동으로 생성
-        self.export_shader(self.shader_ma_path) # 쉐이더를 .ma 파일로 저장
+        os.makedirs(os.path.dirname(self.scene_path), exist_ok=True) # 폴더가 없으면 자동으로 생성
+        self.export_shader(self.scene_path) # 쉐이더를 .ma 파일로 저장
         self.save_shader_info_json(self.shader_json_path) # 쉐이더 정보를 Json 파일로 저장
         
-        print(f"Shader Publishing completed: {self.shader_ma_path}, {self.shader_json_path}")
+        print(f"Shader Publishing completed: {self.scene_path}, {self.shader_json_path}")
     
     def check_valid_path(path):
         if path is None or not isinstance(path, str) or path.strip() == "":
@@ -253,9 +266,6 @@ class MayaPublisher():
         if cmds.objExists("persp"):
             cmds.setAttr("persp.renderable", 0)
 
-        # 파일 이름 프리픽스 설정
-        cmds.setAttr("defaultRenderGlobals.imageFilePrefix", "<Scene>", type="string")
-
         print(" Render settings applied successfully.")
 
     def start_batch_render(self, output_dir):
@@ -264,6 +274,9 @@ class MayaPublisher():
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+
+        # 파일 이름 프리픽스 설정
+        cmds.setAttr("defaultRenderGlobals.imageFilePrefix", output_dir + "/<scene>", type="string")
 
         # 렌더 엔진 확인 (Arnold)
         current_renderer = cmds.getAttr("defaultRenderGlobals.currentRenderer")
@@ -323,16 +336,16 @@ class MayaPublisher():
         
         for option in options:
             self.set_viewport_option(option)
-            type_name = option.replace(" ", "")
-            in_name = f"_{type_name}.mov"
+            option_name = option.replace(" ", "")
+            in_name = f"_{option_name}.mov"
             temp_in_path = publish_paths[0]+in_name  # 임시 저장 경로
-            self.out_name = f"_{type_name}_v{self.version:03d}.mov"
+            out_name = f"_{option_name}_v{self.version:03d}.mov"
 
             # Playblast 한 번만 실행
             self.export_playblast(temp_in_path)
 
             for publish_path in publish_paths:
-                out_path = publish_path+self.out_name
+                out_path = publish_path+ out_name
 
                 # FFmpeg 변환 (레터박스 & 오버레이 적용)
                 FileConverter.convert_with_overlay_and_letterbox(temp_in_path, out_path, self.publish_data)

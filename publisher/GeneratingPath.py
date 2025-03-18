@@ -45,7 +45,6 @@ class FilePath:
                 "mov_plb": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/maya/data/{shot_or_name}_{task}",
                 "mov_product": f"/nas/show/{project}/product/{timestamp}/{seq_or_type}/{shot_or_name}_{task}",
                 "abc_cache": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/maya/alembic/",
-                "shader_ma": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/maya/scenes/{shot_or_name}_{task}_v{version:03d}.ma",
                 "shader_json": f"/nas/show/{project}/{entity_type}/{seq_or_type}/{shot_or_name}/{task}/pub/maya/scenes/{shot_or_name}_{task}_v{version:03d}.json"
             },
             "nuke": {

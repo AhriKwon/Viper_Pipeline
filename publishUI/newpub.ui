@@ -163,8 +163,8 @@ color: black;  /* 글자 색상 */</string>
      <rect>
       <x>410</x>
       <y>160</y>
-      <width>221</width>
-      <height>141</height>
+      <width>224</width>
+      <height>127</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -344,6 +344,11 @@ QLabel {
       <width>241</width>
       <height>231</height>
      </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
     </property>
     <property name="text">
      <string>TextLabel</string>

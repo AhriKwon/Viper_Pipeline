@@ -220,7 +220,7 @@ class PublishUI(QMainWindow):
         
         groupBoxLayout = QGridLayout()
         self.checkboxes = []
-        options = ["shader", "wireframe on shader", "textured", "wireframe on textured"]
+        options = ["shaded", "wireframe on shaded", "textured", "wireframe on textured"]
 
         for i, option in enumerate(options):
             checkbox = QCheckBox(option)
@@ -264,17 +264,19 @@ class PublishUI(QMainWindow):
             file_info = self.extract_file_info(file_path)
             if file_info:
                 self.update_publish_info(
-                    file_info["file_name"], file_info["file_size"], file_info["task_name"]
+                    file_info["file_name"], file_info["file_size"], file_info["task_name"],
+                    file_info["start_date"], file_info["due_date"]
                 )
         else:
             self.ui.label_publish_info.setText("퍼블리시 정보 없음")
             self.ui.label_publish_info.setStyleSheet("font-size: 12px; color: white;")
 
-    def update_publish_info(self, file_name, file_size, task_name):
+    def update_publish_info(self, file_name, file_size, task_name, start_date, due_date):
         """
         선택된 파일의 정보를 업데이트
         """
-        info_text = f"파일: {file_name}\n크기: {file_size:.2f} MB\n태스크: {task_name}"
+        self.ui.label_filename.setText(file_name)
+        info_text = f"크기: {file_size:.2f} MB\n태스크: {task_name}\n태스크 시작일: {start_date}\n태스크 마감일: {due_date}"
         self.ui.label_publish_info.setText(info_text)
 
     def extract_file_info(self, file_path):
@@ -285,7 +287,7 @@ class PublishUI(QMainWindow):
             return None
 
         file_size = os.path.getsize(file_path) / (1024 * 1024)  # MB 단위 변환
-        file_name = os.path.basename(file_path)
+        self.file_name = os.path.basename(file_path)
 
         # Task ID를 가져오고 관련 정보를 샷그리드에서 조회
         task_id = manager.get_task_id_from_file(file_path)
@@ -295,11 +297,15 @@ class PublishUI(QMainWindow):
             task_info = manager.get_task_by_id(task_id)
             if task_info:
                 task_name = task_info["content"]  # 태스크 이름 가져오기
+                start_date = task_info["start_date"]
+                due_date = task_info["due_date"]
 
         return {
-            "file_name": file_name,
+            "file_name": self.file_name,
             "file_size": file_size,
             "task_name": task_name,
+            "start_date": start_date,
+            "due_date": due_date,
         }
     
     def setup_thumbnail_capture(self):
@@ -329,6 +335,7 @@ class PublishUI(QMainWindow):
         """
         캡처된 썸네일을 UI에 업데이트
         """
+        self.thumb_path = save_path
         if os.path.exists(save_path):
             pixmap = QPixmap(save_path).scaled(320, 180, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             self.ui.label_thumbnail.setPixmap(pixmap)
@@ -347,7 +354,7 @@ class PublishUI(QMainWindow):
         file_path = self.get_current_file_path()  # 실행 중인 파일 경로 가져오기
 
         if not file_path:
-            UI_support.show_message.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
+            UI_support.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
             return
         
         # file_data 자동 생성
@@ -371,23 +378,35 @@ class PublishUI(QMainWindow):
             # MayaPublisher에서 버전 경로 가져오기
             version_path = f"{maya_pub.prod_path}{maya_pub.out_name}" # 퍼블리시된 최종 경로
 
-        elif file_path.endswith(".nk", ".nknc"):
+        elif file_path.endswith((".nk", ".nknc")):
             sys.path.append(os.path.abspath(os.path.join(viper_path, 'publisher')))
             from NukePublisher import NukePublisher
 
             # NukePublisher 실행
-            nuke_pub = NukePublisher(file_path)
+            nuke_pub = NukePublisher(file_data)
             publish_result = nuke_pub.publish()
 
         else:
-            UI_support.show_message.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
+            UI_support.show_message("error", "오류", "지원되지 않는 파일 형식입니다.")
             return
 
         # 퍼블리시 성공 여부 확인
         if publish_result:
-            self.update_db_and_sg(version_path, publish_result)
+            # 업데이트에 필요한 데이터 수집
+            version_path = publish_result["playblast path"]
+            scene_path = publish_result["scene path"]
+            description = self.ui.lineEdit_memo.text()
+            thumb_path = self.thumb_path if self.thumb_path else None
+            data = {
+                "file_name": self.file_name,
+                "file_path": scene_path,
+                "description": description,
+                "thumbnail": thumb_path
+            }
+            # 데이터베이스 및 샷그리드 업데이트 시작
+            self.update_db_and_sg(version_path, data)
         else:
-            UI_support.show_message.show_message("error", "오류", "퍼블리시 실패")
+            UI_support.show_message("error", "오류", "퍼블리시 실패")
         
     def get_current_file_path(self):
         """
@@ -423,13 +442,13 @@ class PublishUI(QMainWindow):
         # 파일에서 Task ID 가져오기
         task_id = manager.get_task_id_from_file(file_path)
         if not task_id:
-            UI_support.show_message.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
+            UI_support.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return None
         
         # 샷그리드에서 Task 정보 가져오기
         task_info = manager.get_task_by_id(task_id)
         if not task_info:
-            UI_support.show_message.show_message("error", "오류", "Task 정보를 가져올 수 없습니다.")
+            UI_support.show_message("error", "오류", "Task 정보를 가져올 수 없습니다.")
             return None
 
         # 프로젝트 정보 가져오기
@@ -442,11 +461,13 @@ class PublishUI(QMainWindow):
         options = self.get_selected_options()
 
         # Asset 또는 Shot 정보 분기 처리
-        asset_type, seq, shot = None, None, None
+        asset_type, seq, shot, start_frame, last_frame = None, None, None, None, None
         if entity_type == "Asset":
-            asset_type = task_info["entity"].get("sg_asset_type", "Unknown")
+            entity_type = "assets"
+            asset_type = manager.get_asset_data(entity_name)
         elif entity_type == "Shot":
-            seq = task_info["entity"].get("sg_sequence", {}).get("name", "Unknown")
+            entity_type = "seq"
+            seq = entity_name.rsplit('_')[0]
             shot = entity_name
             start_frame, last_frame = manager.get_shot_cut_data(entity_name)
 
@@ -457,7 +478,7 @@ class PublishUI(QMainWindow):
         file_data = {
             "project": project,
             "entity_type": entity_type,
-            "task_type": task_type.rsplit('_')[1],
+            "task_type": task_type.rsplit('_', 1)[1],
             "options": options,
             "asset_type": asset_type,
             "name": entity_name.rsplit('_')[0],
@@ -496,10 +517,10 @@ class PublishUI(QMainWindow):
         """
         퍼블리시 성공 후 DB와 ShotGrid 업데이트
         """
-        task_id = manager.get_task_id_from_file(data["path"])
+        task_id = manager.get_task_id_from_file(data["file_path"])
 
         if not task_id:
-            UI_support.show_message.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
+            UI_support.show_message("error", "오류", "파일에서 Task ID를 찾을 수 없습니다.")
             return
         
         manager.publish(task_id, version_path, data)
