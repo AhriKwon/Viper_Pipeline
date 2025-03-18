@@ -2,7 +2,7 @@ from PySide6.QtWidgets import (
     QApplication, QMainWindow, QDialog, QWidget, QLabel, QVBoxLayout, 
     QHBoxLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit,
     QGraphicsOpacityEffect, QGridLayout,QTableWidget, QTableWidgetItem, QCheckBox,QGraphicsOpacityEffect,QGraphicsBlurEffect,
-    QLabel
+    QLabel,QTabWidget
     )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtCore import (
@@ -39,7 +39,7 @@ class LoginWindow(QDialog):
         super().__init__()
         self.load_ui()
         UI_support.center_on_screen(self)
-    
+      
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
         ui_file_path = f"{current_directory}/newlogin.ui"
@@ -63,6 +63,8 @@ class LoginWindow(QDialog):
         self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help") 
         self.pushButton_login.clicked.connect(self.attempt_login)
         self.label_background = self.ui.findChild(QLabel, "label_background")
+        
+        
 
         image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
         self.label_background.setPixmap(QPixmap(image_path))
@@ -225,8 +227,10 @@ class LoadUI(QMainWindow):
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
         self.dragPos = None  # 창 이동을 위한 변수
 
-        self.tabWidget_info = self.ui.tabWidget_info 
+        self.tabWidget_lib = self.ui.tabWidget_lib
         self.initialize_labels()     
+        tab_bar = self.ui.tabWidget_lib.tabBar()
+        tab_bar.move(tab_bar.x() + 200, tab_bar.y())  # ✅ 50px 오른쪽으로 이동
         
         UI_support.center_on_screen(self)
 
@@ -269,13 +273,20 @@ class LoadUI(QMainWindow):
         self.ui = loader.load(ui_file)
         self.setCentralWidget(self.ui)
         # self.ui.show()
-        
+        # 🔹 위젯을 직접 찾기
+        self.tabWidget_info = self.ui.findChild(QTabWidget, "tabWidget_info")
+
+        if self.tabWidget_info:
+            print("tabWidget_info가 정상적으로 로드됨!")
+            self.tabWidget_info.move(self.tabWidget_info.x(), self.tabWidget_info.y() - 10)  # 10px 위로 이동
+        else:
+            print("❌ tabWidget_info를 찾을 수 없음!")
+            
 
         self.list_widgets = [self.ui.listWidget_wtg, self.ui.listWidget_ip, self.ui.listWidget_fin]
 
         self.ui.tabWidget_info.setVisible(False)
-
-    
+        
     def mousePressEvent(self, event):
             """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
             if event.button() == Qt.LeftButton:
@@ -306,8 +317,7 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-
-        self.ui.label_filename2.setText(task['content'])
+        
         self.ui.label_filename.setText(task['content'])
         self.ui.label_startdate.setText(task["start_date"])
         self.ui.label_duedate.setText(task["due_date"])
@@ -551,13 +561,13 @@ class LoadUI(QMainWindow):
 
         # 기준이 되는 중앙 라벨 가져오기
         label_central = self.ui.label_central
-        central_x = label_central.x()
+        central_x = label_central.x() + 21
         central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
 
         for i in range(dot_count):
             dot = QLabel(self)
             dot.setFixedSize(dot_size, dot_size)
-            dot.move(central_x + i * spacing, central_y)
+            dot.move(central_x +21 + i * spacing, central_y)
             dot.setStyleSheet("background-color: gray; border-radius: 7px;")
             dot.show()
             self.dots.append(dot)
@@ -565,8 +575,8 @@ class LoadUI(QMainWindow):
             # 애니메이션 설정
             animation = QPropertyAnimation(dot, b"pos")
             animation.setDuration(1600)
-            animation.setStartValue(QPoint(dot.x(), central_y))  # 원래 위치
-            animation.setEndValue(QPoint(dot.x(), central_y - 10))  # 위로 점프
+            animation.setStartValue(QPoint(dot.x() +21, central_y))  # 원래 위치
+            animation.setEndValue(QPoint(dot.x() +21, central_y - 10))  # 위로 점프
             animation.setEasingCurve(QEasingCurve.OutQuad)  # 부드럽게 점프
 
             # 애니메이션이 끝나면 다시 원래 위치로 돌아옴
@@ -840,7 +850,9 @@ class LoadUI(QMainWindow):
             file_name = works[-1]['path']
         else:
             file_name = None
-
+        self.label_filename3 = self.ui.findChild(QLabel, "label_filename3") 
+        
+        self.label_filename3.setText(task['content'])
         self.ui.label_info1.setText(task['content'])
         self.ui.label_info2.setText(task['content'])
         self.ui.label_info3.setText(task["start_date"])
