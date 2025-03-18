@@ -1,6 +1,6 @@
 try:
     from PySide6.QtWidgets import (
-        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,
+        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout, QMessageBox,
         QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
         QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
     )
@@ -9,7 +9,7 @@ try:
     from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
 except:
     from PySide2.QtWidgets import (
-        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,
+        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout, QMessageBox,
         QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
         QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
     )
@@ -22,6 +22,8 @@ from typing import TypedDict
 
 publish_path = os.path.dirname(__file__)
 viper_path = os.path.join(publish_path, '..')
+
+from Viper_loading import LoadingUI
 
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(viper_path, 'shotgridAPI')))
@@ -188,12 +190,17 @@ class PublishUI(QMainWindow):
         self.dragPos = None
 
     def start_capture_mode(self):
+       """
+       스크린 캡쳐 모드 실행
+       """
        self.hide()
        self.overlay = ScreenCapture(self)
        self.overlay.show()
 
     def load_ui(self):
-
+        """
+        퍼블리시 UI 로드
+        """
         ui_file_path = os.path.join(publish_path ,"newpub.ui")
 
         ui_file = QFile(ui_file_path)
@@ -349,6 +356,26 @@ class PublishUI(QMainWindow):
 
     def run_publish(self):
         """
+        퍼블리시 실행 및 UI 전환
+        """
+        file_path = self.get_current_file_path()
+
+        if not file_path:
+            UI_support.show_message("error", "오류", "현재 실행 중인 파일이 없습니다.")
+            return
+        
+        # 현재 UI 숨기기
+        self.hide()
+
+        # 로딩 UI 표시
+        self.loading_ui = LoadingUI()
+        self.loading_ui.show()
+
+        # 퍼블리시 실행 (비동기 처리)
+        QTimer.singleShot(100, lambda: self.process_publish())
+
+    def process_publish(self):
+        """
         현재 실행 중인 파일을 분석하고, Maya 또는 Nuke 퍼블리시 실행
         """
         file_path = self.get_current_file_path()  # 실행 중인 파일 경로 가져오기
@@ -405,9 +432,49 @@ class PublishUI(QMainWindow):
             }
             # 데이터베이스 및 샷그리드 업데이트 시작
             self.update_db_and_sg(version_path, data)
+
+            # 퍼블리시 성공 시 UI 전환 및 알림 표시
+            self.show_publish_success()
         else:
             UI_support.show_message("error", "오류", "퍼블리시 실패")
-        
+    
+    def show_publish_success(self):
+        """
+        퍼블리시 성공 후 알림창 표시 및 UI 종료
+        """
+        # 로딩 UI 닫기
+        if hasattr(self, "loading_ui"):
+            self.loading_ui.close()
+
+        # 퍼블리시 결과 데이터 추출
+        version_path = publish_result.get("playblast path", "경로 없음")
+        scene_path = publish_result.get("scene path", "경로 없음")
+        additional_paths = "\n".join([f"{key}: {value}" for key, value in publish_result.items() if "path" in key])
+
+        # 메시지 텍스트 생성
+        message_text = f"퍼블리시가 성공적으로 완료되었습니다.\n\n" \
+                    f"▶ 영상 경로:\n{version_path}\n\n" \
+                    f"▶ 씬 파일 경로:\n{scene_path}\n\n" \
+                    f"📁 추가 파일 경로:\n{additional_paths}"
+
+        # 퍼블리시 완료 메시지 박스 표시
+        msg = QMessageBox()
+        msg.setWindowTitle("퍼블리시 완료")
+        msg.setText(message_text)
+        msg.setIcon(QMessageBox.Information)
+        msg.setStandardButtons(QMessageBox.Ok)
+
+        # 확인 버튼 클릭 시 프로그램 종료
+        msg.buttonClicked.connect(self.close_all_ui)
+        msg.exec()
+
+    def close_all_ui(self):
+        """
+        모든 UI 종료
+        """
+        self.close()  # 현재 UI 종료
+        QApplication.quit()  # 앱 종료
+
     def get_current_file_path(self):
         """
         Maya 또는 Nuke에서 현재 열려있는 파일 경로를 가져옴
