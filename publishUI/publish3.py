@@ -51,8 +51,6 @@ class PublishUI(QMainWindow):
         self.connect_signals() # 파일 정보 열람
         self.set_checkbox() # 체크박스 실행 (마야파일일때)
         self.populate_file_list()  # 파일 목록을 tableWidget_filelist에 추가
-         # ✅ UI 로드 후 실행되도록 추가
-        self.hide_scrollbars()
 
 
         # publish2.ui 사이즈 조절
@@ -314,21 +312,6 @@ class PublishUI(QMainWindow):
         elif file_name.endswith(".hip"):
             return ICON_PATHS["houdini"]
         return None
-    
-    def hide_scrollbars(self):
-        """ ✅ 스크롤바를 투명화하여 보이지 않도록 설정 (기능 유지) """
-        self.tableWidget_filelist.setStyleSheet("""
-            QTableWidget {
-                background-color: transparent;
-            }
-            QScrollBar:vertical, QScrollBar:horizontal {
-                background: transparent;
-                width: 0px;
-                height: 0px;
-            }
-        """)
-
-   
 
     #========================================================================================================
     #-------------------------2-1 유저가 클릭한 파일만 정보 표시되도록 하기 ------------------------------------
