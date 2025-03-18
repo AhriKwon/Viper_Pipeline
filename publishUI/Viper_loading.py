@@ -1,44 +1,19 @@
-from PySide6.QtWidgets import QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout,QGridLayout
-from PySide6.QtWidgets import QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,QGraphicsOpacityEffect
-from PySide6.QtWidgets import QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
+from PySide6.QtWidgets import (
+    QMainWindow, QApplication, QLabel, QLineEdit, QWidget,QGraphicsOpacityEffect, QLineEdit
+    )
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import QFile,QPropertyAnimation,QPoint,QEasingCurve
-from shotgun_api3 import Shotgun
-from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QFont
-from PySide6.QtCore import Qt, QTimer,QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
-import sys, os, time, math
-
-
-
+from PySide6.QtCore import (
+     QFile,QPropertyAnimation,QPoint,QEasingCurve, Qt,
+     QTimer,QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
+     )
+import sys, os
 
 publish_path = os.path.dirname(__file__)
-viper_path = os.path.join(publish_path, '..')
-
-print (publish_path)
-print (viper_path)
-
-
-
-# # 샷그리드 연동
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
-from user_authenticator import UserAuthenticator
-from shotgrid_manager import ShotGridManager
-manager = ShotGridManager()
-# 로더
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
-from MayaLoader import MayaLoader
-from NukeLoader import NukeLoader
 
 class LoadingUI(QMainWindow):
     def __init__(self):
         super().__init__()
         
-        # self.setup_ui()
-
-       
-        
-
-
         self.load_ui() # qt
         self.label_back = self.ui.findChild(QLineEdit, "label_back")
         self.label_2 = self.ui.findChild(QLabel, "label_2")
@@ -91,9 +66,6 @@ class LoadingUI(QMainWindow):
             """ 마우스를 떼면 위치 초기화 """
             self.dragPos = None
     
-
-      
-
     def setup_text_rotation(self):
         """ 클릭할 때마다 label_text의 문장이 변경되도록 설정 """
         self.texts = [
@@ -189,7 +161,6 @@ class LoadingUI(QMainWindow):
         self.logo_animation.setLoopCount(-1)
         self.logo_animation.start()
 
-
     def create_bouncing_dots(self):
         """ label_central 아래에 원이 튀어오르는 애니메이션 생성 """
         print("점프 애니메이션 원 생성 시작!")
@@ -234,7 +205,6 @@ class LoadingUI(QMainWindow):
         for index, animation in enumerate(self.dot_animations):
             QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
 
-
     def load_ui(self):
 
             ui_file_path = os.path.join( publish_path ,"loading2.ui")
@@ -244,8 +214,7 @@ class LoadingUI(QMainWindow):
             self.ui = loader.load(ui_file)
             self.setCentralWidget(self.ui)
             self.ui.show()
-
-     
+  
 # 예외 발생 시 종료 코드 반환
 if __name__ == "__main__":
     app = QApplication(sys.argv)
