@@ -101,7 +101,7 @@ class ShotGridAPI:
         shots = ShotGridAPI.sg.find(
             "Shot",
             [["sg_sequence", "is", {"type": "Sequence", "id": sequence_id}]],
-            ["id", "code", "sg_asset_type", "description"]
+            ["id", "code", "sg_asset_type", "description", "sg_cut_in", "sg_cut_out"]
         )
 
         for shot in shots:
@@ -117,7 +117,7 @@ class ShotGridAPI:
         tasks = ShotGridAPI.sg.find(
             "Task",
             [["entity", "is", {"type": entity_type, "id": entity_id}]],
-            ["id", "content", "task_assignees", "sg_status_list", "start_date", "due_date"]
+            ["id", "project", "entity", "content", "task_assignees", "sg_status_list", "start_date", "due_date"]
         )
 
         for task in tasks:

@@ -215,6 +215,22 @@ class ShotGridManager:
         DB를 통해 파일 경로에서 Task ID를 추출하여 반환
         """
         return sg_db.get_task_id_from_file(file_path)
+    
+    def get_shot_cut_data(self, shot_name):
+        """
+        샷 이름을 기반으로 Cut In / Cut Out 값을 조회
+        """
+        return sg_db.get_shot_cut_data(shot_name)
+    
+    def get_asset_data(self, asset_name):
+        project_data = sg_db.get_database()
+        for project in project_data:
+            for asset in project.get("assets", []):
+                if asset["code"] == asset_name:
+                    return asset.get("sg_asset_type", "Unknown")
+        
+        print(f"⚠️ Asset {asset_name}에 대한 sg_asset_type 정보를 찾을 수 없습니다.")
+        return "Unknown"
 
     def publish(self, task_id: int, version_path: str, data: PublishedFileData):
         """

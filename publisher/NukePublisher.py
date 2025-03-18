@@ -20,8 +20,8 @@ class NukePublisher:
             "seq": None,
             "shot": None,
             "version": 1,
-            "start_num": 1,
-            "last_num": 99
+            "start_frame": 1001,
+            "last_frame": 1099
         }
 
         
@@ -34,15 +34,23 @@ class NukePublisher:
         self.task_type = self.shot_data["task_type"]
         self.seq = self.shot_data["seq"]
         self.shot = self.shot_data["shot"]
-        self.version = self.shot_data.get("version", 1)
+        self.version = self.shot_data["version"]
+        if default_data["start_frame"] == None:
+            self.start_frame = 1001
+        else:
+            self.start_frame = default_data["start_frame"]
+        if default_data["last_frame"] == None:
+            self.last_frame = 1099
+        else:
+            self.last_frame = default_data["last_frame"]
 
         self.publish_data = {
             "project_name": self.project,
             "shot_name": self.shot,
             "task_name": self.task_type,
             "version": self.version,
-            "start_num": 1,
-            "last_num": 99
+            "start_frame": self.start_frame,
+            "last_frame": self.last_frame
         }
 
         # 퍼블리싱 경로 생성
@@ -56,12 +64,11 @@ class NukePublisher:
         self.mov_path = publish_paths["nuke"]["mov_comp"]
         self.prod_path = publish_paths["nuke"]["mov_product"]
 
-        # Nuke 퍼블리쉬 함수 호출
-        self.nuke_publish([self.mov_path, self.prod_path])
-
-    def nuke_publish(self, publish_paths):
+    def publish(self):
         """Nuke Publishing 실행 (씬 렌더링/ MOV 출력)"""
         nuke.scriptSaveAs(self.scene_path)
+
+        publish_paths = [self.mov_path, self.prod_path]
 
         temp_in_path = publish_paths[0]+".mov"  # 임시 저장 경로
         out_name = f"_v{self.version:03d}.mov" # 출력 파일 이름
@@ -81,6 +88,12 @@ class NukePublisher:
         if os.path.exists(temp_in_path):
             os.remove(temp_in_path)
 
+        publish_pathes = {
+            "scene path": self.scene_path,
+            "playblast path": out_path}
+        
+        return publish_pathes
+
     def export_nukefile(self, output_path):
         """Nuke에서 유저가 선택한 Write 노드를 Apple ProRes MOV 파일로 렌더링"""
         selected_write_nodes = [node for node in nuke.selectedNodes() if node.Class() == "Write"]
@@ -96,5 +109,5 @@ class NukePublisher:
             write_node["codec"].setValue("prores")  # ProRes 코덱 설정 (필요한 경우)
 
             # 렌더 실행
-            nuke.execute(write_node, self.shot_data["start_num"], self.shot_data["last_num"])
+            nuke.execute(write_node, self.shot_data["start_frame"], self.shot_data["last_frame"])
             print(f"렌더링 완료: {write_node['file'].value()}")

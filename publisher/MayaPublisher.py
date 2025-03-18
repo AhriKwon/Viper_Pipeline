@@ -22,7 +22,9 @@ class MayaPublisher():
         "name": None,
         "seq": None,
         "shot": None,
-        "version": 1
+        "version": 1,
+        "start_frame" : 1001,
+        "last_frame" : 1099
         }
     
         # shot_data가 전달되면 기존 default_data를 업데이트
@@ -37,7 +39,15 @@ class MayaPublisher():
         self.name = default_data["name"]
         self.seq = default_data["seq"]
         self.shot = default_data["shot"]
-        self.version = default_data.get("version", 1)
+        self.version = default_data["version"]
+        if default_data["start_frame"] == None:
+            self.start_frame = 1001
+        else:
+            self.start_frame = default_data["start_frame"]
+        if default_data["last_frame"] == None:
+            self.last_frame = 1099
+        else:
+            self.last_frame = default_data["last_frame"]
         
         shot_name = self.name if self.name else self.shot
         self.publish_data = {
@@ -45,8 +55,8 @@ class MayaPublisher():
             "project_name" : self.project,
             "task_name" : self.task_type, 
             "version" : self.version,
-            "start_num" : 1,
-            "last_num" : 99
+            "start_frame" : self.start_frame,
+            "last_frame" : self.last_frame
             }
         # 경로 생성 로직 (seq or asset_type에 따라 다르게 처리)
         if self.asset_type:
@@ -63,19 +73,25 @@ class MayaPublisher():
         self.scene_path = publish_paths["maya"]["pub_scene"]
         self.plb_path = publish_paths["maya"]["mov_plb"]
         self.prod_path = publish_paths["maya"]["mov_product"]
+        option_name = self.options[0] if self.options else None
+        self.out_name = f"_{option_name}_v{self.version:03d}.mov"
         self.abc_path = publish_paths["maya"]["abc_cache"]
         
         # LDV 작업일 경우에만 쉐이더 파일 경로 추가
         if self.task_type == "LDV":
             if "shader_ma" in publish_paths["maya"] and "shader_json" in publish_paths["maya"]:
-                self.shader_ma_path = publish_paths["maya"]["shader_ma"]
                 self.shader_json_path = publish_paths["maya"]["shader_json"]
             else:
                 print("Warning: Shader export paths are not defined in the publishing paths.")
-                self.shader_ma_path = None
                 self.shader_json_path = None
         
     def publish(self): # Task 유형에 맞는 퍼블리쉬 실행
+        publish_pathes = {
+            "scene path": self.scene_path,
+            "cache path": self.abc_path,
+            "playblast path": self.prod_path+self.out_name
+            }
+        
         if self.task_type in ["MDL", "RIG", "LDV"]: 
             # Asset 퍼블리쉬 실행
             self._publish_asset()
@@ -83,6 +99,7 @@ class MayaPublisher():
             # LDV 작업일 경우 쉐이더 퍼블리쉬 실행
             if self.task_type == "LDV":
                 self._publish_shader()
+                publish_pathes["shader path"] = self.shader_json_path
 
         elif self.task_type in ["MM", "LAY", "ANM"]:
             # Shot 퍼블리쉬 작업
@@ -91,6 +108,8 @@ class MayaPublisher():
         elif self.task_type in ["LGT"]:
             # 라이팅 렌더 작업
             self._publish_light()
+        
+        return publish_pathes
 
     def get_shaders(self):
         shading_groups = cmds.ls(type="shadingEngine")
@@ -135,11 +154,11 @@ class MayaPublisher():
 
     def _publish_shader(self): # LDV에서 하나의 오브제에 연결된 쉐이더 값 받아와서 퍼블리쉬
         """LDV 퍼블리쉬 : 쉐이더를 .ma & .json 파일로 저장"""
-        os.makedirs(os.path.dirname(self.shader_ma_path), exist_ok=True) # 폴더가 없으면 자동으로 생성
-        self.export_shader(self.shader_ma_path) # 쉐이더를 .ma 파일로 저장
+        os.makedirs(os.path.dirname(self.scene_path), exist_ok=True) # 폴더가 없으면 자동으로 생성
+        self.export_shader(self.scene_path) # 쉐이더를 .ma 파일로 저장
         self.save_shader_info_json(self.shader_json_path) # 쉐이더 정보를 Json 파일로 저장
         
-        print(f"Shader Publishing completed: {self.shader_ma_path}, {self.shader_json_path}")
+        print(f"Shader Publishing completed: {self.scene_path}, {self.shader_json_path}")
     
     def check_valid_path(path):
         if path is None or not isinstance(path, str) or path.strip() == "":
@@ -225,8 +244,8 @@ class MayaPublisher():
         self.render_settings = {
             "resolution": (1920, 1080),  # HD_1080 preset
             "camera": self.get_renderable_camera(),
-            "start_frame": 1001,  # 기본값 (샷그리드에서 업데이트 예정)
-            "end_frame": 1100     # 기본값 (샷그리드에서 업데이트 예정)
+            "start_frame": self.start_frame,
+            "end_frame": self.last_frame 
         }
 
         cmds.setAttr("defaultRenderGlobals.imageFormat", 51)  # 51은 -> EXR 렌더 포맷 지시  (image format)
@@ -247,9 +266,6 @@ class MayaPublisher():
         if cmds.objExists("persp"):
             cmds.setAttr("persp.renderable", 0)
 
-        # 파일 이름 프리픽스 설정
-        cmds.setAttr("defaultRenderGlobals.imageFilePrefix", "<Scene>", type="string")
-
         print(" Render settings applied successfully.")
 
     def start_batch_render(self, output_dir):
@@ -258,6 +274,9 @@ class MayaPublisher():
         """
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
+
+        # 파일 이름 프리픽스 설정
+        cmds.setAttr("defaultRenderGlobals.imageFilePrefix", output_dir + "/<scene>", type="string")
 
         # 렌더 엔진 확인 (Arnold)
         current_renderer = cmds.getAttr("defaultRenderGlobals.currentRenderer")
@@ -317,16 +336,16 @@ class MayaPublisher():
         
         for option in options:
             self.set_viewport_option(option)
-            type_name = option.replace(" ", "")
-            in_name = f"_{type_name}.mov"
+            option_name = option.replace(" ", "")
+            in_name = f"_{option_name}.mov"
             temp_in_path = publish_paths[0]+in_name  # 임시 저장 경로
-            self.out_name = f"_{type_name}_v{self.version:03d}.mov"
+            out_name = f"_{option_name}_v{self.version:03d}.mov"
 
             # Playblast 한 번만 실행
             self.export_playblast(temp_in_path)
 
             for publish_path in publish_paths:
-                out_path = publish_path+self.out_name
+                out_path = publish_path+ out_name
 
                 # FFmpeg 변환 (레터박스 & 오버레이 적용)
                 FileConverter.convert_with_overlay_and_letterbox(temp_in_path, out_path, self.publish_data)
@@ -337,7 +356,7 @@ class MayaPublisher():
             if os.path.exists(temp_in_path):
                 os.remove(temp_in_path)
 
-    def make_turntable(self, cam_name="turntable_cam", start_frame=1, end_frame=100):
+    def make_turntable(self, cam_name="turntable_cam", start_frame=1001, end_frame=1100):
         """
         Maya에서 Turntable camera 생성 후 애니메이션을 적용하는 함수
         :param cam_name: 생성할 카메라 이름
@@ -360,8 +379,7 @@ class MayaPublisher():
 
         print(f"Turntable Camera '{cam_name}' created from frame {start_frame} to {end_frame}.")
 
-    @staticmethod
-    def save_playblast(output_path):
+    def save_playblast(self, output_path):
         """Playblast 실행 후 저장"""
         
         cmds.playblast(
@@ -377,8 +395,8 @@ class MayaPublisher():
             quality=100, # 비디오 품질 설정 (0~100)
             forceOverwrite=True, # 같은 이름 파일 덮어쓰기, False -> 오류 가능성 높아짐
             widthHeight=(1920, 1080), # 출력 해상도 FHD, 3840x2160 -> 4K
-            startTime=1, # 시작 프레임 설정
-            endTime=99 # 종료 프레임 설정
+            startTime=self.start_frame, # 시작 프레임 설정
+            endTime=self.last_frame # 종료 프레임 설정
         )
         print(f"Playblast 저장 완료: {output_path}")
 
@@ -417,11 +435,5 @@ class MayaPublisher():
         print(f"뷰포트 카메라 설정 완료: {camera_to_use}") 
         
         self.save_playblast(publish_path)
-    
-# if __name__ == "__main__":
-#     maya_pub = MayaPublisher()
-#     selected_options = ["shaded", "wireframe on shaded"]
-#     maya_pub.playblast_publish(selected_options)
-#     maya_pub.save_alembic()paths are not defined in the publishing paths.")
         
     

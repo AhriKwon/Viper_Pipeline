@@ -163,8 +163,8 @@ color: black;  /* 글자 색상 */</string>
      <rect>
       <x>410</x>
       <y>160</y>
-      <width>221</width>
-      <height>141</height>
+      <width>224</width>
+      <height>127</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -178,7 +178,6 @@ color: black;  /* 글자 색상 */</string>
     color: #696969;
     font-size: 14px;
     text-align: center;  /* 중앙 정렬 */
-    padding-top: 50px;  /* ✅ 배경 이미지와 텍스트가 겹치지 않도록 여백 추가 */
 }</string>
     </property>
     <property name="text">
@@ -251,38 +250,6 @@ QLabel {
     </property>
     <property name="text">
      <string/>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label_2">
-    <property name="geometry">
-     <rect>
-      <x>37</x>
-      <y>260</y>
-      <width>311</width>
-      <height>20</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <family>Pretendard ExtraLight</family>
-      <pointsize>-1</pointsize>
-     </font>
-    </property>
-    <property name="styleSheet">
-     <string notr="true">QLabel {
-
-    background-repeat: no-repeat;  /* 반복 방지 */
-    background-position: center;  /* 중앙 정렬 */
-    background-size: contain;  /* 크기를 자동 조정 */
-    color: #A9A9A9;  /* 글자 색상 (흰색) */
-    font-size: 9px;  /* 글자 크기 */
-  
-    text-align: center;  /* 텍스트 중앙 정렬 */
-}</string>
-    </property>
-    <property name="text">
-     <string>Please select the file you want to publish and select the method
-</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_user">
@@ -378,8 +345,16 @@ QLabel {
       <height>231</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <pointsize>12</pointsize>
+     </font>
+    </property>
     <property name="text">
      <string>TextLabel</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
     </property>
    </widget>
   </widget>
@@ -389,7 +364,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>667</width>
-     <height>27</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

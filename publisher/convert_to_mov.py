@@ -125,15 +125,15 @@ class FileConverter:
 
         input_file: 입력 비디오 파일 경로
         output_file: 출력 비디오 파일 경로
-햣        data: 슬레이트 정보 (shot_name, project_name, task_name, version, start_num, last_num)
+햣        data: 슬레이트 정보 (shot_name, project_name, task_name, version, start_frame, last_frame)
         """
         # 입력으로 받은 데이터를 사용하여 슬레이트 정보를 생성함.
         shot_name = data["shot_name"]
         project_name = data["project_name"]
         task_name = data["task_name"]
         version = data["version"]
-        start_num = data["start_num"]
-        last_num = data["last_num"]
+        start_frame = data["start_frame"]
+        last_frame = data["last_frame"]
 
         # FFmpeg 명령어 설정
         ffmpeg_cmd = [
@@ -150,7 +150,7 @@ class FileConverter:
             f"drawtext=text='{task_name}':fontcolor=white:fontsize=20:x=20:y=h*0.9+((h*0.1-text_h)/2),"
             f"drawtext=text='v{version:03d}':fontcolor=white:fontsize=20:x=(w-text_w)/2:y=h*0.9+((h*0.1-text_h)/2),"
             f"drawtext=text='TC %{{pts\\:hms}}':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.94-text_h,"
-            f"drawtext=text='%{{eif\\:n+{start_num}\\:d}} / {last_num}':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.96-text_h",
+            f"drawtext=text='%{{eif\\:n+{start_frame}\\:d}} / {last_frame}':fontcolor=white:fontsize=15:x=w-text_w-20:y=h*0.96-text_h",
             "-y",  # 강제 덮어쓰기
             output_file
         ]
