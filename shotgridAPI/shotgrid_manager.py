@@ -127,14 +127,17 @@ class ShotGridManager:
         """
         특정 Task의 워크 파일 가져오기
         """
-        task = self.get_task_by_id(task_id)
-        works = task["works"]
+        task = self.get_task_by_id(task_id)  # task 가져오기
 
         if task is None:
-            print(f"⚠️ 오류: task_id {task_id}에 해당하는 Task가 없습니다.")
-            return []  # 빈 리스트 반환
+            print(f"⚠️ Error: Task with ID {task_id} not found!")
+            return []  # None이 아니라 빈 리스트를 반환하여 안전하게 처리
 
-        return works
+        if "works" not in task:
+            print(f"⚠️ Error: 'works' key missing in task {task}")
+            return []  # 마찬가지로 빈 리스트 반환
+
+        return task["works"]
 
     def get_publishes_for_task(self, task_id):
         """
