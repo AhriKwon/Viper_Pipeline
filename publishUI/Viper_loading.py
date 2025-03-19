@@ -56,9 +56,6 @@ class LoadingUI(QMainWindow):
 
         self.animate_logo_opacity()
         self.create_bouncing_dots()
-        # self.mousePressEvent()
-        # self.mouseMoveEvent()
-        # self.mouseReleaseEvent()
         self.setup_text_rotation()  # 문장 변경 기능 추가
         self.animate_logo_opacity()  # 로고 애니메이션 실행
         

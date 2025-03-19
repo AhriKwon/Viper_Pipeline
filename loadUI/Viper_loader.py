@@ -403,6 +403,7 @@ class LoadUI(QMainWindow):
 
         # 애니메이션 실행
         self.animate_list_widgets()
+        QTimer.singleShot(150, self.animate_info_labels)
     
     def clear_task_info(self):
         """
@@ -442,7 +443,7 @@ class LoadUI(QMainWindow):
             
             # 리스트 위젯 배경 애니메이션
             bg_animation = QPropertyAnimation(label_bg, b"pos")
-            bg_animation.setDuration(800)  # 0.5초 동안 이동
+            bg_animation.setDuration(100)
             bg_animation.setStartValue(QPoint(start_x_bg, label_bg.y()))
             bg_animation.setEndValue(QPoint(end_x_bg, label_bg.y()))
             bg_animation.setEasingCurve(QEasingCurve.OutQuad)
