@@ -42,7 +42,8 @@ class UserAuthenticator:
     @staticmethod
     def login(email):
         """
-        유저 로그인 시 데이터베이스에 유저 데이터가 있으면 API 호출 없이 로그인 처리
+        유저 로그인 시 데이터베이스에 유저 데이터가 있으면
+        API 호출 없이 로그인 처리
         """
         # 데이터베이스에서 유저 정보 조회
         user = sg_db.get_user_data(email)  # DB에서 유저 데이터 가져오기

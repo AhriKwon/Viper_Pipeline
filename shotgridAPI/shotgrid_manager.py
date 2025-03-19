@@ -222,7 +222,7 @@ class ShotGridManager:
         """
         return sg_db.get_shot_cut_data(shot_name)
     
-    def get_asset_data(self, asset_name):
+    def get_asset_type(self, asset_name):
         project_data = sg_db.get_database()
         for project in project_data:
             for asset in project.get("assets", []):
@@ -270,6 +270,16 @@ class ShotGridManager:
         except Exception as e:
             print(f"퍼블리시 중 오류 발생: {e}")
             return None
+        
+    def update_task_status(self, task_id, status):
+        """
+        ShotGrid 및 DB에서 테스크의 상태 업데이트
+        """
+        # 샷그리드 웹페이지 상태 업데이트
+        sg_api.update_task_status(task_id, status)
+        sg_db.update_entity_status("tasks", task_id, status)
+        
+        return True
 
     def close(self):
         """

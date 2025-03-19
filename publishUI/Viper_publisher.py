@@ -201,7 +201,7 @@ class PublishUI(QMainWindow):
         """
         퍼블리시 UI 로드
         """
-        ui_file_path = os.path.join(publish_path ,"newpub.ui")
+        ui_file_path = os.path.join(publish_path ,"Viper_pub.ui")
 
         ui_file = QFile(ui_file_path)
         if not ui_file.exists():
@@ -434,11 +434,11 @@ class PublishUI(QMainWindow):
             self.update_db_and_sg(version_path, data)
 
             # 퍼블리시 성공 시 UI 전환 및 알림 표시
-            self.show_publish_success()
+            self.show_publish_success(publish_result)
         else:
             UI_support.show_message("error", "오류", "퍼블리시 실패")
     
-    def show_publish_success(self):
+    def show_publish_success(self, publish_result):
         """
         퍼블리시 성공 후 알림창 표시 및 UI 종료
         """
@@ -522,7 +522,8 @@ class PublishUI(QMainWindow):
         project = task_info["project"]["name"]
         entity_type = task_info["entity"]["type"]
         entity_name = task_info["entity"]["name"]
-        task_type = task_info["content"]
+        task_name = task_info["content"]
+        task_type = task_name.rsplit('_', 1)[1]
 
         # 체크박스 옵션 가져오기 (Maya 체크박스 상태 반영)
         options = self.get_selected_options()
@@ -531,7 +532,7 @@ class PublishUI(QMainWindow):
         asset_type, seq, shot, start_frame, last_frame = None, None, None, None, None
         if entity_type == "Asset":
             entity_type = "assets"
-            asset_type = manager.get_asset_data(entity_name)
+            asset_type = manager.get_asset_type(entity_name)
         elif entity_type == "Shot":
             entity_type = "seq"
             seq = entity_name.rsplit('_')[0]
@@ -545,7 +546,7 @@ class PublishUI(QMainWindow):
         file_data = {
             "project": project,
             "entity_type": entity_type,
-            "task_type": task_type.rsplit('_', 1)[1],
+            "task_type": task_type,
             "options": options,
             "asset_type": asset_type,
             "name": entity_name.rsplit('_')[0],

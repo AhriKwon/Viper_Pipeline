@@ -1,14 +1,27 @@
-from PySide6.QtWidgets import (
-    QMainWindow, QApplication, QLabel, QLineEdit, QWidget,QGraphicsOpacityEffect, QLineEdit
-    )
-from PySide6.QtUiTools import QUiLoader
-from PySide6.QtCore import (
-     QFile,QPropertyAnimation,QPoint,QEasingCurve, Qt,
-     QTimer,QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
-     )
+try:
+    from PySide6.QtWidgets import (
+        QMainWindow, QApplication, QLabel, QLineEdit, QWidget,QGraphicsOpacityEffect, QLineEdit
+        )
+    from PySide6.QtUiTools import QUiLoader
+    from PySide6.QtCore import (
+        QFile,QPropertyAnimation,QPoint,QEasingCurve, Qt,
+        QTimer,QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
+        )
+except:
+    from PySide2.QtWidgets import (
+        QMainWindow, QApplication, QLabel, QLineEdit, QWidget,QGraphicsOpacityEffect, QLineEdit
+        )
+    from PySide2.QtUiTools import QUiLoader
+    from PySide2.QtCore import (
+        QFile,QPropertyAnimation,QPoint,QEasingCurve, Qt,
+        QTimer,QPropertyAnimation, QEasingCurve, QSequentialAnimationGroup
+        )
+
 import sys, os
 
 publish_path = os.path.dirname(__file__)
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loadUI')))
+import UI_support
 
 class LoadingUI(QMainWindow):
     def __init__(self):
@@ -38,6 +51,8 @@ class LoadingUI(QMainWindow):
         self.setWindowFlags(Qt.FramelessWindowHint)  #  타이틀바 제거
         self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
         self.dragPos = None  # 창 이동을 위한 변수
+
+        UI_support.center_on_screen(self)
 
         self.animate_logo_opacity()
         self.create_bouncing_dots()
@@ -206,14 +221,14 @@ class LoadingUI(QMainWindow):
             QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
 
     def load_ui(self):
+        current_directory = os.path.dirname(__file__)
+        ui_file_path = f"{current_directory}/Viper_loading.ui"
 
-            ui_file_path = os.path.join( publish_path ,"loading2.ui")
-
-            ui_file = QFile(ui_file_path)
-            loader = QUiLoader()
-            self.ui = loader.load(ui_file)
-            self.setCentralWidget(self.ui)
-            self.ui.show()
+        ui_file = QFile(ui_file_path)
+        loader = QUiLoader()
+        self.ui = loader.load(ui_file)
+        self.setCentralWidget(self.ui)
+        self.ui.show()
   
 # 예외 발생 시 종료 코드 반환
 if __name__ == "__main__":

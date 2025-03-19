@@ -126,10 +126,11 @@ class FileLoader:
         if not file_path or not os.path.exists(file_path):
             QtWidgets.QMessageBox.warning(None, "오류", "유효한 파일 경로를 입력하세요.")
             return
-
-        MayaLoader.create_reference_maya(file_path)
-
-
+        
+        if MayaLoader.is_maya_running():
+            MayaLoader.create_reference_maya(file_path)
+        else:
+            QtWidgets.QMessageBox.warning(None, "오류", "Maya가 실행되지 않았습니다.")
 
     @staticmethod
     def version_up_selected_file(file_list_widget):
@@ -173,21 +174,21 @@ class FileLoader:
             return f"{base_name}_v001{extension}"
 
     @staticmethod
-    def create_file_path(program, part, asset_type, asset_name, seq, shot, task):
+    def create_file_path(part, asset_type, asset_name, seq, shot, task):
         """
         기본 파일 경로 생성
         이미 존재하는 파일은 버전업해서 생성
         
         """
         file_templates = {
-            "MDL": f"{FileLoader.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
-            "RIG": f"{FileLoader.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
-            "LDV": f"{FileLoader.base_dir}/assets/{{asset_type}}/{{asset_name}}/{{task}}/work/maya/scenes/{{asset_name}}_{{task}}_v001.ma",
-            "LAY": f"{FileLoader.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
-            "ANM": f"{FileLoader.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
-            "LGT": f"{FileLoader.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/maya/scenes/{{shot}}_{{task}}_v001.ma",
-            "FX": f"{FileLoader.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/houdini/scenes/{{shot}}_{{task}}_v001.hip",
-            "COM": f"{FileLoader.base_dir}/seq/{{seq}}/{{shot}}/{{task}}/work/nuke/scenes/{{shot}}_{{task}}_v001.nk",
+            "MDL": f"{FileLoader.base_dir}/assets/{asset_type}/{asset_name}/{task}/work/maya/scenes/{asset_name}_{task}_v001.ma",
+            "RIG": f"{FileLoader.base_dir}/assets/{asset_type}/{asset_name}/{task}/work/maya/scenes/{asset_name}_{task}_v001.ma",
+            "LDV": f"{FileLoader.base_dir}/assets/{asset_type}/{asset_name}/{task}/work/maya/scenes/{asset_name}_{task}_v001.ma",
+            "LAY": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/maya/scenes/{shot}_{task}_v001.ma",
+            "ANM": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/maya/scenes/{shot}_{task}_v001.ma",
+            "LGT": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/maya/scenes/{shot}_{task}_v001.ma",
+            "FX": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/houdini/scenes/{shot}_{task}_v001.hip",
+            "COM": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/nuke/scenes/{shot}_{task}_v001.nk",
         }
 
         if part not in file_templates:
@@ -245,12 +246,12 @@ class FileLoader:
         print(f"Houdini 파일 생성 완료: {file_path}")
 
     @staticmethod
-    def create_and_run_task_file(program, part, asset_type, asset_name, seq, shot, task, file_path_input):
+    def create_work_file(part, asset_type, asset_name, seq, shot, task):
         """
         파일 생성 후 프로그램으로 실행
         
         """
-        file_path = FileLoader.create_file_path(program, part, asset_type, asset_name, seq, shot, task)
+        file_path = FileLoader.create_file_path(part, asset_type, asset_name, seq, shot, task)
 
         if not file_path:
             return
@@ -258,7 +259,7 @@ class FileLoader:
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
 
         # 파일 생성
-        if file_path.endswith(".nk", ".nknc"):
+        if file_path.endswith((".nk", ".nknc")):
             FileLoader.create_nuke_file(file_path)
         elif file_path.endswith(".ma"):
             FileLoader.create_maya_file(file_path)
@@ -267,9 +268,7 @@ class FileLoader:
 
         print(f"새 파일 생성 완료: {file_path}")
 
-        # UI 업데이트 및 실행
-        file_path_input.setText(file_path)
-        FileLoader.run_file(file_path_input)
+        return file_path
 
 
     @staticmethod
