@@ -188,7 +188,7 @@ class FileLoader:
             "ANM": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/maya/scenes/{shot}_{task}_v001.ma",
             "LGT": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/maya/scenes/{shot}_{task}_v001.ma",
             "FX": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/houdini/scenes/{shot}_{task}_v001.hip",
-            "COM": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/nuke/scenes/{shot}_{task}_v001.nk",
+            "CMP": f"{FileLoader.base_dir}/seq/{seq}/{shot}/{task}/work/nuke/scenes/{shot}_{task}_v001.nk",
         }
 
         if part not in file_templates:
@@ -241,7 +241,7 @@ class FileLoader:
         미리 만든 Houdini 파일 복사해서 새 파일을 생성
         
         """
-        empty_hip_file = "/home/rapa/Viper/loader_test_createfile/test_v001.hip"
+        empty_hip_file = "/home/rapa/Viper/loader_test_createfile/test_v001.hipnc"
         shutil.copy(empty_hip_file, file_path)
         print(f"Houdini 파일 생성 완료: {file_path}")
 

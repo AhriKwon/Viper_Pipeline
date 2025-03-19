@@ -455,7 +455,7 @@ class PublishUI(QMainWindow):
         message_text = f"퍼블리시가 성공적으로 완료되었습니다.\n\n" \
                     f"▶ 영상 경로:\n{version_path}\n\n" \
                     f"▶ 씬 파일 경로:\n{scene_path}\n\n" \
-                    f"📁 추가 파일 경로:\n{additional_paths}"
+                    f"▶ 추가 파일 경로:\n{additional_paths}"
 
         # 퍼블리시 완료 메시지 박스 표시
         msg = QMessageBox()
