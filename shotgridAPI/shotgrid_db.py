@@ -82,10 +82,47 @@ class ShotgridDB:
             int: 수정된 문서의 개수
         """
         collection = self.db["projects"]
+        
+        update_query = None
+        update_field = None
+        array_filters = None
+
+        # Task가 Asset 아래 있는지 먼저 확인
+        asset_result = collection.find_one({"assets.tasks.id": entity_id})
+        if asset_result:
+            update_query = {"assets.tasks.id": entity_id}
+            update_field = {"assets.$[].tasks.$[task].sg_status_list": new_status}
+            array_filters = [{"task.id": entity_id}]
+
+        # Task가 Sequence → Shot 아래 있는지 확인
+        shot_result = collection.find_one({"sequences.shots.tasks.id": entity_id})
+        if shot_result:
+            update_query = {"sequences.shots.tasks.id": entity_id}
+            update_field = {"sequences.$[].shots.$[].tasks.$[task].sg_status_list": new_status}
+            array_filters = [{"task.id": entity_id}]
+
+        # Asset, Shot 자체의 상태 변경
+        if entity_type == "assets":
+            update_query = {"assets.id": entity_id}
+            update_field = {"assets.$.sg_status_list": new_status}
+            array_filters = None  # Asset에는 array filter가 필요 없음
+        elif entity_type == "shots":
+            update_query = {"sequences.shots.id": entity_id}
+            update_field = {"sequences.$[].shots.$[shot].sg_status_list": new_status}
+            array_filters = [{"shot.id": entity_id}]
+
+        # 잘못된 entity_type 처리
+        if not update_query:
+            print(f"⚠️ 지원되지 않는 entity_type: {entity_type}")
+            return 0
+
+        # 업데이트 실행
         result = collection.update_one(
-            {f"{entity_type}.id": entity_id},
-            {"$set": {f"{entity_type}.$.sg_status_list": new_status}}
+            update_query,
+            {"$set": update_field},
+            array_filters=array_filters if array_filters else None
         )
+
         return result.modified_count
     
     def add_workfile(self, task_id: int, file_path: str) -> int:
@@ -93,6 +130,8 @@ class ShotgridDB:
         새로운 Work 파일이 생성되었을 때 경로를 DB에 추가
         """
         collection = self.db["projects"]
+
+        file_name = os.path.basename(file_path)
         
         # assets.tasks 내부에서 task_id가 있는지 확인
         asset_result = collection.find_one({"assets.tasks.id": task_id})
@@ -100,7 +139,7 @@ class ShotgridDB:
             update_result = collection.update_one(
                 {"assets.tasks.id": task_id},
                 {"$push": {"assets.$[].tasks.$[task].works": 
-                        {"path": file_path, "created_at": datetime.now().isoformat()}}},
+                            {"file_name": file_name, "path": file_path, "created_at": datetime.now().isoformat()}}},
                 array_filters=[{"task.id": task_id}]
             )
             return update_result.modified_count
@@ -111,7 +150,7 @@ class ShotgridDB:
             update_result = collection.update_one(
                 {"sequences.shots.tasks.id": task_id},
                 {"$push": {"sequences.$[].shots.$[].tasks.$[task].works": 
-                        {"path": file_path, "created_at": datetime.now().isoformat()}}},
+                            {"file_name": file_name, "path": file_path, "created_at": datetime.now().isoformat()}}},
                 array_filters=[{"task.id": task_id}]
             )
             return update_result.modified_count

@@ -787,7 +787,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>start date</string>
+               <string>modified date</string>
               </property>
              </widget>
             </item>
@@ -858,7 +858,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>file type</string>
+               <string>due date</string>
               </property>
              </widget>
             </item>
@@ -907,7 +907,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>due date</string>
+               <string>file size</string>
               </property>
              </widget>
             </item>
@@ -934,7 +934,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>file name</string>
+               <string>start date</string>
               </property>
              </widget>
             </item>
@@ -1102,7 +1102,7 @@ QTabBar::tab:!selected{
 </string>
         </property>
         <property name="currentIndex">
-         <number>3</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab_asset">
          <property name="styleSheet">
@@ -1387,7 +1387,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>modified date</string>
+               <string>file size</string>
               </property>
              </widget>
             </item>
@@ -1414,7 +1414,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>start date</string>
+               <string>file type</string>
               </property>
              </widget>
             </item>
@@ -1441,7 +1441,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>file capacity</string>
+               <string/>
               </property>
              </widget>
             </item>
@@ -1468,7 +1468,7 @@ QTabBar::tab {
 }</string>
               </property>
               <property name="text">
-               <string>due date</string>
+               <string>modified date</string>
               </property>
              </widget>
             </item>
@@ -1491,7 +1491,7 @@ QTabBar::tab {
             </property>
             <property name="minimumSize">
              <size>
-              <width>262</width>
+              <width>264</width>
               <height>50</height>
              </size>
             </property>
@@ -1549,7 +1549,7 @@ QPushButton#pushButton_import:hover {
             </property>
             <property name="minimumSize">
              <size>
-              <width>262</width>
+              <width>264</width>
               <height>50</height>
              </size>
             </property>
@@ -1734,7 +1734,7 @@ QPushButton#pushButton_reference:hover {
     <property name="geometry">
      <rect>
       <x>345</x>
-      <y>185</y>
+      <y>182</y>
       <width>187</width>
       <height>487</height>
      </rect>
@@ -1756,7 +1756,7 @@ QPushButton#pushButton_reference:hover {
     <property name="geometry">
      <rect>
       <x>637</x>
-      <y>185</y>
+      <y>182</y>
       <width>187</width>
       <height>487</height>
      </rect>
@@ -1783,8 +1783,8 @@ QLabel {
    <widget class="QLabel" name="label_fin_bg">
     <property name="geometry">
      <rect>
-      <x>928</x>
-      <y>185</y>
+      <x>933</x>
+      <y>182</y>
       <width>187</width>
       <height>487</height>
      </rect>
@@ -1830,7 +1830,7 @@ QLabel {
      <x>0</x>
      <y>0</y>
      <width>1229</width>
-     <height>24</height>
+     <height>25</height>
     </rect>
    </property>
   </widget>

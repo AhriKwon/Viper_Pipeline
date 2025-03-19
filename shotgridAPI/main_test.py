@@ -8,18 +8,18 @@ sg_db = ShotgridDB()
 sg_api = ShotGridAPI()
 manager = ShotGridManager()
 
+sg_db.reset_database()
+
 # 사용 예시
 user_name= "owlgrowl0v0@gmail.com"
 user = UserAuthenticator.login(user_name)
 # 특정 유저 ID로 해당 유저가 속한 프로젝트 조회
 
-sg_db.reset_database()
-
-user_projects = sg_api.get_user_projects(user['id'])
-# 유저의 프로젝트 정보를 데이터베이스에 저장
-for project in user_projects:
-    project_data = sg_api.get_project_details(project["id"])
-    sg_db.save_project_data(project_data)
+# user_projects = sg_api.get_user_projects(user['id'])
+# # 유저의 프로젝트 정보를 데이터베이스에 저장
+# for project in user_projects:
+#     project_data = sg_api.get_project_details(project["id"])
+#     sg_db.save_project_data(project_data)
 
 # # 특정 프로젝트의 에셋 조회
 # project_name = "Viper"

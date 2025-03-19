@@ -17,13 +17,15 @@ from PySide6.QtCore import (
 from PySide6.QtGui import QRegion, QPainter  
 from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
 
-import sys, os, glob
+import sys, os, glob, datetime
 from functools import partial 
 # 샷그리드 API
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
 from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
+from shotgrid_db import ShotgridDB
+sg_db = ShotgridDB()
 # 로더
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
 from FileLoader import FileLoader
@@ -274,7 +276,10 @@ class LoadUI(QMainWindow):
         self.ui.listWidget_works.itemClicked.connect(self.show_works_details)
 
         # ip 리스트 위젯 상태가 바뀔 때 마다 새로고침
-        self.list_widgets[1].itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
+        self.ui.listWidget_ip.itemChanged.connect(lambda item: self.update_list_items(self.list_widgets[1]))
+
+        # My Task Tab WTG->IP 테스크 이동 발생
+        self.ui.listWidget_ip.itemChanged.connect(self.on_ip_item_changed)
 
         # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
         self.blur_in_animation()
@@ -381,27 +386,33 @@ class LoadUI(QMainWindow):
     #====================================애니메이션 함수들=======================================
     #================================(loginui가 성공할 시에)=================================
 
-    # def show_task_details(self, task_id, event=None):
-    #     """
-    #     클릭한 테스크 정보를 info탭에 띄워주는 함수
-    #     """
-    #     task = manager.get_task_by_id(task_id)
-    #     works = manager.get_works_for_task(task_id)
-    #     if works:
-    #         file_name = works[-1]['path']
-    #     else:
-    #         file_name = None
-        
-    #     self.ui.label_info1.setText(task["start_date"])
-    #     self.ui.label_info2.setText(task["due_date"])
+    def show_task_details(self, task_id, event=None):
+        """
+        클릭한 테스크 정보를 info탭에 띄워주는 함수
+        """
+        task = manager.get_task_by_id(task_id)
 
-    #     file_type = self.get_filetype(file_name)
-    #     self.ui.label_type.setText(file_type)  
+        self.clear_task_info()
+         
+        # task 탭 정보들
+        self.ui.label_filename3.setText(task['content'])
+        self.ui.label_info1.setText(task["start_date"])
+        self.ui.label_info2.setText(task["due_date"])
 
-    #     self.ui.tabWidget_info.show()
+        self.ui.tabWidget_info.show()
 
-    #     # 애니메이션 실행
-    #     self.animate_list_widgets(left=True)
+        # 애니메이션 실행
+        self.animate_list_widgets()
+    
+    def clear_task_info(self):
+        """
+        Task 정보를 초기화
+        """
+        self.ui.label_filename3.setText("")
+        self.ui.label_info1.setText("")
+        self.ui.label_info2.setText("")
+        self.ui.label_info3.setText("")
+        self.ui.label_info4.setText("")
 
     def animate_list_widgets(self):
         """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
@@ -422,12 +433,12 @@ class LoadUI(QMainWindow):
         for label_bg in widgets:
             # 기존 위치 저장
             start_x_bg = label_bg.x()
-            end_x_bg = start_x_bg - 295
+            end_x_bg = start_x_bg - 77
 
             if not label_bg == self.ui.label_wtg_bg:
-                end_x_bg -= 285
+                end_x_bg -= 75
             if label_bg == self.ui.label_fin_bg:
-                end_x_bg -= 270
+                end_x_bg -= 78
             
             # 리스트 위젯 배경 애니메이션
             bg_animation = QPropertyAnimation(label_bg, b"pos")
@@ -441,7 +452,6 @@ class LoadUI(QMainWindow):
 
             # GC 방지: 리스트에 저장
             self.animations.append(bg_animation)
-
 
     def initialize_labels(self):
         """ 애니메이션 실행 전에 모든 라벨을 초기 위치로 설정 """
@@ -588,7 +598,6 @@ class LoadUI(QMainWindow):
             self.mask_step += 4  # 확장 속도 (원하는 대로 조정)
         else:
             self.mask_timer.stop()  # 최대 크기에 도달하면 애니메이션 종료
-
 
     def start_label_left_animation(self):
         """ label_left, label_logo, label_viper, label_user가 함께 이동하는 애니메이션 실행 """
@@ -830,22 +839,17 @@ class LoadUI(QMainWindow):
 
         return latest_thumbnail
 
-    def show_task_details(self, task_id, event=None):
-        """
-        클릭한 테스크 정보를 info탭에 띄워주는 함수
-        """
-        task = manager.get_task_by_id(task_id)
-        works = manager.get_works_for_task(task_id)
-         
-        # task 탭 정보들
-        self.ui.label_filename3.setText(task['content'])
-        self.ui.label_info1.setText(task["start_date"])
-        self.ui.label_info2.setText(task["due_date"])
-
-        self.ui.tabWidget_info.show()
-        QTimer.singleShot(10, self.animate_info_labels)
-        print ("show task details")
-
+    def get_filetype(self, file_name):
+        if file_name == None:
+            return "work file 없음"
+        elif file_name.endswith((".ma", ".mb")):
+            return "Maya"
+        elif file_name.endswith((".nk", ".nknc")):
+            return "Nuke"
+        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
+            return "Houdini"
+        else:
+            return "알 수 없는 파일 형식"
 
     def show_task_works(self, task_id, event=None):
         """
@@ -861,7 +865,7 @@ class LoadUI(QMainWindow):
 
         # works 데이터 추가
         for work in works:
-            file_name = work["file_name"]  # 파일 이름이 없을 경우 기본값 설정
+            file_name = work.get("file_name", "Unnamed File")  # 파일 이름이 없을 경우 기본값 설정
             file_type = self.get_filetype(file_name)
             
             # 파일 형식에 맞게 로고 QLabel을 설정
@@ -899,7 +903,8 @@ class LoadUI(QMainWindow):
         """
         listWidget_works에서 아이템 클릭 시 파일 정보 표시
         """
-        file_path = item.data(Qt.UserRole)
+        file_data = item.data(Qt.UserRole)
+        file_path = file_data["path"]
         if not file_path or not os.path.exists(file_path):
             self.ui.label_info3.setText("파일 없음")
             self.ui.label_info4.setText("파일 크기 없음")
@@ -915,8 +920,8 @@ class LoadUI(QMainWindow):
         formatted_size = f"{file_size_mb:.2f} MB"
 
         # UI에 표시
-        self.ui.label_info3.setText(f"최근 수정: {formatted_time}")
-        self.ui.label_info4.setText(f"파일 크기: {formatted_size}")
+        self.ui.label_info3.setText(formatted_time)
+        self.ui.label_info4.setText(formatted_size)
 
     def animate_info_labels(self):
         """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
@@ -955,7 +960,6 @@ class LoadUI(QMainWindow):
 
         # UI 업데이트 후 100ms 뒤에 애니메이션 실행
         QTimer.singleShot(100, self._start_info_label_animation)
-
 
     def _start_info_label_animation(self):
         """Task 정보 라벨 등장 애니메이션 실행"""
@@ -1001,6 +1005,97 @@ class LoadUI(QMainWindow):
                 continue
 
         loader.run_file(file_path)
+    
+    def on_ip_item_changed(self, item):
+        """
+        리스트 위젯에서 특정 아이템이 변경될 때 실행됨.
+        """
+        if not item:
+            print("⚠️ 변경된 아이템이 None입니다.")
+            return
+
+        task_data = item.data(Qt.UserRole)
+        if not task_data:
+            print(f"⚠️ 변경된 아이템 '{item.text()}'에 UserRole 데이터가 없습니다.")
+            return
+
+        print(f"변경 감지 - 추가된 Task: {task_data['name']} (ID: {task_data['id']})")
+        self.move_task_to_ip(item)
+
+    def move_task_to_ip(self, item):
+        """
+        WTG 리스트에서 IP 리스트로 이동 시, Task 상태를 IP로 변경하고 반영.
+        """
+        
+        task_data = item.data(Qt.UserRole)
+        if not task_data:
+            print("⚠️ 이동할 Task 정보가 없습니다.")
+            return
+        
+        task_id = task_data["id"]
+        print(f"Task {task_id} 상태 변경: WTG → IP")
+
+        # Work 파일 생성
+        self.create_work_file(task_id)
+
+        # ShotGrid 및 DB에서 상태 업데이트
+        update_result = manager.update_task_status(task_id, "ip")
+        if update_result:
+            print(f"Task {task_id} 상태 업데이트 완료")
+        else:
+            print(f"⚠️ Task {task_id} 상태 업데이트 실패")
+
+    def create_work_file(self, task_id):
+        """
+        Work 파일을 생성하고 DB에 반영.
+        """
+        # Task 정보 가져오기
+        task_info = manager.get_task_by_id(task_id)
+        if not task_info:
+            print(f"⚠️ Task {task_id} 정보를 찾을 수 없습니다.")
+            return
+
+        # 파일 경로 생성을 위한 데이터 수집
+        entity_type = task_info["entity"]["type"]
+        entity_name = task_info["entity"]["name"]
+        task_name = task_info["content"]
+        task_type = task_name.rsplit('_', 1)[1]
+
+        if entity_type == "Asset":
+            asset_type = task_info["entity"].get("sg_asset_type")
+        else:
+            None
+        if entity_type == "Shot":
+            seq = task_info["entity"].get("sg_sequence", {}).get("name") 
+        else:
+            None
+        shot = entity_name if entity_type == "Shot" else None
+
+        asset_type, seq, shot = None, None, None
+        if entity_type == "Asset":
+            entity_type = "assets"
+            asset_type = manager.get_asset_type(entity_name)
+        elif entity_type == "Shot":
+            entity_type = "seq"
+            seq = entity_name.rsplit('_')[0]
+            shot = entity_name
+
+        # Work 파일 생성
+        work_file_path = FileLoader.create_work_file(task_type, asset_type, entity_name, seq, shot, task_type)
+
+        if not work_file_path:
+            print(f"⚠️ Work 파일 경로를 생성할 수 없습니다.")
+            return
+
+        print(f"Work 파일 생성 완료: {work_file_path}")
+
+        # DB에 Work 파일 추가
+        db_update_result = sg_db.add_workfile(task_id, work_file_path)
+        if db_update_result:
+            print(f"Work 파일이 DB에 추가됨: {work_file_path}")
+        else:
+            print(f"⚠️ DB 업데이트 실패")
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

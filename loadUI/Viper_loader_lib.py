@@ -6,7 +6,7 @@ from PySide6.QtCore import(
     Qt, QMimeData, QUrl,QTimer,QPoint,QPropertyAnimation,QEasingCurve
 )
 from PySide6.QtGui import QPixmap, QDrag
-import os, sys, json, glob
+import os, sys, json, glob, datetime
 
 import UI_support
 
@@ -46,39 +46,59 @@ class LibraryTab:
 
         # 이벤트 연결
         self.ui.pushButton_import.clicked.connect(self.import_file)
-        # self.ui.pushButton_reference.clicked.connect(self.reference_file)
+        self.ui.pushButton_reference.clicked.connect(self.reference_file)
 
-    def show_task_details(self, task_id, event=None):
+        self.table_widget.cellClicked.connect(self.show_lib_info)
+
+    def show_lib_info(self, row, col):
         """
         클릭한 테스크 정보를 info탭에 띄워주는 함수
         """
-        task = manager.get_task_by_id(task_id)
-        works = manager.get_works_for_task(task_id)
-        if works:
-            file_name = works[-1]['path']
-        else:
-            file_name = None
-        self.ui.label_filename_2.setText(task['content'])
-        self.ui.label_filename_2.setText(task['content'])
-        self.ui.label_startdate_2.setText(task["start_date"])
-        self.ui.label_duedate_2.setText(task["due_date"])
+        cell_widget = self.table_widget.cellWidget(row, col)
 
-        file_type = self.get_filetype(file_name)
-        self.ui.label_type_2.setText(file_type)  
+        file_path = cell_widget.property("file_path")
 
+        if not file_path or not os.path.exists(file_path):
+            self.ui.label_info3.setText("파일 없음")
+            self.ui.label_info4.setText("파일 크기 없음")
+            return
+        
+        # 파일 이름
+        file_name = os.path.basename(file_path)
+
+        # 파일 최근 편집 날짜 가져오기
+        last_modified_time = os.path.getmtime(file_path)
+        formatted_time = datetime.datetime.fromtimestamp(last_modified_time).strftime('%Y-%m-%d %H:%M:%S')
+
+        # 파일 크기 가져오기 (MB 단위 변환)
+        file_size = os.path.getsize(file_path)  # 바이트 단위
+        file_size_mb = file_size / (1024 * 1024)  # MB 변환
+        formatted_size = f"{file_size_mb:.2f} MB"
+
+        file_type = self.get_filetype(file_path)
+
+        self.ui.label_filename4.setText(file_name.rsplit('.')[0])
+        self.ui.label_info11.setText(file_type)
+        self.ui.label_info22.setText(formatted_time)
+        self.ui.label_info33.setText(formatted_size)
+
+        # 애니메이션 효과 적용
         self.ui.tabWidget_info2.show()
         QTimer.singleShot(10, self.animate_info_labels)
         print ("show task details")
 
-    def get_filetype(self, file_name):
-        if file_name == None:
-            return "work file 없음"
-        elif file_name.endswith((".ma", ".mb")):
+    def get_filetype(self, file_path):
+
+        ext = os.path.splitext(file_path)[-1].lower()
+
+        if ext.endswith((".ma", ".mb")):
             return "Maya"
-        elif file_name.endswith((".nk", ".nknc")):
+        elif ext.endswith((".nk", ".nknc")):
             return "Nuke"
-        elif file_name.endswith((".hip", ".hiplc", ".hipnc")):
-            return "Houdini"
+        elif ext.endswith(".abc"):
+            return "Cache"
+        elif ext.endswith((".mp4", ".mov", ".avi")):
+            return "Video"
         else:
             return "알 수 없는 파일 형식"
    
@@ -321,7 +341,7 @@ class LibraryTab:
         bookmark_checkbox.setParent(label_thumbnail)
 
         # 파일 이름 QLabel
-        label_name = QLabel(file_name)
+        label_name = QLabel(file_name.rsplit('.')[0])
         label_name.setAlignment(Qt.AlignCenter)
         label_name.setStyleSheet("color: white;")
 
@@ -371,6 +391,42 @@ class LibraryTab:
 
         if imported_files:
             UI_support.show_message("info", "파일 Import", f"{len(imported_files)}개 파일을 가져왔습니다.")
+    
+    def reference_file(self):
+        """
+        파일 reference
+        """
+        selected_indexes = self.table_widget.selectedIndexes()
+        print(f"선택된 인덱스: {selected_indexes}")
+
+        if not selected_indexes:
+            UI_support.show_message("error", "오류", "파일이 선택되지 않았습니다.")
+            return
+
+        ref_files = []  # 가져온 파일 리스트
+
+        for index in selected_indexes:
+            row = index.row()
+            col = index.column()
+
+            # 셀 위젯에서 파일 경로 가져오기
+            cell_widget = self.table_widget.cellWidget(row, col)
+            if not cell_widget:
+                continue
+            
+            # 파일 경로 가져오기
+            file_path = cell_widget.property("file_path")
+
+            if not file_path:
+                print(f"경고: {row}, {col} 셀에 파일 경로 없음")
+                continue
+
+            print(f"파일 가져오기: {file_path}")
+            loader.create_reference_file(file_path)  # 파일 로드 실행
+            ref_files.append(file_path)
+
+        if ref_files:
+            UI_support.show_message("info", "파일 Import", f"{len(ref_files)}개 파일을 가져왔습니다.")
 
     def save_bookmarks(self):
         """
