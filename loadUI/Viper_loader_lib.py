@@ -106,66 +106,66 @@ class LibraryTab:
         else:
             return "알 수 없는 파일 형식"
    
-    def animate_info_labels(self):
-        """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
-        print("Task 정보 라벨 애니메이션 시작!")
+    # def animate_info_labels(self):
+    #     """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+    #     print("Task 정보 라벨 애니메이션 시작!")
 
-        # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
-        label_pairs = [
+    #     # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
+    #     label_pairs = [
            
-            ("label_6", "label_filename"),
-            ("label_7", "label_type"),
-            ("label_8", "label_startdate"),
-            ("label_9", "label_duedate")
-        ]
+    #         ("label_6", "label_filename"),
+    #         ("label_7", "label_type"),
+    #         ("label_8", "label_startdate"),
+    #         ("label_9", "label_duedate")
+    #     ]
 
-        # 라벨 객체 저장
-        self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
+    #     # 라벨 객체 저장
+    #     self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
 
-        # 원래 위치 저장
-        self.original_positions = {
-            label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
-        }
+    #     # 원래 위치 저장
+    #     self.original_positions = {
+    #         label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
+    #     }
 
-        # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
-        screen_offset = -200  
-        self.start_positions = {
-            label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
-        }
+    #     # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
+    #     screen_offset = -200  
+    #     self.start_positions = {
+    #         label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
+    #     }
 
-        # 애니메이션 실행 전에 위치 강제 설정
-        for pair in self.labels:
+    #     # 애니메이션 실행 전에 위치 강제 설정
+    #     for pair in self.labels:
             
-            for label in pair:
-                print (pair, label)
-                label.move(self.start_positions[label])  
-                label.setVisible(True)  
+    #         for label in pair:
+    #             print (pair, label)
+    #             label.move(self.start_positions[label])  
+    #             label.setVisible(True)  
 
-        # UI 업데이트 후 100ms 뒤에 애니메이션 실행
-        QTimer.singleShot(100, self._start_info_label_animation)
+    #     # UI 업데이트 후 100ms 뒤에 애니메이션 실행
+    #     QTimer.singleShot(100, self._start_info_label_animation)
 
-    def _start_info_label_animation(self):
-        """
-        Task 정보 라벨 등장 애니메이션 실행
-        """
-        print("Task 정보 라벨 등장 애니메이션 실행!")
+    # def _start_info_label_animation(self):
+    #     """
+    #     Task 정보 라벨 등장 애니메이션 실행
+    #     """
+    #     print("Task 정보 라벨 등장 애니메이션 실행!")
 
-        self.animations = []
-        delay = 0
+    #     self.animations = []
+    #     delay = 0
 
-        for pair in self.labels:
-            for label in pair:
-                animation = QPropertyAnimation(label, b"pos", self)
-                animation.setDuration(1500)  
-                print (self.start_positions[label])
-                animation.setStartValue(self.start_positions[label])  
-                animation.setEndValue(self.original_positions[label])  
-                animation.setEasingCurve(QEasingCurve.OutBack)  
+    #     for pair in self.labels:
+    #         for label in pair:
+    #             animation = QPropertyAnimation(label, b"pos", self)
+    #             animation.setDuration(1500)  
+    #             print (self.start_positions[label])
+    #             animation.setStartValue(self.start_positions[label])  
+    #             animation.setEndValue(self.original_positions[label])  
+    #             animation.setEasingCurve(QEasingCurve.OutBack)  
 
-                QTimer.singleShot(delay, animation.start)  # 순차적 실행
-                self.animations.append(animation)
+    #             QTimer.singleShot(delay, animation.start)  # 순차적 실행
+    #             self.animations.append(animation)
 
-            delay += 200  # 딜레이 추가 (순차적 등장)
+    #         delay += 200  # 딜레이 추가 (순차적 등장)
 
 
 #////////////////////////////////////////////////////////////////////////////////////////////////////////////////

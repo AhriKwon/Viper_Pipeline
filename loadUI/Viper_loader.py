@@ -46,181 +46,179 @@ class LoginWindow(QDialog):
         # 버튼 가져오기
         self.login_button = self.ui.findChild(QPushButton, "pushButton_login")
 
-        # 버튼 클릭 시 소리 재생 연결
-        self.login_button.clicked.connect(self.play_button_sound)
+        # # 버튼 클릭 시 소리 재생 연결
+        # self.login_button.clicked.connect(self.play_button_sound)
 
-        #  사운드 효과 설정
-        self.button_sound = QSoundEffect()
-        self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
-        self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
+        # #  사운드 효과 설정
+        # self.button_sound = QSoundEffect()
+        # self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
+        # self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
 
-    def play_button_sound(self):
-            """ 로그인 버튼 클릭 시 소리 재생 """
-            print("버튼 클릭 소리 재생")
-            self.button_sound.play()
+    # def play_button_sound(self):
+    #         """ 로그인 버튼 클릭 시 소리 재생 """
+    #         print("버튼 클릭 소리 재생")
+    #         self.button_sound.play()
 
-    def load_ui(self):
-        current_directory = os.path.dirname(__file__)
-        ui_file_path = f"{current_directory}/Viper_login.ui"
-        self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
-        self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
-        self.dragPos = None  # 창 이동을 위한 변수
+    # def load_ui(self):
+    #     current_directory = os.path.dirname(__file__)
+    #     ui_file_path = f"{current_directory}/Viper_login.ui"
+    #     self.setWindowFlags(Qt.FramelessWindowHint)  # 타이틀바 제거
+    #     self.setAttribute(Qt.WA_TranslucentBackground)  # 배경 투명 설정
+    #     self.dragPos = None  # 창 이동을 위한 변수
 
-        ui_file = QFile(ui_file_path)
-        loader = QUiLoader()
-        self.ui = loader.load(ui_file)
-        self.setLayout(QVBoxLayout())
-        self.layout().addWidget(self.ui)
+    #     ui_file = QFile(ui_file_path)
+    #     loader = QUiLoader()
+    #     self.ui = loader.load(ui_file)
+    #     self.setLayout(QVBoxLayout())
+    #     self.layout().addWidget(self.ui)
 
-        # 로그인 창 크기 조정 
-        self.setGeometry(100, 100, 1200, 800)
-        self.resize(741, 491)
+    #     # 로그인 창 크기 조정 
+    #     self.setGeometry(100, 100, 1200, 800)
+    #     self.resize(741, 491)
         
-        self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
-        self.label_id = self.ui.findChild(QLabel, "label_id") 
-        self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
-        self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help") 
-        self.pushButton_login.clicked.connect(self.attempt_login)
-        self.label_background = self.ui.findChild(QLabel, "label_background")
+        # self.lineEdit_id = self.ui.findChild(QLineEdit, "lineEdit_id")
+        # self.label_id = self.ui.findChild(QLabel, "label_id") 
+        # self.pushButton_login = self.ui.findChild(QPushButton, "pushButton_login")
+        # self.pushButton_help = self.ui.findChild(QPushButton, "pushButton_help") 
+        # self.pushButton_login.clicked.connect(self.attempt_login)
+        # self.label_background = self.ui.findChild(QLabel, "label_background")
         
+        # image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
+        # self.label_background.setPixmap(QPixmap(image_path))
+        # self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        # self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        # image_path_2 = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인
+        # self.label_id.setPixmap(QPixmap(image_path_2))
+        # self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+
+        # self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
+        # self.setAttribute(Qt.WA_TranslucentBackground)  # 창의 배경을 투명하게 설정
+
+        # painter = QPainter(self)
+        # painter.setRenderHint(QPainter.Antialiasing)
+
+        # # 전체 창 크기 가져오기
+        # rect = self.rect()
+
+        # # 배경을 투명하게 설정
+        # painter.setBrush(QBrush(Qt.transparent))
+        # painter.setPen(QColor(0, 0, 0))  # 검정색 테두리
+
+        # # 검정 테두리를 그리기 (1px)
+        # painter.drawRect(rect.adjusted(10, 10, -10, -10))  # 안쪽으로 1px 조정하여 테두리만 표시
+        # self.forlogin_ani()
         
-
-        image_path = f"{current_directory}/forui/login.png"  # 배경 이미지 경로 확인
-        self.label_background.setPixmap(QPixmap(image_path))
-        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
-
-        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
-
-        image_path_2 = f"{current_directory}/forui/Group 3995.png"  # 배경 이미지 경로 확인
-        self.label_id.setPixmap(QPixmap(image_path_2))
-        self.label_id.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
-
-        self.label_background.setScaledContents(True)  # QLabel 크기에 맞게 자동 조정
-        self.setAttribute(Qt.WA_TranslucentBackground)  # 창의 배경을 투명하게 설정
-
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        # 전체 창 크기 가져오기
-        rect = self.rect()
-
-        # 배경을 투명하게 설정
-        painter.setBrush(QBrush(Qt.transparent))
-        painter.setPen(QColor(0, 0, 0))  # 검정색 테두리
-
-        # 검정 테두리를 그리기 (1px)
-        painter.drawRect(rect.adjusted(10, 10, -10, -10))  # 안쪽으로 1px 조정하여 테두리만 표시
-        self.forlogin_ani()
-        
-        def custom_message_handler(mode, context, message):
-            ignored_messages = [
-                "QPainter::setOpacity: Painter not active",
-                "QPainter::setWorldTransform: Painter not active",
-                "QPainter::restore: Unbalanced save/restore",
-                "QPainter::begin: A paint device can only be painted by one painter at a time.",
-                "QPainter::translate: Painter not active",
-                "QPainter::begin: A paint device can only be painted by one painter at a time.",
-                "QPainter::begin: Paint device returned engine == 0, type: 1",
-                "QPainter::drawRects: Painter not active"
-            ]
+        # def custom_message_handler(mode, context, message):
+        #     ignored_messages = [
+        #         "QPainter::setOpacity: Painter not active",
+        #         "QPainter::setWorldTransform: Painter not active",
+        #         "QPainter::restore: Unbalanced save/restore",
+        #         "QPainter::begin: A paint device can only be painted by one painter at a time.",
+        #         "QPainter::translate: Painter not active",
+        #         "QPainter::begin: A paint device can only be painted by one painter at a time.",
+        #         "QPainter::begin: Paint device returned engine == 0, type: 1",
+        #         "QPainter::drawRects: Painter not active"
+        #     ]
             
-            # 특정 메시지 무시
-            if any(ignored_msg in message for ignored_msg in ignored_messages):
-                return
+        #     # 특정 메시지 무시
+        #     if any(ignored_msg in message for ignored_msg in ignored_messages):
+        #         return
 
-            # 기본 Qt 메시지 출력
-            print(message)
+        #     # 기본 Qt 메시지 출력
+        #     print(message)
 
-        # Qt 메시지 핸들러 설치
-        qInstallMessageHandler(custom_message_handler)
+        # # Qt 메시지 핸들러 설치
+        # qInstallMessageHandler(custom_message_handler)
       
 
     #/////////////////////로그인창 애니메이션 실행 함수 넣는 곳!!1/////////////////////////////////////
-    def mousePressEvent(self, event):
-            """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
-            if event.button() == Qt.LeftButton:
-                self.dragPos = event.globalPosition().toPoint()
-                event.accept()
+    # def mousePressEvent(self, event):
+    #         """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+    #         if event.button() == Qt.LeftButton:
+    #             self.dragPos = event.globalPosition().toPoint()
+    #             event.accept()
 
-    def mouseMoveEvent(self, event):
-            """ 마우스를 드래그하면 창 이동 """
-            if event.buttons() == Qt.LeftButton and self.dragPos:
-                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
-                self.dragPos = event.globalPosition().toPoint()
-                event.accept()
+    # def mouseMoveEvent(self, event):
+    #         """ 마우스를 드래그하면 창 이동 """
+    #         if event.buttons() == Qt.LeftButton and self.dragPos:
+    #             self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+    #             self.dragPos = event.globalPosition().toPoint()
+    #             event.accept()
 
-    def mouseReleaseEvent(self, event):
-            """ 마우스를 떼면 위치 초기화 """
-            self.dragPos = None
+    # def mouseReleaseEvent(self, event):
+    #         """ 마우스를 떼면 위치 초기화 """
+    #         self.dragPos = None
 
-    def forlogin_ani(self):
+    # def forlogin_ani(self):
        
-        # 텍스트 애니메이션 설정
-        self.full_text = "Please enter your e-mail"  # 최종 표시될 텍스트
-        self.current_text = ""  # 현재 보여질 텍스트
-        self.text_index = 0  # 현재 위치 인덱스
+    #     # 텍스트 애니메이션 설정
+    #     self.full_text = "Please enter your e-mail"  # 최종 표시될 텍스트
+    #     self.current_text = ""  # 현재 보여질 텍스트
+    #     self.text_index = 0  # 현재 위치 인덱스
 
-        # QTimer 설정
-        self.timer = QTimer(self)
-        self.timer.timeout.connect(self.update_placeholder)
-        self.timer.start(100)  # 100ms 간격으로 실행
+    #     # QTimer 설정
+    #     self.timer = QTimer(self)
+    #     self.timer.timeout.connect(self.update_placeholder)
+    #     self.timer.start(100)  # 100ms 간격으로 실행
 
-    def update_placeholder(self):
-        """ 한 글자씩 placeholder에 추가하는 함수 """
-        if self.text_index < len(self.full_text):
-            self.current_text += self.full_text[self.text_index]  # 한 글자 추가
-            self.lineEdit_id.setPlaceholderText(self.current_text)  # 업데이트
-            self.text_index += 1  # 다음 인덱스로 이동
-        else:
-            self.timer.stop()  # 모든 글자가 추가되면 타이머 중지
+    # def update_placeholder(self):
+    #     """ 한 글자씩 placeholder에 추가하는 함수 """
+    #     if self.text_index < len(self.full_text):
+    #         self.current_text += self.full_text[self.text_index]  # 한 글자 추가
+    #         self.lineEdit_id.setPlaceholderText(self.current_text)  # 업데이트
+    #         self.text_index += 1  # 다음 인덱스로 이동
+    #     else:
+    #         self.timer.stop()  # 모든 글자가 추가되면 타이머 중지
 
 
     #///////////////////////////////////////////////////////////////////////////////////////////////
     
 
-    # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
-    def attempt_login(self):
-        email = self.lineEdit_id.text().strip()
+    # # 만약 email이 맞다면 mainwindow(loadui)가 실행되도록
+    # def attempt_login(self):
+    #     email = self.lineEdit_id.text().strip()
 
-        if not email:
-            UI_support.show_message("error", "오류", "이메일을 입력해주세요")
-            return
+    #     if not email:
+    #         UI_support.show_message("error", "오류", "이메일을 입력해주세요")
+    #         return
         
-        user_data = UserAuthenticator.login(email)
+    #     user_data = UserAuthenticator.login(email)
 
-        if user_data:
-            self.accept()
-            # self.main_window = LoadUI(email)
-            self.fade_out_animation()
-            self.main_window.show()
+    #     if user_data:
+    #         self.accept()
+    #         # self.main_window = LoadUI(email)
+    #         self.fade_out_animation()
+    #         self.main_window.show()
            
-        else:
-            UI_support.show_message("error", "오류", "등록되지 않은 사용자입니다")
-            return
+    #     else:
+    #         UI_support.show_message("error", "오류", "등록되지 않은 사용자입니다")
+    #         return
         
-    def fade_out_animation(self):
-        """로그인 창이 서서히 사라지는 애니메이션 효과"""
-        print("로그인 창 페이드 아웃 애니메이션 시작!")  # 디버깅용 출력
+    # def fade_out_animation(self):
+    #     """로그인 창이 서서히 사라지는 애니메이션 효과"""
+    #     print("로그인 창 페이드 아웃 애니메이션 시작!")  # 디버깅용 출력
 
-        # 투명도 효과 적용
-        self.opacity_effect = QGraphicsOpacityEffect(self)
-        self.setGraphicsEffect(self.opacity_effect)
+    #     # 투명도 효과 적용
+    #     self.opacity_effect = QGraphicsOpacityEffect(self)
+    #     self.setGraphicsEffect(self.opacity_effect)
 
-        # 투명도 애니메이션 설정 (1.0 → 0.0)
-        self.animation = QPropertyAnimation(self.opacity_effect, b"opacity")
-        self.animation.setDuration(2000)  # 2초 동안 서서히 사라짐
-        self.animation.setStartValue(1.0)  # 처음에는 불투명
-        self.animation.setEndValue(0.0)  # 완전히 투명
+    #     # 투명도 애니메이션 설정 (1.0 → 0.0)
+    #     self.animation = QPropertyAnimation(self.opacity_effect, b"opacity")
+    #     self.animation.setDuration(2000)  # 2초 동안 서서히 사라짐
+    #     self.animation.setStartValue(1.0)  # 처음에는 불투명
+    #     self.animation.setEndValue(0.0)  # 완전히 투명
 
-        # 애니메이션이 끝나면 `open_main_window()` 실행
-        self.animation.finished.connect(self.open_main_window)
-        self.animation.start()
-    def open_main_window(self):
-        """애니메이션 종료 후 메인 윈도우 실행"""
-        print("애니메이션 완료 → 메인 윈도우 실행!")
-        self.accept()  # 로그인 창 닫기
-        self.main_window = LoadUI(self.lineEdit_id.text().strip())  # 메인 윈도우 실행
-        self.main_window.show()
+    #     # 애니메이션이 끝나면 `open_main_window()` 실행
+    #     self.animation.finished.connect(self.open_main_window)
+    #     self.animation.start()
+    # def open_main_window(self):
+    #     """애니메이션 종료 후 메인 윈도우 실행"""
+    #     print("애니메이션 완료 → 메인 윈도우 실행!")
+    #     self.accept()  # 로그인 창 닫기
+    #     self.main_window = LoadUI(self.lineEdit_id.text().strip())  # 메인 윈도우 실행
+    #     self.main_window.show()
 
 
 
@@ -280,67 +278,67 @@ class LoadUI(QMainWindow):
         # My Task Tab WTG->IP 테스크 이동 발생
         self.ui.listWidget_ip.itemChanged.connect(self.on_ip_item_changed)
 
-        # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
-        self.blur_in_animation()
+        # # 메인 윈도우 흐려지게 시작하고 점점 뚜렷하게
+        # self.blur_in_animation()
 
-        self.create_bouncing_dots()
+        # self.create_bouncing_dots()
 
-         # 버튼 가져오기
-        self.open_button = self.ui.findChild(QPushButton, "pushButton_open")
-        self.import_button = self.ui.findChild(QPushButton, "pushButton_import")
-        self.refer_button = self.ui.findChild(QPushButton, "pushButton_reference")
+        #  # 버튼 가져오기
+        # self.open_button = self.ui.findChild(QPushButton, "pushButton_open")
+        # self.import_button = self.ui.findChild(QPushButton, "pushButton_import")
+        # self.refer_button = self.ui.findChild(QPushButton, "pushButton_reference")
 
-        # 버튼 클릭 시 소리 재생 연결
-        self.open_button.clicked.connect(self.play_button_sound)
-        self.import_button.clicked.connect(self.play_button_sound)
-        self.refer_button.clicked.connect(self.play_button_sound)
+        # # 버튼 클릭 시 소리 재생 연결
+        # self.open_button.clicked.connect(self.play_button_sound)
+        # self.import_button.clicked.connect(self.play_button_sound)
+        # self.refer_button.clicked.connect(self.play_button_sound)
 
-        #  사운드 효과 설정
-        self.button_sound = QSoundEffect()
-        self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
-        self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
+        # #  사운드 효과 설정
+        # self.button_sound = QSoundEffect()
+        # self.button_sound.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/2.wav"))  # 버튼 소리 파일 경로 설정
+        # self.button_sound.setVolume(0.8)  # 소리 크기 설정 (0.0 ~ 1.0)
 
-        # ✅ 파일 선택 시 효과음 플레이어 설정
-        self.selection_sound = QMediaPlayer()
-        self.selection_audio_output = QAudioOutput()
-        self.selection_sound.setAudioOutput(self.selection_audio_output)
-        self.selection_audio_output.setVolume(0.8)  # 볼륨 설정 (0.0 ~ 1.0)
+        # # ✅ 파일 선택 시 효과음 플레이어 설정
+        # self.selection_sound = QMediaPlayer()
+        # self.selection_audio_output = QAudioOutput()
+        # self.selection_sound.setAudioOutput(self.selection_audio_output)
+        # self.selection_audio_output.setVolume(0.8)  # 볼륨 설정 (0.0 ~ 1.0)
 
-        # ✅ 리스트 위젯에 아이템 선택 이벤트 연결
-        self.ui.listWidget_wtg.itemSelectionChanged.connect(self.play_selection_sound)
-        self.ui.listWidget_ip.itemSelectionChanged.connect(self.play_selection_sound)
-        self.ui.listWidget_fin.itemSelectionChanged.connect(self.play_selection_sound)
+        # # ✅ 리스트 위젯에 아이템 선택 이벤트 연결
+        # self.ui.listWidget_wtg.itemSelectionChanged.connect(self.play_selection_sound)
+        # self.ui.listWidget_ip.itemSelectionChanged.connect(self.play_selection_sound)
+        # self.ui.listWidget_fin.itemSelectionChanged.connect(self.play_selection_sound)
 
-        # 로그인 화면 음악 설정 (QMediaPlayer 사용)
-        self.start_music = QMediaPlayer()
-        self.audio_output = QAudioOutput()  # 오디오 출력 장치 설정
-        self.start_music.setAudioOutput(self.audio_output)
-        #  MP3 파일 경로 설정
-        self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/load2.mp3"))
-        self.audio_output.setVolume(0.4)  # 음량 설정 (0.0 ~ 1.0)
+        # # 로그인 화면 음악 설정 (QMediaPlayer 사용)
+        # self.start_music = QMediaPlayer()
+        # self.audio_output = QAudioOutput()  # 오디오 출력 장치 설정
+        # self.start_music.setAudioOutput(self.audio_output)
+        # #  MP3 파일 경로 설정
+        # self.start_music.setSource(QUrl.fromLocalFile("/nas/Viper/minseo/forui/amusic/load2.mp3"))
+        # self.audio_output.setVolume(0.4)  # 음량 설정 (0.0 ~ 1.0)
 
 
   #====================================loadui 로드=======================================
   #================================(loginui가 성공할 시에)=================================
 
     # 로드열리면 실행
-    def showEvent(self, event):
+    # def showEvent(self, event):
         
-        self.start_music.play()
-        super().showEvent(event)  # 부모 클래스의 showEvent 실행
-    # 파일항목 선택하면 실행 
-    def play_selection_sound(self):
+    #     self.start_music.play()
+    #     super().showEvent(event)  # 부모 클래스의 showEvent 실행
+    # # 파일항목 선택하면 실행 
+    # def play_selection_sound(self):
        
-        sound_path = "/nas/Viper/minseo/forui/amusic/select.wav"  # 효과음 파일 경로 설정
+    #     sound_path = "/nas/Viper/minseo/forui/amusic/select.wav"  # 효과음 파일 경로 설정
 
-        if os.path.exists(sound_path):  # 파일이 존재하는지 확인
-            self.selection_sound.setSource(QUrl.fromLocalFile(sound_path))
-            self.selection_sound.play()
-    # 버튼클릭음 
-    def play_button_sound(self):
+    #     if os.path.exists(sound_path):  # 파일이 존재하는지 확인
+    #         self.selection_sound.setSource(QUrl.fromLocalFile(sound_path))
+    #         self.selection_sound.play()
+    # # 버튼클릭음 
+    # def play_button_sound(self):
           
-            print("버튼 클릭 소리 재생")
-            self.button_sound.play()
+    #         print("버튼 클릭 소리 재생")
+    #         self.button_sound.play()
 
     def load_ui(self):
         current_directory = os.path.dirname(__file__)
@@ -365,22 +363,22 @@ class LoadUI(QMainWindow):
 
         self.ui.tabWidget_info.setVisible(False)
         
-    def mousePressEvent(self, event):
-            """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
-            if event.button() == Qt.LeftButton:
-                self.dragPos = event.globalPosition().toPoint()
-                event.accept()
+    # def mousePressEvent(self, event):
+    #         """ 마우스를 클릭했을 때 창의 현재 위치 저장 """
+    #         if event.button() == Qt.LeftButton:
+    #             self.dragPos = event.globalPosition().toPoint()
+    #             event.accept()
 
-    def mouseMoveEvent(self, event):
-            """ 마우스를 드래그하면 창 이동 """
-            if event.buttons() == Qt.LeftButton and self.dragPos:
-                self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
-                self.dragPos = event.globalPosition().toPoint()
-                event.accept()
+    # def mouseMoveEvent(self, event):
+    #         """ 마우스를 드래그하면 창 이동 """
+    #         if event.buttons() == Qt.LeftButton and self.dragPos:
+    #             self.move(self.pos() + event.globalPosition().toPoint() - self.dragPos)
+    #             self.dragPos = event.globalPosition().toPoint()
+    #             event.accept()
 
-    def mouseReleaseEvent(self, event):
-            """ 마우스를 떼면 위치 초기화 """
-            self.dragPos = None
+    # def mouseReleaseEvent(self, event):
+    #         """ 마우스를 떼면 위치 초기화 """
+    #         self.dragPos = None
 
     #====================================애니메이션 함수들=======================================
     #================================(loginui가 성공할 시에)=================================
@@ -414,288 +412,288 @@ class LoadUI(QMainWindow):
         self.ui.label_info3.setText("")
         self.ui.label_info4.setText("")
 
-    def animate_list_widgets(self):
-        """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
-        if self.animation_executed:
-            print("이미 애니메이션이 실행됨, 다시 실행 안 함!")
-            return  # 한 번 실행된 후에는 다시 실행되지 않음
+    # def animate_list_widgets(self):
+    #     """ 리스트 위젯과 라벨을 함께 이동하는 애니메이션 (한 번만 실행) """
+    #     if self.animation_executed:
+    #         print("이미 애니메이션이 실행됨, 다시 실행 안 함!")
+    #         return  # 한 번 실행된 후에는 다시 실행되지 않음
 
-        print("리스트 위젯과 라벨 이동 애니메이션 시작!")
-        self.animation_executed = True  # 실행 상태 변경
+    #     print("리스트 위젯과 라벨 이동 애니메이션 시작!")
+    #     self.animation_executed = True  # 실행 상태 변경
 
-        self.animations = []  # 애니메이션 리스트
+    #     self.animations = []  # 애니메이션 리스트
 
-        # 리스트 위젯과 해당하는 라벨 매칭
-        widgets = [
-            self.ui.label_wtg_bg, self.ui.label_ip_bg, self.ui.label_fin_bg
-        ]
+    #     # 리스트 위젯과 해당하는 라벨 매칭
+    #     widgets = [
+    #         self.ui.label_wtg_bg, self.ui.label_ip_bg, self.ui.label_fin_bg
+    #     ]
 
-        for label_bg in widgets:
-            # 기존 위치 저장
-            start_x_bg = label_bg.x()
-            end_x_bg = start_x_bg - 77
+    #     for label_bg in widgets:
+    #         # 기존 위치 저장
+    #         start_x_bg = label_bg.x()
+    #         end_x_bg = start_x_bg - 77
 
-            if not label_bg == self.ui.label_wtg_bg:
-                end_x_bg -= 75
-            if label_bg == self.ui.label_fin_bg:
-                end_x_bg -= 78
+    #         if not label_bg == self.ui.label_wtg_bg:
+    #             end_x_bg -= 75
+    #         if label_bg == self.ui.label_fin_bg:
+    #             end_x_bg -= 78
             
-            # 리스트 위젯 배경 애니메이션
-            bg_animation = QPropertyAnimation(label_bg, b"pos")
-            bg_animation.setDuration(100)
-            bg_animation.setStartValue(QPoint(start_x_bg, label_bg.y()))
-            bg_animation.setEndValue(QPoint(end_x_bg, label_bg.y()))
-            bg_animation.setEasingCurve(QEasingCurve.OutQuad)
+    #         # 리스트 위젯 배경 애니메이션
+    #         bg_animation = QPropertyAnimation(label_bg, b"pos")
+    #         bg_animation.setDuration(100)
+    #         bg_animation.setStartValue(QPoint(start_x_bg, label_bg.y()))
+    #         bg_animation.setEndValue(QPoint(end_x_bg, label_bg.y()))
+    #         bg_animation.setEasingCurve(QEasingCurve.OutQuad)
 
-            # 애니메이션 실행
-            bg_animation.start()
+    #         # 애니메이션 실행
+    #         bg_animation.start()
 
-            # GC 방지: 리스트에 저장
-            self.animations.append(bg_animation)
+    #         # GC 방지: 리스트에 저장
+    #         self.animations.append(bg_animation)
 
-    def initialize_labels(self):
-        """ 애니메이션 실행 전에 모든 라벨을 초기 위치로 설정 """
-        print(" 모든 라벨 초기화")
+    # def initialize_labels(self):
+    #     """ 애니메이션 실행 전에 모든 라벨을 초기 위치로 설정 """
+    #     print(" 모든 라벨 초기화")
 
-        self.label_left = self.ui.label_left  
-        self.label_logo = self.ui.label_logo
-        self.label_viper = self.ui.label_viper
-        self.label_user = self.ui.label_user
+    #     self.label_left = self.ui.label_left  
+    #     self.label_logo = self.ui.label_logo
+    #     self.label_viper = self.ui.label_viper
+    #     self.label_user = self.ui.label_user
 
-        # 원래 위치 저장
-        self.original_positions = {
-            "left": QPoint(self.label_left.x(), self.label_left.y()),
-            "logo": QPoint(self.label_logo.x(), self.label_logo.y()),
-            "viper": QPoint(self.label_viper.x(), self.label_viper.y()),
-            "user": QPoint(self.label_user.x(), self.label_user.y()),
-        }
+    #     # 원래 위치 저장
+    #     self.original_positions = {
+    #         "left": QPoint(self.label_left.x(), self.label_left.y()),
+    #         "logo": QPoint(self.label_logo.x(), self.label_logo.y()),
+    #         "viper": QPoint(self.label_viper.x(), self.label_viper.y()),
+    #         "user": QPoint(self.label_user.x(), self.label_user.y()),
+    #     }
 
-        # 화면 크기 기준으로 시작 위치 설정 (label_user는 오른쪽 바깥에서 들어옴)
-        screen_width = self.width()  
-        offset = 150  
+    #     # 화면 크기 기준으로 시작 위치 설정 (label_user는 오른쪽 바깥에서 들어옴)
+    #     screen_width = self.width()  
+    #     offset = 150  
 
-        self.start_positions = {
-            "left": QPoint(-self.label_left.width() - offset, self.original_positions["left"].y()),  
-            "logo": QPoint(-self.label_logo.width() - offset, self.original_positions["logo"].y()),  
-            "viper": QPoint(-self.label_viper.width() - offset, self.original_positions["viper"].y()),  
-            "user": QPoint(screen_width + offset, self.original_positions["user"].y()),  
-        }
+    #     self.start_positions = {
+    #         "left": QPoint(-self.label_left.width() - offset, self.original_positions["left"].y()),  
+    #         "logo": QPoint(-self.label_logo.width() - offset, self.original_positions["logo"].y()),  
+    #         "viper": QPoint(-self.label_viper.width() - offset, self.original_positions["viper"].y()),  
+    #         "user": QPoint(screen_width + offset, self.original_positions["user"].y()),  
+    #     }
 
-        # 애니메이션 실행 전에 위치 강제 설정 + 숨김 처리
-        for key, label in [
-            ("left", self.label_left),
-            ("logo", self.label_logo),
-            ("viper", self.label_viper),
-            ("user", self.label_user),
-        ]:
-            label.move(self.start_positions[key])  
-            label.setVisible(False)
+    #     # 애니메이션 실행 전에 위치 강제 설정 + 숨김 처리
+    #     for key, label in [
+    #         ("left", self.label_left),
+    #         ("logo", self.label_logo),
+    #         ("viper", self.label_viper),
+    #         ("user", self.label_user),
+    #     ]:
+    #         label.move(self.start_positions[key])  
+    #         label.setVisible(False)
 
-        print("모든 라벨 초기화 완료")
+    #     print("모든 라벨 초기화 완료")
 
-    def animate_labels(self):
-        """  라벨이 위에서 아래로 떨어지는 애니메이션 실행 """
-        print("라벨 애니메이션 시작!")
+    # def animate_labels(self):
+    #     """  라벨이 위에서 아래로 떨어지는 애니메이션 실행 """
+    #     print("라벨 애니메이션 시작!")
 
-        labels = [
-            self.ui.label_ani1,
-            self.ui.label_ani2,
-            self.ui.label_ani3,
-            self.ui.label_ani4,
-        ]
+    #     labels = [
+    #         self.ui.label_ani1,
+    #         self.ui.label_ani2,
+    #         self.ui.label_ani3,
+    #         self.ui.label_ani4,
+    #     ]
 
-        self.label_animations = []  # 애니메이션 객체 저장 리스트 추가
-        self.opacity_animations = [] 
-        self.initial_positions = {} 
+    #     self.label_animations = []  # 애니메이션 객체 저장 리스트 추가
+    #     self.opacity_animations = [] 
+    #     self.initial_positions = {} 
 
-        delays = [500, 200, 100, 20]  
-        durations = [700, 1000, 1200, 2500]
-        for index, label in enumerate(labels):
-            #  QGraphicsOpacityEffect 추가 (처음에는 보이지 않도록)
-            opacity_effect = QGraphicsOpacityEffect(label)
-            label.setGraphicsEffect(opacity_effect)
-            opacity_effect.setOpacity(0)  #  처음에는 완전 투명
-            # 초기 위치 저장 (현재 y 좌표를 저장)
-            self.initial_positions[label] = label.y()
-            start_pos = QPoint(label.x(), self.initial_positions[label] - 150)  # 시작 위치 (위에서 아래로)
-            end_pos = QPoint(label.x(), self.initial_positions[label])  # 최종 위치
+    #     delays = [500, 200, 100, 20]  
+    #     durations = [700, 1000, 1200, 2500]
+    #     for index, label in enumerate(labels):
+    #         #  QGraphicsOpacityEffect 추가 (처음에는 보이지 않도록)
+    #         opacity_effect = QGraphicsOpacityEffect(label)
+    #         label.setGraphicsEffect(opacity_effect)
+    #         opacity_effect.setOpacity(0)  #  처음에는 완전 투명
+    #         # 초기 위치 저장 (현재 y 좌표를 저장)
+    #         self.initial_positions[label] = label.y()
+    #         start_pos = QPoint(label.x(), self.initial_positions[label] - 150)  # 시작 위치 (위에서 아래로)
+    #         end_pos = QPoint(label.x(), self.initial_positions[label])  # 최종 위치
 
-            label.move(start_pos)  #  시작 위치로 이동 (처음에는 안 보임)
-            label.setVisible(False)  # 초기에는 완전히 숨김 (중간에 깜빡이는 문제 해결)
-            if label == self.ui.label_ani1:
-                print("label_ani1과 label_left 애니메이션 동시 실행")
-                self.start_label_left_animation() 
+    #         label.move(start_pos)  #  시작 위치로 이동 (처음에는 안 보임)
+    #         label.setVisible(False)  # 초기에는 완전히 숨김 (중간에 깜빡이는 문제 해결)
+    #         if label == self.ui.label_ani1:
+    #             print("label_ani1과 label_left 애니메이션 동시 실행")
+    #             self.start_label_left_animation() 
 
-            # QTimer를 활용해 순차적으로 실행되도록 설정
-            timer = QTimer(self)
-            timer.setSingleShot(True)
-            timer.timeout.connect(lambda lbl=label, dur=durations[index], eff=opacity_effect: self.start_label_animation(lbl, dur, eff))
-            timer.start(sum(delays[:index + 1])) 
+    #         # QTimer를 활용해 순차적으로 실행되도록 설정
+    #         timer = QTimer(self)
+    #         timer.setSingleShot(True)
+    #         timer.timeout.connect(lambda lbl=label, dur=durations[index], eff=opacity_effect: self.start_label_animation(lbl, dur, eff))
+    #         timer.start(sum(delays[:index + 1])) 
 
-            self.label_animations.append(timer)
+    #         self.label_animations.append(timer)
 
-    def start_label_animation(self, label, duration, opacity_effect):
-        """ 개별 라벨 애니메이션 실행 (더 부드럽게) """
-        print(f"{label.objectName()} 애니메이션 시작! 지속시간: {duration}ms")
-        label.setVisible(True)
-        # 위치 애니메이션 (위에서 아래로 이동)
-        move_animation = QPropertyAnimation(label, b"pos")
-        move_animation.setDuration(duration)
-        move_animation.setStartValue(QPoint(label.x(), self.initial_positions[label] - 150))  #  위에서 시작
-        move_animation.setEndValue(QPoint(label.x(), self.initial_positions[label]))  #  원래 위치로 이동
-        move_animation.setEasingCurve(QEasingCurve.OutCubic)  # 부드러운 감속 곡선
+    # def start_label_animation(self, label, duration, opacity_effect):
+    #     """ 개별 라벨 애니메이션 실행 (더 부드럽게) """
+    #     print(f"{label.objectName()} 애니메이션 시작! 지속시간: {duration}ms")
+    #     label.setVisible(True)
+    #     # 위치 애니메이션 (위에서 아래로 이동)
+    #     move_animation = QPropertyAnimation(label, b"pos")
+    #     move_animation.setDuration(duration)
+    #     move_animation.setStartValue(QPoint(label.x(), self.initial_positions[label] - 150))  #  위에서 시작
+    #     move_animation.setEndValue(QPoint(label.x(), self.initial_positions[label]))  #  원래 위치로 이동
+    #     move_animation.setEasingCurve(QEasingCurve.OutCubic)  # 부드러운 감속 곡선
 
-        # 투명도 애니메이션 (부드럽게 나타남)
-        fade_animation = QPropertyAnimation(opacity_effect, b"opacity")
-        fade_animation.setDuration(duration * 0.6)  #  위치보다 약간 빠르게 나타나도록 조절
-        fade_animation.setStartValue(0)  # 처음엔 완전 투명
-        fade_animation.setEndValue(1)  # 완전 보이게
+    #     # 투명도 애니메이션 (부드럽게 나타남)
+    #     fade_animation = QPropertyAnimation(opacity_effect, b"opacity")
+    #     fade_animation.setDuration(duration * 0.6)  #  위치보다 약간 빠르게 나타나도록 조절
+    #     fade_animation.setStartValue(0)  # 처음엔 완전 투명
+    #     fade_animation.setEndValue(1)  # 완전 보이게
 
-        self.label_animations.append(move_animation)  # 참조를 유지하여 GC 방지
-        self.opacity_animations.append(fade_animation)  # 투명도 애니메이션도 추가
+    #     self.label_animations.append(move_animation)  # 참조를 유지하여 GC 방지
+    #     self.opacity_animations.append(fade_animation)  # 투명도 애니메이션도 추가
 
-        move_animation.start()
-        fade_animation.start()
-        self.start_expand_animation()
-        self.start_label_left_animation()
+    #     move_animation.start()
+    #     fade_animation.start()
+    #     self.start_expand_animation()
+    #     self.start_label_left_animation()
      
-    # label_central 용 애니메이션 
-    def start_expand_animation(self):
-        """ 중앙 라벨이 마스크처럼 펼쳐지는 애니메이션 """
-        print("중앙 라벨 확장 애니메이션 시작!")
+    # # label_central 용 애니메이션 
+    # def start_expand_animation(self):
+    #     """ 중앙 라벨이 마스크처럼 펼쳐지는 애니메이션 """
+    #     print("중앙 라벨 확장 애니메이션 시작!")
 
-        # 라벨 가져오기
-        self.label_central = self.ui.label_central
-        self.label_central.setVisible(False)   
+    #     # 라벨 가져오기
+    #     self.label_central = self.ui.label_central
+    #     self.label_central.setVisible(False)   
 
-        # 원본 크기 저장
-        original_width = self.label_central.width()
-        original_height = self.label_central.height()
+    #     # 원본 크기 저장
+    #     original_width = self.label_central.width()
+    #     original_height = self.label_central.height()
 
-        # 초기 마스크 설정 (중앙 1px만 보이게)
-        self.mask_step = 1  # 시작 크기 (1px)
-        self.max_mask_width = original_width  # 최종 마스크 크기
-        self.label_central.setVisible(False)  # 처음에는 숨김
+    #     # 초기 마스크 설정 (중앙 1px만 보이게)
+    #     self.mask_step = 1  # 시작 크기 (1px)
+    #     self.max_mask_width = original_width  # 최종 마스크 크기
+    #     self.label_central.setVisible(False)  # 처음에는 숨김
 
-        # 0.1초 후 애니메이션 시작 (label_central이 애니메이션 시작 전 보이지 않도록)
-        QTimer.singleShot(200, self._start_mask_animation)
+    #     # 0.1초 후 애니메이션 시작 (label_central이 애니메이션 시작 전 보이지 않도록)
+    #     QTimer.singleShot(200, self._start_mask_animation)
 
-    def _start_mask_animation(self):
-        """ 마스크 애니메이션 시작 """
-        self.label_central.setVisible(True)  # 이제 보이도록 설정
-        self.mask_timer = QTimer(self)
-        self.mask_timer.timeout.connect(self._update_mask_animation)
-        self.mask_timer.start(25)  # 15ms마다 실행 (부드러운 확장 효과)
+    # def _start_mask_animation(self):
+    #     """ 마스크 애니메이션 시작 """
+    #     self.label_central.setVisible(True)  # 이제 보이도록 설정
+    #     self.mask_timer = QTimer(self)
+    #     self.mask_timer.timeout.connect(self._update_mask_animation)
+    #     self.mask_timer.start(25)  # 15ms마다 실행 (부드러운 확장 효과)
 
-    def _update_mask_animation(self):
-        """ 마스크 확장 업데이트 (부드러운 애니메이션) """
-        if self.mask_step < self.max_mask_width:
-            new_mask = QRegion(
-                (self.label_central.width() // 2) - (self.mask_step // 2), 0, 
-                self.mask_step, self.label_central.height()
-            )
-            self.label_central.setMask(new_mask)
-            self.mask_step += 4  # 확장 속도 (원하는 대로 조정)
-        else:
-            self.mask_timer.stop()  # 최대 크기에 도달하면 애니메이션 종료
+    # def _update_mask_animation(self):
+    #     """ 마스크 확장 업데이트 (부드러운 애니메이션) """
+    #     if self.mask_step < self.max_mask_width:
+    #         new_mask = QRegion(
+    #             (self.label_central.width() // 2) - (self.mask_step // 2), 0, 
+    #             self.mask_step, self.label_central.height()
+    #         )
+    #         self.label_central.setMask(new_mask)
+    #         self.mask_step += 4  # 확장 속도 (원하는 대로 조정)
+    #     else:
+    #         self.mask_timer.stop()  # 최대 크기에 도달하면 애니메이션 종료
 
-    def start_label_left_animation(self):
-        """ label_left, label_logo, label_viper, label_user가 함께 이동하는 애니메이션 실행 """
-        print("label_left 애니메이션 시작!")
+    # def start_label_left_animation(self):
+    #     """ label_left, label_logo, label_viper, label_user가 함께 이동하는 애니메이션 실행 """
+    #     print("label_left 애니메이션 시작!")
 
-        self.animations = []  # 애니메이션 참조 유지 리스트
-        labels = [
-            ("left", self.ui.label_left),
-            ("logo", self.ui.label_logo),
-            ("viper", self.ui.label_viper),
-            ("user", self.ui.label_user)
-        ]
+    #     self.animations = []  # 애니메이션 참조 유지 리스트
+    #     labels = [
+    #         ("left", self.ui.label_left),
+    #         ("logo", self.ui.label_logo),
+    #         ("viper", self.ui.label_viper),
+    #         ("user", self.ui.label_user)
+    #     ]
 
-        # 디버깅용: 현재 위치와 이동 거리 확인
-        for key, label in labels:
-            print(f"🔹 {key} 시작 위치: {self.start_positions[key]} -> {self.original_positions[key]}")
+    #     # 디버깅용: 현재 위치와 이동 거리 확인
+    #     for key, label in labels:
+    #         print(f"🔹 {key} 시작 위치: {self.start_positions[key]} -> {self.original_positions[key]}")
 
-        for key, label in labels:
-            label.setVisible(True)  # 애니메이션 시작 전 보이도록 설정
+    #     for key, label in labels:
+    #         label.setVisible(True)  # 애니메이션 시작 전 보이도록 설정
 
-            animation = QPropertyAnimation(label, b"pos", self)
-            animation.setDuration(2000)  # 2초 동안 이동
-            animation.setStartValue(self.start_positions[key])  
-            animation.setEndValue(self.original_positions[key])  
-            animation.setEasingCurve(QEasingCurve.OutBack)  
+    #         animation = QPropertyAnimation(label, b"pos", self)
+    #         animation.setDuration(2000)  # 2초 동안 이동
+    #         animation.setStartValue(self.start_positions[key])  
+    #         animation.setEndValue(self.original_positions[key])  
+    #         animation.setEasingCurve(QEasingCurve.OutBack)  
 
-            animation.start()
-            self.animations.append(animation)  # GC 방지: 리스트에 저장
+    #         animation.start()
+    #         self.animations.append(animation)  # GC 방지: 리스트에 저장
 
-        # 애니메이션 실행 후 UI 강제 업데이트 (안 보이는 문제 해결)
-        self.update()
+    #     # 애니메이션 실행 후 UI 강제 업데이트 (안 보이는 문제 해결)
+    #     self.update()
 
-    def create_bouncing_dots(self):
-        """ label_central 아래에 원이 튀어오르는 애니메이션 생성 """
-        print("점프 애니메이션 원 생성 시작!")
+    # def create_bouncing_dots(self):
+    #     """ label_central 아래에 원이 튀어오르는 애니메이션 생성 """
+    #     print("점프 애니메이션 원 생성 시작!")
 
-        self.dots = []  # 원 리스트
-        self.dot_animations = []  # 애니메이션 리스트
+    #     self.dots = []  # 원 리스트
+    #     self.dot_animations = []  # 애니메이션 리스트
 
-        dot_count = 5  # 원 개수
-        dot_size = 3  # 원 크기
-        spacing = 20  # 원 간격
+    #     dot_count = 5  # 원 개수
+    #     dot_size = 3  # 원 크기
+    #     spacing = 20  # 원 간격
 
-        # 기준이 되는 중앙 라벨 가져오기
-        label_central = self.ui.label_central
-        central_x = label_central.x() + 21
-        central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
+    #     # 기준이 되는 중앙 라벨 가져오기
+    #     label_central = self.ui.label_central
+    #     central_x = label_central.x() + 21
+    #     central_y = label_central.y() + label_central.height() + 20  # label_central 바로 아래 배치
 
-        for i in range(dot_count):
-            dot = QLabel(self)
-            dot.setFixedSize(dot_size, dot_size)
-            dot.move(central_x +21 + i * spacing, central_y)
-            dot.setStyleSheet("background-color: gray; border-radius: 7px;")
-            dot.show()
-            self.dots.append(dot)
+    #     for i in range(dot_count):
+    #         dot = QLabel(self)
+    #         dot.setFixedSize(dot_size, dot_size)
+    #         dot.move(central_x +21 + i * spacing, central_y)
+    #         dot.setStyleSheet("background-color: gray; border-radius: 7px;")
+    #         dot.show()
+    #         self.dots.append(dot)
 
-            # 애니메이션 설정
-            animation = QPropertyAnimation(dot, b"pos")
-            animation.setDuration(1600)
-            animation.setStartValue(QPoint(dot.x() +21, central_y))  # 원래 위치
-            animation.setEndValue(QPoint(dot.x() +21, central_y - 10))  # 위로 점프
-            animation.setEasingCurve(QEasingCurve.OutQuad)  # 부드럽게 점프
+    #         # 애니메이션 설정
+    #         animation = QPropertyAnimation(dot, b"pos")
+    #         animation.setDuration(1600)
+    #         animation.setStartValue(QPoint(dot.x() +21, central_y))  # 원래 위치
+    #         animation.setEndValue(QPoint(dot.x() +21, central_y - 10))  # 위로 점프
+    #         animation.setEasingCurve(QEasingCurve.OutQuad)  # 부드럽게 점프
 
-            # 애니메이션이 끝나면 다시 원래 위치로 돌아옴
-            animation.setLoopCount(-1)  # 무한 반복
-            self.dot_animations.append(animation)
+    #         # 애니메이션이 끝나면 다시 원래 위치로 돌아옴
+    #         animation.setLoopCount(-1)  # 무한 반복
+    #         self.dot_animations.append(animation)
 
-        self.start_bouncing_animation()
+    #     self.start_bouncing_animation()
 
-    def start_bouncing_animation(self):
-        """ 점프 애니메이션 실행 (순차적으로 시작) """
-        delay = 300  # 개별 점의 딜레이 시간
+    # def start_bouncing_animation(self):
+    #     """ 점프 애니메이션 실행 (순차적으로 시작) """
+    #     delay = 300  # 개별 점의 딜레이 시간
 
-        for index, animation in enumerate(self.dot_animations):
-            QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
+    #     for index, animation in enumerate(self.dot_animations):
+    #         QTimer.singleShot(index * delay, animation.start)  # 순차적으로 실행
     
-    def blur_in_animation(self):
-        """ 메인 윈도우가 흐릿하게 시작되었다가 점점 선명해지는 효과 """
-        print("메인 윈도우 블러 애니메이션 시작!")
+    # def blur_in_animation(self):
+    #     """ 메인 윈도우가 흐릿하게 시작되었다가 점점 선명해지는 효과 """
+    #     print("메인 윈도우 블러 애니메이션 시작!")
         
-        # 블러 효과 적용
-        self.blur_effect = QGraphicsBlurEffect(self)  # 블러 효과 객체 생성
-        self.blur_effect.setBlurRadius(20)  # 초기에 블러 강도 (최대 흐림)
-        self.setGraphicsEffect(self.blur_effect)  # 현재 창에 블러 적용
+    #     # 블러 효과 적용
+    #     self.blur_effect = QGraphicsBlurEffect(self)  # 블러 효과 객체 생성
+    #     self.blur_effect.setBlurRadius(20)  # 초기에 블러 강도 (최대 흐림)
+    #     self.setGraphicsEffect(self.blur_effect)  # 현재 창에 블러 적용
 
-        # 블러 애니메이션 설정 (BlurRadius: 20 → 0)
-        self.animation = QPropertyAnimation(self.blur_effect, b"blurRadius")
-        self.animation.setDuration(1300)  # 2초 동안 점점 선명해짐
-        self.animation.setStartValue(20)  # 처음에는 블러 효과 강함
-        self.animation.setEndValue(0)  # 점점 선명하게
+    #     # 블러 애니메이션 설정 (BlurRadius: 20 → 0)
+    #     self.animation = QPropertyAnimation(self.blur_effect, b"blurRadius")
+    #     self.animation.setDuration(1300)  # 2초 동안 점점 선명해짐
+    #     self.animation.setStartValue(20)  # 처음에는 블러 효과 강함
+    #     self.animation.setEndValue(0)  # 점점 선명하게
 
-        # 부드러운 가속도 설정
-        self.animation.finished.connect(self.animate_labels)
-        self.animation.setEasingCurve(QEasingCurve.InOutQuad)  # 자연스럽게 변화
+    #     # 부드러운 가속도 설정
+        # self.animation.finished.connect(self.animate_labels)
+        # self.animation.setEasingCurve(QEasingCurve.InOutQuad)  # 자연스럽게 변화
 
 
-        self.animation.finished.connect(lambda: QTimer.singleShot(4000, self.remove_login_message))
-        self.animation.start()
+        # self.animation.finished.connect(lambda: QTimer.singleShot(4000, self.remove_login_message))
+        # self.animation.start()
 
 
 #=============================로그인 후, task 목록을 가져오는 함수====================================
@@ -923,64 +921,64 @@ class LoadUI(QMainWindow):
         self.ui.label_info3.setText(formatted_time)
         self.ui.label_info4.setText(formatted_size)
 
-    def animate_info_labels(self):
-        """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
-        print("Task 정보 라벨 애니메이션 시작!")
+    # def animate_info_labels(self):
+    #     """Task 정보 라벨들이 화면 왼쪽에서 부드럽게 등장하는 애니메이션"""
+    #     print("Task 정보 라벨 애니메이션 시작!")
 
-        # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
-        label_pairs = [
+    #     # 사용할 라벨 리스트 (각 라벨과 대응하는 제목 라벨)
+    #     label_pairs = [
            
-            ("label_6", "label_info1"),
-            ("label_7", "label_info2"),
-            ("label_8", "label_info3"),
-            ("label_9", "label_info4")
-        ]
+    #         ("label_6", "label_info1"),
+    #         ("label_7", "label_info2"),
+    #         ("label_8", "label_info3"),
+    #         ("label_9", "label_info4")
+    #     ]
 
-        # 라벨 객체 저장
-        self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
+    #     # 라벨 객체 저장
+    #     self.labels = [(getattr(self.ui, lbl1), getattr(self.ui, lbl2)) for lbl1, lbl2 in label_pairs]
 
-        # 원래 위치 저장
-        self.original_positions = {
-            label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
-        }
+    #     # 원래 위치 저장
+    #     self.original_positions = {
+    #         label: QPoint(label.x(), label.y()) for pair in self.labels for label in pair
+    #     }
 
-        # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
-        screen_offset = -200  
-        self.start_positions = {
-            label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
-        }
+    #     # 시작 위치 설정 (화면 왼쪽 바깥으로 이동)
+    #     screen_offset = -200  
+    #     self.start_positions = {
+    #         label: QPoint(screen_offset, label.y()) for pair in self.labels for label in pair
+    #     }
 
-        # 애니메이션 실행 전에 위치 강제 설정
-        for pair in self.labels:
+    #     # 애니메이션 실행 전에 위치 강제 설정
+    #     for pair in self.labels:
             
-            for label in pair:
-                print (pair, label)
-                label.move(self.start_positions[label])  
-                label.setVisible(True)  
+    #         for label in pair:
+    #             print (pair, label)
+    #             label.move(self.start_positions[label])  
+    #             label.setVisible(True)  
 
-        # UI 업데이트 후 100ms 뒤에 애니메이션 실행
-        QTimer.singleShot(100, self._start_info_label_animation)
+    #     # UI 업데이트 후 100ms 뒤에 애니메이션 실행
+    #     QTimer.singleShot(100, self._start_info_label_animation)
 
-    def _start_info_label_animation(self):
-        """Task 정보 라벨 등장 애니메이션 실행"""
-        print("Task 정보 라벨 등장 애니메이션 실행!")
+    # def _start_info_label_animation(self):
+    #     """Task 정보 라벨 등장 애니메이션 실행"""
+    #     print("Task 정보 라벨 등장 애니메이션 실행!")
 
-        self.animations = []
-        delay = 0
+    #     self.animations = []
+    #     delay = 0
 
-        for pair in self.labels:
-            for label in pair:
-                animation = QPropertyAnimation(label, b"pos", self)
-                animation.setDuration(1500)  
-                print (self.start_positions[label])
-                animation.setStartValue(self.start_positions[label])  
-                animation.setEndValue(self.original_positions[label])  
-                animation.setEasingCurve(QEasingCurve.OutBack)  
+    #     for pair in self.labels:
+    #         for label in pair:
+    #             animation = QPropertyAnimation(label, b"pos", self)
+    #             animation.setDuration(1500)  
+    #             print (self.start_positions[label])
+    #             animation.setStartValue(self.start_positions[label])  
+    #             animation.setEndValue(self.original_positions[label])  
+    #             animation.setEasingCurve(QEasingCurve.OutBack)  
 
-                QTimer.singleShot(delay, animation.start)  # 순차적 실행
-                self.animations.append(animation)
+    #             QTimer.singleShot(delay, animation.start)  # 순차적 실행
+    #             self.animations.append(animation)
 
-            delay += 200  # 딜레이 추가 (순차적 등장)
+    #         delay += 200  # 딜레이 추가 (순차적 등장)
 
     def open_file(self):
         """

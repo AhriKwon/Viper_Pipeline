@@ -162,28 +162,28 @@ class PublishUI(QMainWindow):
         # publish 버튼을 누르면 퍼블리쉬되도록 연동
         self.ui.pushButton_publish.clicked.connect(self.run_publish)
 
-    def mousePressEvent(self, event):
-        """
-        마우스를 클릭했을 때 창의 현재 위치 저장
-        """
-        if event.button() == Qt.LeftButton:
-            self.dragPos = event.globalPos()
-            event.accept()
+    # def mousePressEvent(self, event):
+    #     """
+    #     마우스를 클릭했을 때 창의 현재 위치 저장
+    #     """
+    #     if event.button() == Qt.LeftButton:
+    #         self.dragPos = event.globalPos()
+    #         event.accept()
 
-    def mouseMoveEvent(self, event):
-        """
-        마우스를 드래그하면 창 이동
-        """
-        if event.buttons() == Qt.LeftButton and self.dragPos:
-            self.move(self.pos() + event.globalPos() - self.dragPos)
-            self.dragPos = event.globalPos()
-            event.accept()
+    # def mouseMoveEvent(self, event):
+    #     """
+    #     마우스를 드래그하면 창 이동
+    #     """
+    #     if event.buttons() == Qt.LeftButton and self.dragPos:
+    #         self.move(self.pos() + event.globalPos() - self.dragPos)
+    #         self.dragPos = event.globalPos()
+    #         event.accept()
 
-    def mouseReleaseEvent(self, event):
-        """
-        마우스를 떼면 위치 초기화
-        """
-        self.dragPos = None
+    # def mouseReleaseEvent(self, event):
+    #     """
+    #     마우스를 떼면 위치 초기화
+    #     """
+    #     self.dragPos = None
 
     def start_capture_mode(self):
        """
@@ -214,49 +214,49 @@ class PublishUI(QMainWindow):
             print("⚠️ UI 로드 실패: QUiLoader가 UI 파일을 로드하지 못했습니다.")
         
 
-    def set_checkbox(self):
-        """
-        마야에서 실행될 경우에만 체크박스 표시
-        """
-        if not self.ui.groupBox_checkbox:
-            return
+    # def set_checkbox(self):
+    #     """
+    #     마야에서 실행될 경우에만 체크박스 표시
+    #     """
+    #     if not self.ui.groupBox_checkbox:
+    #         return
         
-        groupBoxLayout = QGridLayout()
-        self.checkboxes = []
-        options = ["shaded", "wireframe on shaded", "textured", "wireframe on textured"]
+    #     groupBoxLayout = QGridLayout()
+    #     self.checkboxes = []
+    #     options = ["shaded", "wireframe on shaded", "textured", "wireframe on textured"]
 
-        for i, option in enumerate(options):
-            checkbox = QCheckBox(option)
-            checkbox.setStyleSheet("""
-                QCheckBox {
-                    spacing: 5px;
-                    color: white;g
-                    font-size: 10px;
-                }
-                QCheckBox::indicator {
-                    width: 17px;
-                    height: 17px;
-                    border-radius: 3px;
-                    background: transparent;
+    #     for i, option in enumerate(options):
+    #         checkbox = QCheckBox(option)
+    #         checkbox.setStyleSheet("""
+    #             QCheckBox {
+    #                 spacing: 5px;
+    #                 color: white;g
+    #                 font-size: 10px;
+    #             }
+    #             QCheckBox::indicator {
+    #                 width: 17px;
+    #                 height: 17px;
+    #                 border-radius: 3px;
+    #                 background: transparent;
                     
-                    border: 2px solid #376FF2;
-                }
-                QCheckBox::indicator:checked {
-                    background: #376FF2;
-                    border: 2px solid #376FF2;
-                    image: url(/nas/Viper/minseo/check_icon.png); /* 체크 모양 아이콘 */
-                }
-            """)
-            self.checkboxes.append(checkbox)
-            groupBoxLayout.addWidget(checkbox, i // 2, i % 2)
+    #                 border: 2px solid #376FF2;
+    #             }
+    #             QCheckBox::indicator:checked {
+    #                 background: #376FF2;
+    #                 border: 2px solid #376FF2;
+    #                 image: url(/nas/Viper/minseo/check_icon.png); /* 체크 모양 아이콘 */
+    #             }
+    #         """)
+    #         self.checkboxes.append(checkbox)
+    #         groupBoxLayout.addWidget(checkbox, i // 2, i % 2)
 
-        self.ui.groupBox_checkbox.setLayout(groupBoxLayout)
+    #     self.ui.groupBox_checkbox.setLayout(groupBoxLayout)
         
-        # 마야에서만 체크박스를 보이고, 누크에서는 숨김
-        if self.is_maya():
-            self.ui.groupBox_checkbox.setVisible(True)
-        else:
-            self.ui.groupBox_checkbox.setVisible(False)
+    #     # 마야에서만 체크박스를 보이고, 누크에서는 숨김
+    #     if self.is_maya():
+    #         self.ui.groupBox_checkbox.setVisible(True)
+    #     else:
+    #         self.ui.groupBox_checkbox.setVisible(False)
 
     def setup_publish_info(self):
         """
@@ -569,7 +569,7 @@ class PublishUI(QMainWindow):
     
     def extract_version_from_filename(self, file_path):
         """
-        파일 이름에서 버전 정보를 추출 (예: _v001, _v02 -> 1, 2)
+        파일 이름에서 버전 정보를 추출 (_v001, _v02 -> 1, 2)
         """
         filename = os.path.basename(file_path)
         match = re.search(r'_v(\d+)', filename)
