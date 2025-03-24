@@ -167,7 +167,16 @@ class FileConverter:
             print(e.stderr)  # 오류 메시지 출력
     def convert_to_prores(self, input_path, output_path):
         """FFmpeg을 사용하여 Apple ProRes MOV 파일로 변환"""
-        # ... (기존 코드)
+
+        ffmpeg_cmd = [
+        "ffmpeg",
+        "-i", input_path,  # 입력 파일 경로
+        "-c:v", "prores_ks",  # ProRes 코덱 설정
+        "-profile:v", "3",  # ProRes 422 설정 (0: Proxy, 1: LT, 2: SQ, 3: HQ)
+        "-pix_fmt", "yuv422p10le",  # 10-bit ProRes
+        "-y",  # 기존 파일 덮어쓰기
+        output_path  # 출력 파일 경로
+    ]
         try:
             subprocess.run(ffmpeg_cmd, check=True, stderr=subprocess.PIPE, text=True)
         except subprocess.CalledProcessError as e:
