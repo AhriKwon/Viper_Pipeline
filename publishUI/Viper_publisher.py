@@ -1,23 +1,19 @@
 try:
     from PySide6.QtWidgets import (
-        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout, QMessageBox,
-        QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
-        QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
+        QMainWindow, QApplication, QCheckBox, QMessageBox, QWidget, QGridLayout
     )
     from PySide6.QtUiTools import QUiLoader
     from PySide6.QtCore import Qt, QFile, QTimer, QRect
-    from PySide6.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
+    from PySide6.QtGui import QPixmap, QPainter
 except:
     from PySide2.QtWidgets import (
-        QMainWindow, QApplication, QCheckBox, QGroupBox, QVBoxLayout, QMessageBox,
-        QTableWidget, QTableWidgetItem, QLabel, QFileDialog, QLineEdit, QPushButton, QWidget,
-        QGridLayout, QAbstractItemView, QListWidget, QLineEdit,QHBoxLayout
+        QMainWindow, QApplication, QCheckBox, QMessageBox, QWidget, QGridLayout
     )
     from PySide2.QtUiTools import QUiLoader
     from PySide2.QtCore import Qt, QFile, QTimer, QRect
-    from PySide2.QtGui import QFont, QColor, QBrush, QIcon, QPixmap,QFontDatabase, QPainter
+    from PySide2.QtGui import QPixmap, QPainter
 
-import sys, os, time, subprocess, re
+import sys, os, re
 from typing import TypedDict
 
 publish_path = os.path.dirname(__file__)
