@@ -1,15 +1,15 @@
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QDialog, QWidget, QLabel, QVBoxLayout, 
     QHBoxLayout, QListWidgetItem, QPushButton, QLineEdit, QLabel, QTabWidget,
-    QGraphicsOpacityEffect, QGraphicsOpacityEffect, QGraphicsBlurEffect
+    QGraphicsOpacityEffect, QGraphicsBlurEffect
     )
 from PySide6.QtCore import (
     QFile, Qt, QPropertyAnimation, QTimer, QUrl,
-    QTimer, QPoint,QPropertyAnimation,QEasingCurve, qInstallMessageHandler
+    QTimer, QPoint, QPropertyAnimation, QEasingCurve, qInstallMessageHandler
     )
 from PySide6.QtUiTools import QUiLoader
-from PySide6.QtMultimedia import QSoundEffect,QMediaPlayer, QAudioOutput
-from PySide6.QtGui import QRegion, QPainter, QPixmap, QColor,QPainter, QBrush
+from PySide6.QtMultimedia import QSoundEffect, QMediaPlayer, QAudioOutput
+from PySide6.QtGui import QRegion, QPixmap, QColor, QPainter, QBrush
 
 import sys, os, datetime
 
