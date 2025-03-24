@@ -1,21 +1,25 @@
 from PySide6.QtWidgets import (
     QTableWidget, QWidget, QVBoxLayout, QLabel, QCheckBox,
-    QTableWidgetItem,QHeaderView, QSizePolicy, QHBoxLayout, QApplication,QTabWidget
+    QHeaderView, QApplication
     )
 from PySide6.QtCore import(
     Qt, QMimeData, QUrl,QTimer,QPoint,QPropertyAnimation,QEasingCurve
-)
+    )
 from PySide6.QtGui import QPixmap, QDrag
 import os, sys, json, glob, datetime
 
 import UI_support
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+publish_path = os.path.dirname(__file__)
+viper_path = os.path.join(publish_path, '..')
+
+# 샷그리드 API
+sys.path.append(os.path.abspath(os.path.join(viper_path, 'shotgridAPI')))
 from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
 
 # 로더
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
+sys.path.append(os.path.abspath(os.path.join(viper_path, 'loader')))
 from FileLoader import FileLoader
 loader = FileLoader()
 

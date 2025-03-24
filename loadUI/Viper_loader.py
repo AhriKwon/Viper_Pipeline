@@ -1,39 +1,38 @@
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QDialog, QWidget, QLabel, QVBoxLayout, 
-    QHBoxLayout, QListWidget, QListWidgetItem, QPushButton, QLineEdit,
-    QGraphicsOpacityEffect, QGridLayout,QTableWidget, QTableWidgetItem, QCheckBox,QGraphicsOpacityEffect,QGraphicsBlurEffect,
-    QLabel,QTabWidget
+    QHBoxLayout, QListWidgetItem, QPushButton, QLineEdit, QLabel, QTabWidget,
+    QGraphicsOpacityEffect, QGraphicsOpacityEffect, QGraphicsBlurEffect
+    )
+from PySide6.QtCore import (
+    QFile, Qt, QPropertyAnimation, QTimer, QUrl,
+    QTimer, QPoint,QPropertyAnimation,QEasingCurve, qInstallMessageHandler
     )
 from PySide6.QtUiTools import QUiLoader
 from PySide6.QtMultimedia import QSoundEffect,QMediaPlayer, QAudioOutput
+from PySide6.QtGui import QRegion, QPainter, QPixmap, QColor,QPainter, QBrush
 
+import sys, os, datetime
 
-from PySide6.QtCore import (
-    QFile, Qt, QPropertyAnimation, QRect, QTimer, QMimeData, QUrl,
-    QByteArray, QDataStream, QIODevice, QTimer, QPoint,QPropertyAnimation,QEasingCurve,
-    qInstallMessageHandler
+publish_path = os.path.dirname(__file__)
+viper_path = os.path.join(publish_path, '..')
 
-    )
-from PySide6.QtGui import QRegion, QPainter  
-from PySide6.QtGui import QPixmap, QColor, QDrag,QPainter, QBrush
-
-import sys, os, glob, datetime
-from functools import partial 
 # 샷그리드 API
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'shotgridAPI')))
+sys.path.append(os.path.abspath(os.path.join(viper_path, 'shotgridAPI')))
 from user_authenticator import UserAuthenticator
 from shotgrid_manager import ShotGridManager
 manager = ShotGridManager()
 from shotgrid_db import ShotgridDB
 sg_db = ShotgridDB()
+
 # 로더
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'loader')))
+sys.path.append(os.path.abspath(os.path.join(viper_path, 'loader')))
 from FileLoader import FileLoader
 loader = FileLoader()
 
 # 로더 UI
 import UI_support
 from Viper_loader_lib import LibraryTab
+
 
  #============================================================================================
  #================================로그인 창 : LoginWindow==============================================

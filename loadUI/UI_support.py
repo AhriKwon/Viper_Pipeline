@@ -1,10 +1,10 @@
 try:
-    from PySide6.QtWidgets import QMessageBox, QApplication, QMainWindow, QWidget
-    from PySide6.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
+    from PySide6.QtWidgets import QMessageBox, QApplication, QWidget
+    from PySide6.QtGui import QPixmap, QPainter, QPainterPath
     from PySide6.QtCore import Qt
 except:
-    from PySide2.QtWidgets import QMessageBox, QApplication, QMainWindow, QWidget
-    from PySide2.QtGui import QPixmap, QPainter, QBrush, QPainterPath, QScreen
+    from PySide2.QtWidgets import QMessageBox, QApplication, QWidget
+    from PySide2.QtGui import QPixmap, QPainter, QPainterPath
     from PySide2.QtCore import Qt
 
 #====================================경고, 알림창 팝업=========================================
